@@ -1,0 +1,30 @@
+  global_frame: /world
+  robot_base_frame: /base_link
+  transform_tolerance: 0.2
+  robot_radius: 0.6
+
+  update_frequency: 2.0
+  publish_frequency: 2.0
+  rolling_window: false
+
+  width: 40
+  height: 40
+  resolution: 0.3
+  origin_x: -20
+  origin_y: -20
+
+  footprint: [[0.305, 0.278], [0.04, 0.193], [-0.04, 0.193], [-0.282, 0.178], [-0.282, -0.178], [-0.04, -0.193], [0.04, -0.193], [0.305, -0.278]]
+
+  plugins:
+    - {name: static, type: "costmap_2d::StaticLayer"}
+    - {name: inflation, type: "costmap_2d::InflationLayer"}
+
+  static:
+    unknown_cost_value: -1
+    lethal_cost_threshold: 100
+    map_topic: /projected_map
+
+  inflation:
+    inflation_radius: 0.3
+
+

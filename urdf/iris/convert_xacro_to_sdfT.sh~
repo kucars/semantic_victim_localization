@@ -1,0 +1,2 @@
+rosrun xacro xacro.py  windows.xacro > windows.urdf
+gz sdf -p windows.urdf > windows.sdf

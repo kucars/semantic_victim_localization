@@ -1,0 +1,248 @@
+<?xml version="1.0"?>
+
+<robot name="iris" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Properties that can be assigned at build time as arguments.
+  Is there a reason not to make all properties arguments?
+  -->
+  <xacro:arg name='name' default='iris' />
+  <xacro:arg name='mavlink_addr' default='INADDR_ANY' />
+  <xacro:arg name='mavlink_udp_port' default='14560' />
+  <xacro:arg name='visual_material' default='DarkGrey' />
+  <xacro:arg name='enable_mavlink_interface' default='true' />
+  <xacro:arg name='enable_wind' default='false' />
+  <xacro:arg name='enable_ground_truth' default='true' />
+  <xacro:arg name='enable_logging' default='false' />
+  <xacro:arg name='log_file' default='iris' />
+
+  <!-- macros for gazebo plugins, sensors -->
+  <xacro:include filename="$(find kuri_mbzirc_sim)/urdf/iris_accessories/component_snippets.xacro" />
+
+
+  <!-- Instantiate iris "mechanics" -->
+  <xacro:include filename="$(find kuri_mbzirc_sim)/urdf/iris_accessories/iris.xacro" />
+
+  <xacro:if value="$(arg enable_wind)">
+    <xacro:wind_plugin_macro
+        namespace="${namespace}"
+        wind_direction="0 0 1"
+        wind_force_mean="0.7"
+        xyz_offset="1 0 0"
+        wind_gust_direction="0 0 0"
+        wind_gust_duration="0"
+        wind_gust_start="0"
+        wind_gust_force_mean="0"
+        />
+  </xacro:if>
+
+  <xacro:if value="$(arg enable_mavlink_interface)">
+  <!-- Instantiate mavlink telemetry interface. -->
+  <xacro:mavlink_interface_macro
+    namespace="${namespace}"
+    imu_sub_topic="/imu"
+    mavlink_addr="INADDR_ANY"
+    mavlink_udp_port="14560"
+    >
+  </xacro:mavlink_interface_macro>
+  </xacro:if>
+
+  <!-- Mount an ADIS16448 IMU. -->
+  <xacro:imu_plugin_macro
+    namespace="${namespace}"
+    imu_suffix=""
+    parent_link="base_link"
+    imu_topic="/imu"
+    mass_imu_sensor="0.015"
+    gyroscope_noise_density="0.0003394"
+    gyroscopoe_random_walk="0.000038785"
+    gyroscope_bias_correlation_time="1000.0"
+    gyroscope_turn_on_bias_sigma="0.0087"
+    accelerometer_noise_density="0.004"
+    accelerometer_random_walk="0.006"
+    accelerometer_bias_correlation_time="300.0"
+    accelerometer_turn_on_bias_sigma="0.1960"
+  >
+    <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:imu_plugin_macro>
+
+  <xacro:if value="$(arg enable_ground_truth)">
+    <!-- Mount an IMU providing ground truth. -->
+    <xacro:imu_plugin_macro
+      namespace="${namespace}"
+      imu_suffix="gt"
+      parent_link="base_link"
+      imu_topic="ground_truth/imu"
+      mass_imu_sensor="0.00001"
+      gyroscope_noise_density="0.0"
+      gyroscopoe_random_walk="0.0"
+      gyroscope_bias_correlation_time="1000.0"
+      gyroscope_turn_on_bias_sigma="0.0"
+      accelerometer_noise_density="0.0"
+      accelerometer_random_walk="0.0"
+      accelerometer_bias_correlation_time="300.0"
+      accelerometer_turn_on_bias_sigma="0.0"
+    >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:imu_plugin_macro>
+
+    <!-- Mount a generic odometry sensor providing ground truth. -->
+    <xacro:odometry_plugin_macro
+      namespace="${namespace}/ground_truth"
+      odometry_sensor_suffix="gt"
+      parent_link="base_link"
+      pose_topic="pose"
+      pose_with_covariance_topic="pose_with_covariance"
+      position_topic="position"
+      transform_topic="transform"
+      odometry_topic="odometry"
+      parent_frame_id="world"
+      mass_odometry_sensor="0.00001"
+      measurement_divisor="1"
+      measurement_delay="0"
+      unknown_delay="0.0"
+      noise_normal_position="0 0 0"
+      noise_normal_quaternion="0 0 0"
+      noise_normal_linear_velocity="0 0 0"
+      noise_normal_angular_velocity="0 0 0"
+      noise_uniform_position="0 0 0"
+      noise_uniform_quaternion="0 0 0"
+      noise_uniform_linear_velocity="0 0 0"
+      noise_uniform_angular_velocity="0 0 0"
+      enable_odometry_map="false"
+      odometry_map=""
+      image_scale=""
+    >
+      <inertia ixx="0.00001" ixy="0.0" ixz="0.0" iyy="0.00001" iyz="0.0" izz="0.00001" /> <!-- [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] [kg.m^2] -->
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+    </xacro:odometry_plugin_macro>
+  </xacro:if>
+
+  <xacro:if value="$(arg enable_logging)">
+    <!-- Instantiate a logger -->
+    <xacro:bag_plugin_macro
+      namespace="${namespace}"
+      bag_file="$(arg log_file)"
+      rotor_velocity_slowdown_sim="${rotor_velocity_slowdown_sim}"
+    >
+    </xacro:bag_plugin_macro>
+  </xacro:if>
+
+  <!-- forward facing camera -->
+
+  <xacro:include filename="$(find kuri_mbzirc_sim)/urdf/iris_accessories/realsense_camera.urdf.xacro"/>
+ <xacro:realsense_camera name="front_cam" parent="base_link">
+    <origin xyz="0.15 0 -0.048" rpy="0 0.093 0"/>
+  </xacro:realsense_camera>
+
+
+
+  <!-- forward facing thermal camera -->
+<!-- 
+    <xacro:include filename="$(find kuri_mbzirc_sim)/urdf/iris_accessories/flir_a35_camera.urdf.xacro"/>
+ <xacro:flir_a35_camera name="front_cam" parent="base_link">
+    <origin xyz="0.15 0 -0.048" rpy="0 0.093 0"/>
+  </xacro:flir_a35_camera>
+
+
+-->
+
+
+  <!-- Downward facing camera -->
+   <xacro:include filename="$(find kuri_mbzirc_sim)/urdf/iris_accessories/generic_camera.urdf.xacro" />
+ <!-- <xacro:generic_camera name="downward_cam" parent="base_link" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="20" res_x="640" res_y="480" image_format="R8G8B8" hfov="100">
+    <origin xyz="0.0 0.0 -0.045" rpy="0 ${M_PI/2} 0"/> -->
+    <xacro:generic_camera name="downward_cam" parent="base_link" ros_topic="camera/image" cam_info_topic="camera/camera_info" update_rate="77" res_x="1228" res_y="1027" image_format="R8G8B8" hfov="52.9855">
+    <origin xyz="0.0 0.0 -0.045" rpy="0 ${M_PI/2} 0"/> 
+  </xacro:generic_camera>
+
+
+
+  <!-- stick -->
+
+
+      <!-- Spawn velodyne -->
+  <!--
+ <xacro:include filename="$(find  kuri_mbzirc_sim)/urdf/husky/VLP-16-customed.urdf.xacro"/>
+  <VLP-16 parent="base_link" name="velodyne" topic="/velodyne_points">
+    <origin xyz="0 0 0.048" rpy="0 0 0" />
+  </VLP-16>
+ -->
+
+<!-- Hokuyo UTM-30LX mounted above quadrotor body -->
+<!--
+   <xacro:include filename="$(find rotors_description)/urdf/hokuyo_utm30lx.urdf.xacro" />
+  <xacro:hokuyo_utm30lx name="laser0" parent="base_link" ros_topic="scan" update_rate="40" ray_count="1081" min_angle="-135" max_angle="135">
+    <origin xyz="0.0 0.0 0.085" rpy="0 0 0"/>
+  </xacro:hokuyo_utm30lx>
+  -->
+
+
+<!--
+  <property name="hokuyo_size" value="0.05" />
+  <link name="hokuyo_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${hokuyo_size} ${hokuyo_size} ${hokuyo_size}"/>
+      </geometry>
+      <material name="Blue" />
+    </visual>
+  </link>
+  <joint name="hokuyo_joint" type="fixed">
+    <origin xyz="0.0 0.0 0.085" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="hokuyo_link" />
+  </joint>
+  <gazebo reference="hokuyo_link">
+    <material>Gazebo/Blue</material>
+    <turnGravityOff>false</turnGravityOff>
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>${hokuyo_size/2} 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>10.0</max>
+          <resolution>0.001</resolution>
+        </range>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/scan</topicName>
+        <frameName>hokuyo_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+-->
+
+
+  <!-- GPS -->
+  <gazebo>
+    <plugin name="gps_controller" filename="libhector_gazebo_ros_gps.so">
+      <updateRate>40</updateRate>
+      <robotNamespace>/</robotNamespace>
+      <bodyName>base_link</bodyName>
+      <frameId>base_link</frameId>
+      <topicName>navsat/fix</topicName>
+      <velocityTopicName>navsat/vel</velocityTopicName>
+      <referenceLatitude>49.9</referenceLatitude>
+      <referenceLongitude>8.9</referenceLongitude>
+      <referenceHeading>0</referenceHeading>
+      <referenceAltitude>0</referenceAltitude>
+      <drift>0.0001 0.0001 0.0001</drift>
+    </plugin>
+  </gazebo>
+
+
+
+</robot>
+
