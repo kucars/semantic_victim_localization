@@ -182,7 +182,7 @@ double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(Pose p_)
+grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_)
 {
   //  // Source: Borrowed partially from
   //  // https://github.com/uzh-rpg/rpg_ig_active_reconstruction/blob/master/ig_active_reconstruction_octomap/src/code_base/octomap_basic_ray_ig_calculator.inl

@@ -44,5 +44,4 @@ public:
   geometry_msgs::Pose transformSetpoint2Global (const geometry_msgs::Pose p_set);
   geometry_msgs::Pose transformGlobal2Setpoint (const geometry_msgs::Pose p_global);
 };
-
 #endif // VEHICLECONTROLIRIS_H

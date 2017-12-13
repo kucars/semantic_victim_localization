@@ -16,7 +16,7 @@
 #include <victim_localization/Volumetric_Map_Manager.h>
 
 
-typedef geometry_msgs::Pose Pose;
+//typedef geometry_msgs::Pose Pose;
 
 class view_generator_IG
 {
@@ -40,9 +40,9 @@ public:
   Volumetric_Map *occlusion_map;
   double obj_bounds_x_max_, obj_bounds_y_max_, obj_bounds_z_max_;
   double obj_bounds_x_min_, obj_bounds_y_min_, obj_bounds_z_min_;
-  Pose current_pose_;
-  std::vector<Pose> generated_poses;
-  std::vector<Pose> rejected_poses;
+  geometry_msgs::Pose current_pose_;
+  std::vector<geometry_msgs::Pose> generated_poses;
+  std::vector<geometry_msgs::Pose> rejected_poses;
 
   // Visualizer
   int vis_marker_array_prev_size_;
@@ -52,14 +52,14 @@ public:
 
   //...methods...
   view_generator_IG();
-  void setCurrentPose(Pose p);
+  void setCurrentPose(geometry_msgs::Pose p);
   void setHistory(nbv_history* h);
   void setOcclusionMap(Volumetric_Map* Occ);
 
 
-  bool isInsideBounds(Pose p);
-  bool isSafe(Pose p);
-  bool isValidViewpoint(Pose p);
+  bool isInsideBounds(geometry_msgs::Pose p);
+  bool isSafe(geometry_msgs::Pose p);
+  bool isValidViewpoint(geometry_msgs::Pose p);
 
   //generate views
   void generateViews(bool check);
@@ -67,13 +67,13 @@ public:
 
 
  //visualize
-  void visualize(std::vector<Pose> valid_poses, std::vector<Pose> invalid_poses, Pose selected_pose);
+  void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
   visualization_msgs::Marker visualizeDeleteArrowMarker(int id);
-  visualization_msgs::Marker visualizeCreateArrowMarker(int id, Pose pose, bool valid, double max_z = 0, double min_z = 0);
-  void visualizeSelectedArrowMarker(Pose selected_pose, visualization_msgs::MarkerArray &All_poses);
+  visualization_msgs::Marker visualizeCreateArrowMarker(int id, geometry_msgs::Pose pose, bool valid, double max_z = 0, double min_z = 0);
+  void visualizeSelectedArrowMarker(geometry_msgs::Pose selected_pose, visualization_msgs::MarkerArray &All_poses);
 
-  bool ComparePoses(Pose Pose1, Pose Pose2);
-  void visualizeDrawSphere(Pose p, double r);
+  bool ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2);
+  void visualizeDrawSphere(geometry_msgs::Pose p, double r);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
 

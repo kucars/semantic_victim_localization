@@ -49,7 +49,7 @@
 
 
 
-typedef geometry_msgs::Pose Pose;
+//typedef geometry_msgs::Pose Pose;
 
 class Volumetric_Map
 {

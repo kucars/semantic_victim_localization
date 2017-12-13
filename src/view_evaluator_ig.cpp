@@ -16,9 +16,9 @@
 view_evaluator_IG::view_evaluator_IG():
   info_selected_utility_(-std::numeric_limits<float>::infinity()) //-inf
 {
-  ros::param::param<double>("~HFOV_angle", HFOV_deg , 58);
-  ros::param::param<double>("~HFOV_angle", VFOV_deg , 45);
-  ros::param::param<double>("~maximum_depth_distance", max_depth_d , 5);
+  ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
+  ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
+  ros::param::param<double>("~depth_range_min", max_depth_d , 5);
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
 
@@ -63,7 +63,7 @@ void view_evaluator_IG::update_parameters()
 
 }
 
-double view_evaluator_IG::calculateIG(Pose p){      //TOFIX project FOV from camera center not drone center
+double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX project FOV from camera center not drone center
  // std::cout << "tested Pose: " << p <<std::endl;
   grid_map::GridMap temp_Map;
   grid_map::Polygon polygon_view;
@@ -95,7 +95,7 @@ void view_evaluator_IG::evaluate(){      //TOFIX project FOV from camera center 
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
-      Pose p = view_gen_->generated_poses[i];
+      geometry_msgs::Pose p = view_gen_->generated_poses[i];
         double utility = calculateIG(p);
         if (utility > info_selected_utility_)
         {
@@ -113,7 +113,7 @@ void view_evaluator_IG::evaluate(){      //TOFIX project FOV from camera center 
       view_gen_->visualize(view_gen_->generated_poses, view_gen_->rejected_poses,selected_pose_);
 }
 
-Pose view_evaluator_IG::getTargetPose()
+geometry_msgs::Pose view_evaluator_IG::getTargetPose()
 {
   return selected_pose_;
 }

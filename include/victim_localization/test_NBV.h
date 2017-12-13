@@ -11,9 +11,12 @@
 #include <victim_localization/view_evaluator_ig.h>
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/view_generator_ig_nn_adaptive.h>
+#include <victim_localization/view_generator_ig_frontier.h>
 #include <victim_localization/Volumetric_Map_Manager.h>
 #include <victim_localization/nbv_history.h>
 
+#include <victim_localization/ReactivePathPlanner.h>
+#include <victim_localization/straightline.h>
 
 
 namespace NBVState {

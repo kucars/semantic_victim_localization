@@ -34,7 +34,7 @@
         </surface>
       </collision>
       <collision name='base_link_fixed_joint_lump__downward_cam_link_collision_1'>
-        <pose frame=''>0 0 -0.045 3.14159 1.57079 3.14159</pose>
+        <pose frame=''>0 0.049 -0.048 0 0.26179 0</pose>
         <geometry>
           <box>
             <size>0.01 0.01 0.01</size>
@@ -81,7 +81,7 @@
         </material>
       </visual>
       <visual name='base_link_fixed_joint_lump__downward_cam_link_visual_1'>
-        <pose frame=''>0 0 -0.045 3.14159 1.57079 3.14159</pose>
+        <pose frame=''>0 0.049 -0.048 0 0.26179 0</pose>
         <geometry>
           <box>
             <size>0.01 0.01 0.01</size>
@@ -132,11 +132,45 @@
           <cameraInfoTopicName>camera/camera_info</cameraInfoTopicName>
           <frameName>downward_cam_optical_frame</frameName>
         </plugin>
-        <pose frame=''>0 0 -0.045 3.14159 1.57079 3.14159</pose>
+        <pose frame=''>0 0.049 -0.048 0 0.26179 0</pose>
       </sensor>
       <velocity_decay/>
       <gravity>1</gravity>
       <velocity_decay/>
+
+<!-- THERMAL CAMERA --> 
+      <sensor type="camera" name="thermal_camera_sensor">
+        <update_rate>10</update_rate>
+        <camera name='__default__'>
+          <horizontal_fov>1.047</horizontal_fov>
+          <image>
+            <width>160</width>
+            <height>120</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.01</near>
+            <far>100</far>
+          </clip>
+<!--
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.007</stddev>
+          </noise>
+-->
+        </camera>
+        <plugin name="thermal_camera_controller" filename="libgazebo_ros_thermal_camera_pink.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>10</updateRate>
+          <imageTopicName>thermal_camera/image_raw</imageTopicName>
+          <cameraInfoTopicName>thermal_camera/camera_info</cameraInfoTopicName>
+          <frameName>thermal_optical_frame</frameName>
+          <interface:camera name="thermal_camera_iface" />
+        </plugin>
+        <pose frame=''>0 0.049 -0.048 0 0.26179 0</pose>
+      </sensor> -->
+
       <sensor name='front_cam' type='depth'>
         <update_rate>20</update_rate>
         <camera name='__default__'>
@@ -161,6 +195,8 @@
         </plugin>
         <pose frame=''>0 0.049 -0.048 0 0.26179 0</pose>
       </sensor>
+
+
     </link>
     <link name='/ground_truth/odometry_sensorgt_link'>
       <pose frame=''>0 0 0 0 -0 0</pose>

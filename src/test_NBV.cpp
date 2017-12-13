@@ -27,16 +27,12 @@ void TestNBZ::initVehicle(){
 
     // Set starting position
     ros::Duration(2.0).sleep();
-    int pose_number;
-    std::string pose_number_str;
-    ros::param::param<int>("~uav_start_pose", pose_number, 1);
-    pose_number_str = std::to_string(pose_number);
 
     double x, y, z, yaw;
-    ros::param::param<double>("~uav_pose_x_" + pose_number_str, x, -8);
-    ros::param::param<double>("~uav_pose_y_" + pose_number_str, y, -8);
-    ros::param::param<double>("~uav_pose_z_" + pose_number_str, z, 1);
-    ros::param::param<double>("~uav_pose_yaw_" + pose_number_str, yaw, 0);
+    ros::param::param<double>("~uav_pose_x_" , -8);
+    ros::param::param<double>("~uav_pose_y_" , y, -8);
+    ros::param::param<double>("~uav_pose_z_" , z, 1);
+    ros::param::param<double>("~uav_pose_yaw_" , yaw, 0);
 
     vehicle_->setWaypoint(x, y, z, yaw);
 
@@ -146,7 +142,7 @@ void TestNBZ::generateViewpoints()
    std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
 
   view_generate_->setCurrentPose(vehicle_->getPose());
-  Pose previous_pose=view_generate_->current_pose_;
+  geometry_msgs::Pose previous_pose=view_generate_->current_pose_;
   view_generate_->generateViews();
 
   if (view_generate_->generated_poses.size() == 0)
@@ -176,13 +172,16 @@ void TestNBZ::UpdateMap()
   Map_->setCurrentPose(vehicle_->getPose());
 
   if (detection_enabled){
-    if (Victim_detection_DL_->detection_Cluster_status==true)
-    Map_->setDetectionResult(Victim_detection_DL_->getClusterCentroid()
-                           ,Victim_detection_DL_->getClusterCentroidResultStatus());
-    else Map_->setDetectionResult((vehicle_->getPose()).position,0);
+    if (Victim_detection_DL_->detection_Cluster_succeed==true)
+    Map_->setDetectionResult(Victim_detection_DL_->getClusterCentroidResultStatus());
   }
-  else Map_->setDetectionResult((vehicle_->getPose()).position,0);
-
+  else {
+  detector_status status_tem;
+  status_tem.victim_found= false;
+   Position g(0,0);
+  status_tem.victim_loc=g;
+   Map_->setDetectionResult(status_tem);
+}
   Map_->Update();
 
   if (Map_->getDetectionStatus().victim_found)

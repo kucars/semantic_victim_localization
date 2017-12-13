@@ -6,10 +6,10 @@ view_generator_IG::view_generator_IG():
 {
   // Read parameters
 
-   ros::param::param("~view_generator_pos_res_x", res_x_, 1.0);
-   ros::param::param("~view_generator_pos_res_y", res_y_, 1.0);
-   ros::param::param("~view_generator_pos_res_z", res_z_, 1.0);
-   ros::param::param("~view_generator_pos_res_yaw", res_yaw_, M_PI/3.0); // (pi/3)
+   ros::param::param("~view_generator_nn_pos_res_x", res_x_, 1.0);
+   ros::param::param("~view_generator_nn_pos_res_y", res_y_, 1.0);
+   ros::param::param("~view_generator_nn_pos_res_z", res_z_, 1.0);
+   ros::param::param("~view_generator_nn_pos_res_yaw", res_yaw_, M_PI/3.0); // (pi/3)
 
    ros::param::param("~object_bounds_x_min", obj_bounds_x_min_,-1.0);
    ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 1.0);
@@ -39,7 +39,7 @@ view_generator_IG::view_generator_IG():
 
 }
 
-bool view_generator_IG::isInsideBounds(Pose p)
+bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
 {
   if (p.position.x < nav_bounds_x_min_ || p.position.x > nav_bounds_x_max_ ||
       p.position.y < nav_bounds_y_min_ || p.position.y > nav_bounds_y_max_ ||
@@ -51,7 +51,7 @@ bool view_generator_IG::isInsideBounds(Pose p)
   return true;
 }
 
-bool view_generator_IG::isSafe(Pose p)
+bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 {
   double resl= manager_->octree_->getResolution();
   double box_size= obj_bounds_x_max_;
@@ -82,7 +82,7 @@ bool view_generator_IG::isSafe(Pose p)
 }
 
 
-bool view_generator_IG::isValidViewpoint(Pose p)
+bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
 {
   if (!isInsideBounds(p) ){
     //std::cout << "rejectedbyvalidity" << std::endl;
@@ -127,7 +127,7 @@ bool view_generator_IG::isValidViewpoint(Pose p)
 }
 
 
-void view_generator_IG::visualize(std::vector<Pose> valid_poses, std::vector<Pose> invalid_poses, Pose selected_pose)
+void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
 {
   if (pub_view_marker_array_.getNumSubscribers() == 0)
     return;
@@ -181,7 +181,7 @@ visualization_msgs::Marker view_generator_IG::visualizeDeleteArrowMarker(int id)
   return pose_marker;
 }
 
-visualization_msgs::Marker view_generator_IG::visualizeCreateArrowMarker(int id, Pose pose, bool valid, double max_z, double min_z)
+visualization_msgs::Marker view_generator_IG::visualizeCreateArrowMarker(int id, geometry_msgs::Pose pose, bool valid, double max_z, double min_z)
 {
   visualization_msgs::Marker pose_marker;
 
@@ -215,7 +215,7 @@ visualization_msgs::Marker view_generator_IG::visualizeCreateArrowMarker(int id,
 }
 
 
-void view_generator_IG::visualizeSelectedArrowMarker(Pose selected_pose, visualization_msgs::MarkerArray &All_poses)
+void view_generator_IG::visualizeSelectedArrowMarker(geometry_msgs::Pose selected_pose, visualization_msgs::MarkerArray &All_poses)
 {
 
   for (int i=0; i<All_poses.markers.size();i++)
@@ -229,7 +229,7 @@ void view_generator_IG::visualizeSelectedArrowMarker(Pose selected_pose, visuali
 }
 
 
-bool view_generator_IG::ComparePoses(Pose Pose1, Pose Pose2)
+bool view_generator_IG::ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2)
 {
   if (float(
         (Pose1.position.x-Pose2.position.x) +
@@ -242,7 +242,7 @@ bool view_generator_IG::ComparePoses(Pose Pose1, Pose Pose2)
 
 
 
-void view_generator_IG::visualizeDrawSphere(Pose p, double r)
+void view_generator_IG::visualizeDrawSphere(geometry_msgs::Pose p, double r)
 {
   if (pub_view_drone_marker_.getNumSubscribers() == 0)
     return;
@@ -266,7 +266,7 @@ void view_generator_IG::visualizeDrawSphere(Pose p, double r)
   vis_sphere_counter_++;
 }
 
-void view_generator_IG::setCurrentPose(Pose p)
+void view_generator_IG::setCurrentPose(geometry_msgs::Pose p)
 {
   current_pose_ = p;
 }
@@ -278,7 +278,7 @@ void view_generator_IG::setOctomapManager(volumetric_mapping::OctomapManager *ma
 
 void view_generator_IG::generateViews(bool generate_at_current_location)
 {
-  std::vector<Pose> initial_poses;
+  std::vector<geometry_msgs::Pose> initial_poses;
   generated_poses.clear();
   rejected_poses.clear();
 
@@ -306,7 +306,7 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
             if (i_x==0 && i_y==0 && i_yaw==0)
             continue;
 
-            Pose p;
+            geometry_msgs::Pose p;
             p.position.x = currX + res_x_*i_x*cos(currYaw) + res_y_*i_y*sin(currYaw);
             p.position.y = currY - res_x_*i_x*sin(currYaw) + res_y_*i_y*cos(currYaw);
             p.position.z = 1.0 ;//+ res_z_*i_z; // z-axis movement is fixed

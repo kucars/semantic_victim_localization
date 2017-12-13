@@ -3,7 +3,7 @@
 SSD_Detection_with_clustering::SSD_Detection_with_clustering()
 {
 
-detection_Cluster_status=false;
+detection_Cluster_succeed=false;
 
 tf_listener = new tf::TransformListener();
 ros::NodeHandle nh_;
@@ -95,7 +95,7 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
 
-  detection_Cluster_status= false; //initialized detection status to start
+  detection_Cluster_succeed= false; //initialized detection status to start
 
 
   if (!DetectionAvailable()) {
@@ -185,7 +185,6 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
 
       if (!filtered_cloud->points.size()) {  // if filtered_cloud size is zero, we should try again with new input cloud data
         //detection_status="repeat";
-        std::cout << "NONONON" << std::endl;
         return;
           }
 
@@ -250,7 +249,7 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
         }
 
         detected_point = point_out.point;
-        detection_Cluster_status= true;
+        detection_Cluster_succeed= true;
 
         //std::cout << detected_point << std::endl;
 
@@ -272,13 +271,14 @@ void SSD_Detection_with_clustering::PublishSegmentedPointCloud(const pcl::PointC
 bool SSD_Detection_with_clustering::DetectionAvailable(){
     return (current_ssd_detection.Class == "person");
 }
-geometry_msgs::Point SSD_Detection_with_clustering::getClusterCentroid(){
-  return detected_point;
-}
 
-bool SSD_Detection_with_clustering::getClusterCentroidResultStatus()
+detector_status SSD_Detection_with_clustering::getClusterCentroidResultStatus()
 {
-  return detection_Cluster_status;
+  detector_status status;
+  status.victim_found = detection_Cluster_succeed;
+  status.victim_loc[0]=detected_point.x;
+  status.victim_loc[1]=detected_point.y;
+  return status;
 }
 
 void SSD_Detection_with_clustering::SetCurrentSetpoint(geometry_msgs::Pose setpoint)

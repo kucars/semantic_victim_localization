@@ -29,7 +29,6 @@ void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::Const
     ROS_ERROR_THROTTLE(1, "Map not set up: No octomap available!");
 
   Convert2DMaptoOccupancyGrid(ros::Time::now());
-  //std::cout << "map depth is: " << m_octree->getTreeDepth() <<std::endl;
 }
 
 void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
@@ -55,11 +54,6 @@ void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
 
     //ignore the node that are outside the z-range
     if (z > m_occupancyMinZ && z < m_occupancyMaxZ){
-
-     // std::cout << "node with posittion: "  << p << " Prob_O: " << node->getOccupancy() << " Value: " << node->getValue()  << std::endl;
-
-
-      //continue;
 
     bool inUpdateBBX = isInUpdateBBX(it);
 
@@ -322,22 +316,3 @@ void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmap_)
   costmap_ros_=costmap_;
 }
 
-
-/*
- int main(int argc, char **argv)
- {
- // >>>>>>>>>>>>>>>>>
- // Initialize ROS
- // >>>>>>>>>>>>>>>>>
- ros::init(argc, argv, "correct_depth");
-
- ros::NodeHandle nh;
- ros::NodeHandle nh_private("~");
- Volumetric_Map test_(nh,nh_private);
-
-
- ros::spin();
- return 0;
-
- }
- */

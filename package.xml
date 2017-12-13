@@ -37,6 +37,9 @@
   <build_depend>tf</build_depend>
   <run_depend>tf</run_depend>
 
+<build_depend>sspp</build_depend>
+<run_depend>sspp</run_depend>
+
   <!--<build_depend>rostest</build_depend>-->
 
   <build_depend>mav_msgs</build_depend>
@@ -66,6 +69,10 @@
 
 <build_depend>costmap_2d</build_depend>
  <run_depend>costmap_2d</run_depend>
+
+<build_depend>OpenCV</build_depend>
+<run_depend>OpenCV</run_depend>
+
 
 <build_depend>grid_map_demos</build_depend>
 <build_depend>grid_map_cv</build_depend>

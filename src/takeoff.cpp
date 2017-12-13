@@ -39,9 +39,9 @@ int main(int argc, char **argv)
     }
 
     geometry_msgs::PoseStamped pose;
-    pose.pose.position.x = -8;
-    pose.pose.position.y = -8;
-    pose.pose.position.z = 0.5;
+    pose.pose.position.x = 0;
+    pose.pose.position.y = 0;
+    pose.pose.position.z = 1.6;
 
 
     pose.pose.orientation.x = 0.7071067811865476;

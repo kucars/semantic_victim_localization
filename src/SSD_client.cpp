@@ -1,14 +1,5 @@
 #include <victim_localization/ssd_client.h>
 
-
-
-//Defining namespace using in this code
-using namespace std;
-//using namespace ros;
-//using namespace std_msgs;
-//using namespace mastering_ros_demo_pkg;
-
-
 SSD_client::SSD_client(){
   ros::NodeHandle n;
   loop_rate(10);
@@ -19,7 +10,6 @@ void SSD_client::Get_SSD_Detection(){
   Detection_success=false;
   while (ros::ok() && !Detection_success)
 	{
-
 	  std::stringstream ss;
     ss << "Start Detecting";
     srv.request.req = ss.str();
@@ -28,7 +18,7 @@ void SSD_client::Get_SSD_Detection(){
       Detection_success=true;
     }
 
-    cout << "detected class" << srv.response.Class.c_str() << endl;
+    std::cout << "detected class" << srv.response.Class.c_str() << std::endl;
 
 	ros::spinOnce();
 	//Setting the loop rate

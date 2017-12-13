@@ -12,14 +12,11 @@ private:
   std::string DL_map_topic="victim_map/grid_map_DL";
   std::string DL_polygon_topic="polygon_DL";
   std::string DL_layer_name="victim_DL";
-  detector_status DL_status;
 
 
 public:
   victim_map_DL();
   void Update();
-  detector_status getDetectionStatus();
-
 };
 
 #endif // VICTIM_MAP_DL_H

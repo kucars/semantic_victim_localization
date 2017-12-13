@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(victim_localization)
 
+SET ( CMAKE_CXX_FLAGS "-frounding-math" )
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -33,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
     grid_map_core
     octomap_world
     costmap_2d
+    sspp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -42,6 +44,8 @@ find_package(Eigen REQUIRED)
 find_package(gazebo REQUIRED)
 find_package(octomap REQUIRED)
 find_package(PCL REQUIRED)
+find_package(CGAL QUIET COMPONENTS)
+find_package(OpenCV REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -121,7 +125,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS message_runtime roscpp geometry_msgs visualization_msgs octomap_world tf
-  DEPENDS Eigen
+  DEPENDS Eigen libudev-dev
   #LIBRARIES Victim_Localization
   #CATKIN_DEPENDS roscpp rospy
   #DEPENDS system_lib
@@ -139,6 +143,7 @@ include_directories(
     ${GAZEBO_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
+    ${sspp_INCLUDE_DIRS}
     include #Adds my own custom class headers
     include/vicitm_localization
     include/control
@@ -160,11 +165,15 @@ add_executable (test_NBV
     src/view_evaluator_ig.cpp
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
+    src/view_generator_ig_frontier.cpp
     src/ssd_detection_with_ecludian_clustering.cpp
     src/Volumetric_Map_Manager.cpp
     src/raytracing.cpp
     src/nbv_history.cpp
 
+    src/navigation_base.cpp
+    src/straightline.cpp
+    src/ReactivePathPlanner.cpp
     )
 add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
 
@@ -174,10 +183,30 @@ target_link_libraries(test_NBV
     ${Eigen_LIBRARIES}
     ${OCTOMAP_LIBRARIES}
     ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${CGAL_Core_LIBRARY}
+    ${rviz_visual_tools_LIBRARIES}
 )
 
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})
+
+add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
+add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(thermalVictim ${catkin_LIBRARIES}
+${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+${Eigen_LIBRARIES}
+${OCTOMAP_LIBRARIES}
+${PCL_LIBRARIES}
+${CGAL_LIBRARY}
+${CGAL_Core_LIBRARY}
+${rviz_visual_tools_LIBRARIES}
+irimager
+irimageprocessing
+ircore
+udev
+)
+
 
 
 #add_executable(pointc src/Volumetric_Map_Manager.cpp )

@@ -25,7 +25,6 @@
 
 
 
-typedef geometry_msgs::Pose Pose;
 typedef geometry_msgs::Point Point;
 typedef geometry_msgs::PoseStamped PoseStamped;
 
@@ -43,7 +42,7 @@ struct OctomapKeyCompare {
 class RayTracing
 {
 public:
-  Pose current_pose_;
+  geometry_msgs::Pose current_pose_;
   octomap::OcTree *tree_;
   view_generator_IG *view_gen_;
   std::string Layer_name_;
@@ -64,7 +63,7 @@ std::vector<octomap::point3d> rays_far_plane_at_pose_;
 double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
 double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
 
-grid_map::GridMap Project_3d_rayes_to_2D_plane(Pose p);
+grid_map::GridMap Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p);
 
 
 RayTracing(view_generator_IG *vg);

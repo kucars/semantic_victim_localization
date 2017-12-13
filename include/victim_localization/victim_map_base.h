@@ -19,7 +19,6 @@
 #include <victim_localization/raytracing.h>
 
 
-typedef geometry_msgs::Pose Pose;
 typedef geometry_msgs::Point Point;
 typedef geometry_msgs::PoseStamped PoseStamped;
 
@@ -49,8 +48,9 @@ public:
 
 
   float const_;
-  Pose current_loc_;
+  geometry_msgs::Pose current_loc_;
   double current_yaw_;
+  detector_status status;
 
 
   double HFOV_deg;
@@ -64,11 +64,12 @@ public:
   grid_map::Polygon polygon;
   volumetric_mapping::OctomapManager *manager_;
   RayTracing *raytracing_;
+  std::string victimMapName;
 
 
 
   //Detection_info//
-  Point detect_loc_;
+  Position detect_loc_;
   bool is_detect_;
   Point p1; // rectangle corners for projected map update
   Point p2;
@@ -79,6 +80,8 @@ public:
 
   virtual void Update(){};
   virtual detector_status getDetectionStatus();
+  std::string VictimMpaType();
+
 
 
   Position approximate_detect(Position x);
@@ -89,14 +92,14 @@ public:
 
   std::string getlayer_name();
   void setlayer_name(std::string layer_);
-  void setCurrentPose(Pose ps);
-  void setDetectionResult(Point p, bool is_detect_);
+  void setCurrentPose(geometry_msgs::Pose ps);
+  void setDetectionResult(detector_status status);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
   void setRaytracing(RayTracing *Ray);
 
   grid_map::GridMap Project_3d_rayes_to_2D_plane();
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
-  grid_map::Polygon Update_region(grid_map::GridMap Map, Pose corner_);
+  grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
 
   //%%%%%
   std::vector<Eigen::Vector3d> rays_far_plane_;
@@ -110,9 +113,9 @@ public:
   std::string base_frame;
 
   double tree_resolution;
-  double calculateIG(Pose p);
+  double calculateIG(geometry_msgs::Pose p);
 
-  double calculateIG_New(Pose p);
+  double calculateIG_New(geometry_msgs::Pose p);
   double getCellEntropy(Index cell_);
 
   octomap::OcTree *tree_;

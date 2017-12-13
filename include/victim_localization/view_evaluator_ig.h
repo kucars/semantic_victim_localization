@@ -19,7 +19,7 @@ public:
   float info_entropy_total_;
 
   view_evaluator_IG();
-  Pose getTargetPose();
+  geometry_msgs::Pose getTargetPose();
   void setViewGenerator(view_generator_IG* v);
   void setMappingModule(Victim_Map_Base* m);
   void update_parameters();
@@ -39,10 +39,10 @@ protected:
 
   //volumetric_mapping::OctomapManager *manager_;
 
-  Pose current_pose_;
+  geometry_msgs::Pose current_pose_;
   double current_yaw_;
   std::string MapLayer;
-  Pose selected_pose_;
+  geometry_msgs::Pose selected_pose_;
 
   double HFOV_deg;
   double VFOV_deg;
@@ -54,9 +54,9 @@ protected:
 
   double tree_resolution;
   double const_;
-  double calculateIG(Pose p);
+  double calculateIG(geometry_msgs::Pose p);
 
-  double calculateIG_New(Pose p);
+  double calculateIG_New(geometry_msgs::Pose p);
   double getCellEntropy(Position cell_);
 
 

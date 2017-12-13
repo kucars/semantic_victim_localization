@@ -6,14 +6,9 @@ double range_max_=10;
 Victim_Map_Base::Victim_Map_Base()
 {
   //default values for configs
-  ros::param::param<double>("~", Prob_D_H , 0.9);
-  ros::param::param<double>("~", Prob_D_Hc , 0.05);
-  ros::param::param<double>("~", Prob_Dc_H , 0.1);
-  ros::param::param<double>("~", Prob_Dc_Hc , 0.95);
-
-  ros::param::param<double>("~HFOV_angle", HFOV_deg , 58);
-  ros::param::param<double>("~HFOV_angle", VFOV_deg , 45);
-  ros::param::param<double>("~maximum_depth_distance", max_depth_d , 5);
+  ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
+  ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
+  ros::param::param<double>("~depth_range_max", max_depth_d , 5);
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
 
@@ -21,7 +16,11 @@ Victim_Map_Base::Victim_Map_Base()
 
   sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 100, &Victim_Map_Base::callbackdrawFOV, this);
 
-  //adding the raytracing call here....
+  //initialize_victim_to_false
+  status.victim_loc=Position(std::numeric_limits<double>::quiet_NaN(),
+                             std::numeric_limits<double>::quiet_NaN());
+
+  status.victim_found=false;
 }
 
 Victim_Map_Base::~Victim_Map_Base(){}
@@ -50,7 +49,7 @@ grid_map::Polygon Victim_Map_Base::draw_FOV(){
   pub_polygon.publish(message);
 }
 
-grid_map::Polygon Victim_Map_Base::Update_region(grid_map::GridMap Map, Pose corner_){
+grid_map::Polygon Victim_Map_Base::Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_){
 
   grid_map::Polygon rectange_update;
 
@@ -76,7 +75,7 @@ grid_map::Polygon Victim_Map_Base::Update_region(grid_map::GridMap Map, Pose cor
 }
 
 void Victim_Map_Base::callbackdrawFOV(const PoseStamped &ps_stamped){
-  Pose ps=ps_stamped.pose;
+  geometry_msgs::Pose ps=ps_stamped.pose;
   double yaw_=pose_conversion::getYawFromQuaternion(ps.orientation);
   Point p1_corner; // first corner point for triangle
   Point p2_corner; // second corner point for triangle
@@ -149,14 +148,14 @@ void Victim_Map_Base::setlayer_name(std::string layer_) {
   layer_name=layer_;
 }
 
-void Victim_Map_Base::setCurrentPose(Pose ps) {
+void Victim_Map_Base::setCurrentPose(geometry_msgs::Pose ps) {
   current_loc_=ps;
   current_yaw_=pose_conversion::getYawFromQuaternion(current_loc_.orientation);
 }
 
-void Victim_Map_Base::setDetectionResult(Point p, bool is_detect) {
-  detect_loc_=p;
-  is_detect_=is_detect;
+void Victim_Map_Base::setDetectionResult(detector_status status) {
+  detect_loc_=status.victim_loc;
+  is_detect_=status.victim_found;
 }
 
 void Victim_Map_Base::setRaytracing(RayTracing *Ray){
@@ -165,12 +164,11 @@ void Victim_Map_Base::setRaytracing(RayTracing *Ray){
 
 
 detector_status Victim_Map_Base::getDetectionStatus(){
-  std::cout << "[Warning] detection_Checking is not implemented in the Base Mapping Module" << std::endl;
-  detector_status status;
-  status.victim_found=false;
-  status.victim_loc=Position(std::numeric_limits<double>::quiet_NaN(),
-                             std::numeric_limits<double>::quiet_NaN());
-  return status;
+ return status;
 }
 
 
+std::string Victim_Map_Base::VictimMpaType(){
+  victimMapName="victim Map base";
+  return victimMapName;
+}

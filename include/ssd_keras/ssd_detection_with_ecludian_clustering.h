@@ -63,6 +63,8 @@
 #include <victim_localization/DL_msgs_boxes.h>
 #include "victim_localization/DL_box.h"
 
+#include <victim_localization/victim_map_base.h>
+
 
 
 
@@ -74,7 +76,7 @@ public:
   victim_localization::DL_msgs_box current_ssd_detection;
   geometry_msgs::Pose current_pose;
   geometry_msgs::Point detected_point;
-  bool detection_Cluster_status; //
+  bool detection_Cluster_succeed; //
   ros::Publisher pub_segemented_human_pointcloud;
   ros::Publisher pub_setpoint;
 
@@ -97,7 +99,7 @@ public:
   void CallBackData(const sensor_msgs::ImageConstPtr& input_depth,
                     const geometry_msgs::PoseStamped::ConstPtr& loc);
   void FindClusterCentroid();
-  bool getClusterCentroidResultStatus();
+  detector_status getClusterCentroidResultStatus();
   geometry_msgs::Point getClusterCentroid();
   void PublishSegmentedPointCloud(const pcl::PointCloud<pcl::PointXYZ> input_PointCloud);
 };

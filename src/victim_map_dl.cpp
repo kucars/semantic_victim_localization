@@ -16,6 +16,13 @@ victim_map_DL::victim_map_DL():
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(DL_map_topic, 1, true);
+
+  //Values for probability
+  ros::param::param<double>("~Prob_D_H_for_DL", Prob_D_H , 0.9);
+  ros::param::param<double>("~Prob_D_Hc_for_DL", Prob_D_Hc , 0.05);
+  ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.1);
+  ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.95);
+
   //pub_polygon=nh_.advertise<geometry_msgs::PolygonStamped>(DL_polygon_topic, 1, true);
 }
 
@@ -27,11 +34,11 @@ void victim_map_DL::Update(){
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
   Position D_loc;
-  D_loc[0]=detect_loc_.x;
-  D_loc[1]=detect_loc_.y;
+  D_loc[0]=detect_loc_[0];
+  D_loc[1]=detect_loc_[0];
   D_loc=approximate_detect(D_loc);
 
-  DL_status.victim_found=false; //initialize detection to false
+  status.victim_found=false; //initialize detection to false
 
   for (grid_map::GridMapIterator iterator(temp_Map);
        !iterator.isPastEnd(); ++iterator) {
@@ -39,8 +46,6 @@ void victim_map_DL::Update(){
     Index index=*iterator;
     temp_Map.getPosition(index, position);
    if (!raytracing_->isInsideBounds(position)) continue;
-
-   // std::cout << "possible_location3" << std::endl;
 
     float P_prior=map.atPosition(layer_name, position);
     if(temp_Map.atPosition("temp", position)==0){ // if the cell is free ( contains no obsticales)
@@ -53,8 +58,8 @@ void victim_map_DL::Update(){
 
           if (Detec_prob>0.9) {
             //std::cout << "Detec_prob" << std::endl;
-            DL_status.victim_found=true;
-            DL_status.victim_loc=position;
+            status.victim_found=true;
+            status.victim_loc=position;
           }
         }
 
@@ -68,9 +73,6 @@ void victim_map_DL::Update(){
   publish_Map();
 }
 
-detector_status victim_map_DL::getDetectionStatus(){
-  return DL_status;
-}
 
 
 
