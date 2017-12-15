@@ -32,7 +32,7 @@ public:
   void setWaypoint(double x, double y, double z, double yaw);
   void setWaypoint(geometry_msgs::Pose p);
   void setWaypointIncrement(double x, double y, double z, double yaw);
-  void start();
+  void start(double x, double y, double z);
   void updateTwist();
 };
 

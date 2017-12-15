@@ -1,0 +1,12 @@
+grid_map_topic: /victim_map/grid_map_thermal
+grid_map_visualizations:
+  - name: elevation_map_points
+    type: point_cloud
+    params:
+     layer: victim_thermal
+  - name: elevation_grid
+    type: occupancy_grid
+    params:
+     layer: victim_thermal
+     data_min: 0
+     data_max: 1

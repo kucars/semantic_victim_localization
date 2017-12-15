@@ -1,25 +1,18 @@
 <launch>
 
     <!-- MAVROS posix SITL environment launch script -->
-    <!--
-    <arg name="x" default="-7"/>
-    <arg name="y" default="-7"/>
-    <arg name="z" default="0.113795"/>
-    <arg name="R" default="0"/>
-    <arg name="P" default="0"/>
-    <arg name="Y" default="0"/>
-     -->
+
     <arg name="x" value="-1.655930"/>
     <arg name="y" value="0"/>
-    <arg name="z" default="0.2"/>
+    <arg name="z" default="0.5"/>
     <arg name="R" default="0"/>
     <arg name="P" default="0"/>
     <arg name="Y" value="0"/>
 
     <arg name="est" default="lpe"/>
     <arg name="vehicle" default="iris"/>
-    <arg name="world" default="$(find victim_localization)/world/world_test_thermal.world"/>
-    <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg veh\icle)"/>
+    <arg name="world" default="$(find victim_localization)/world/twoRoomsSmall.world"/>
+    <arg name="rcS" default="$(find px4)/posix-configs/SITL/init/$(arg est)/$(arg vehicle)"/>
     <arg name="headless" default="false"/>
     <arg name="gui" default="true"/>
     <arg name="ns" default="iris"/>      
@@ -68,10 +61,6 @@
     <node name="$(anon vehicle_spawn)" output="screen" pkg="gazebo_ros" type="spawn_model"
         args="-sdf -file $(arg sdfRobot) -model $(arg vehicle) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
 
-   <!-- <node name="spawn_m" output="screen" pkg="gazebo_ros" type="spawn_model" 
-       args="-urdf -param /robot_description -model iris_drone -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
-
-       -->
       <!-- send the robot XML to param server -->
 
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />

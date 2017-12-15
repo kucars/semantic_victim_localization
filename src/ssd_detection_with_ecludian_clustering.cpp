@@ -1,26 +1,32 @@
 #include <ssd_keras/ssd_detection_with_ecludian_clustering.h>
 
-SSD_Detection_with_clustering::SSD_Detection_with_clustering()
+SSD_Detection_with_clustering::SSD_Detection_with_clustering():
+victim_detector_base()
 {
 
 detection_Cluster_succeed=false;
 
 tf_listener = new tf::TransformListener();
-ros::NodeHandle nh_;
-ros::NodeHandle nh_private;
 
 
 //Parameters
 std::string topic_ssd_keras;
 std::string topic_depth_image;
 std::string topic_Odometry;
+std::string topic_Position;
 std::string topic_segmented_PointCloud;
 
 
 ros::param::param("~topic_ssd_keras", topic_ssd_keras, std::string("/ssd_detction/box"));
 ros::param::param("~topic_depth_image", topic_depth_image, std::string("front_cam/depth/image_raw"));
 ros::param::param("~topic_Odometry", topic_Odometry, std::string("iris/mavros/local_position/pose"));
+ros::param::param("~topic_Position", topic_Position, std::string("/iris/mavros/setpoint_position/local"));
 ros::param::param("~topic_segmented_PointCloud", topic_segmented_PointCloud, std::string("ssd/segmented_PointCloud"));
+ros::param::param("~RGB_image_x_resolution", image_x_resol, 640.0);
+ros::param::param("~RGB_image_y_resolution", image_y_resol, 480.0);
+ros::param::param("~RGB_image_x_offset", image_x_offset, 320.5);
+ros::param::param("~RGB_image_y_offset", image_y_offset, 240.5);
+ros::param::param("~RGB_focal_length", RGB_FL, 524.2422531097977);
 
 
 //message_filters configurations
@@ -91,6 +97,7 @@ void SSD_Detection_with_clustering::DetectionService(){
 
 void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code works with one human detection in the image, need to be
                                                             // generatlized for multiple humans
+
   pcl::PointCloud<pcl::PointXYZ>::Ptr depth_cloud (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud (new pcl::PointCloud<pcl::PointXYZ>);
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_f (new pcl::PointCloud<pcl::PointXYZ>);
@@ -123,10 +130,9 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
             int index=(j-y_min)+cnt*(y_max-y_min);
             float depth_=current_depth_image->image.at<float>(j,i);
             if (std::isnan(depth_)) cnt_non++;
-            float FL_SS=524.2422531097977;
 
-            depth_cloud->points[index].x=(i- 320.5)*((depth_)/(FL_SS));
-            depth_cloud->points[index].y=(j- 240.5)*((depth_)/(FL_SS));
+            depth_cloud->points[index].x=(i- image_x_offset)*((depth_)/(RGB_FL));
+            depth_cloud->points[index].y=(j- image_y_offset)*((depth_)/(RGB_FL));
             depth_cloud->points[index].z=depth_;
         }
         cnt++;
@@ -272,20 +278,19 @@ bool SSD_Detection_with_clustering::DetectionAvailable(){
     return (current_ssd_detection.Class == "person");
 }
 
-detector_status SSD_Detection_with_clustering::getClusterCentroidResultStatus()
+Status SSD_Detection_with_clustering::getDetectorStatus()
 {
-  detector_status status;
+  Status status;
   status.victim_found = detection_Cluster_succeed;
   status.victim_loc[0]=detected_point.x;
   status.victim_loc[1]=detected_point.y;
   return status;
 }
 
-void SSD_Detection_with_clustering::SetCurrentSetpoint(geometry_msgs::Pose setpoint)
-{
- setpoint_.pose=setpoint;
- setpoint_.header.frame_id = "base_link";
- setpoint_.header.stamp = ros::Time::now();
+
+void SSD_Detection_with_clustering::performDetection(){
+  DetectionService();
+  FindClusterCentroid();
 }
 
 /*

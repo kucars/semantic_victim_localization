@@ -1,5 +1,5 @@
-#ifndef VICTIM_MAP_DL_H
-#define VICTIM_MAP_DL_H
+#ifndef VICTIM_MAP_THERMAL_H
+#define VICTIM_MAP_THERMAL_H
 
 #include "victim_localization/victim_map_base.h"
 
@@ -9,18 +9,16 @@ class victim_map_Thermal: public Victim_Map_Base
 {
 
 private:
-  std::string thermal_map_topic="victim_map/grid_map_thermal";
   std::string thermal_polygon_topic="polygon_thermal";
   std::string Thermal_layer_name="victim_thermal";
   double thermal_img_x_res;
   double thermal_img_y_res;
   double thermal_x_offset;
   double thermal_y_offset;
-  Position thermal_vic_loc;
+  double max_thermal_d;
 
   Position ThermalRayStart;
   Position ThermalRayEnd;
-  grid_map::Polygon ThermalRay;
   std::vector<Position> ThermalRay;
 
 public:
@@ -33,4 +31,4 @@ public:
   tf::TransformListener *tf_listener;
 };
 
-#endif // VICTIM_MAP_DL_H
+#endif // VICTIM_MAP_THERMAL_H

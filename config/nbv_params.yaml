@@ -1,147 +1,148 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+############
+## Scenario settings
+############
+nav_bounds_x_max: 10.0
+nav_bounds_x_min: -10.0
+nav_bounds_y_max: 10.0
+nav_bounds_y_min: -5
+nav_bounds_z_max: 5
+nav_bounds_z_min: 0.5 ## Do not allow the UAV to go below this height, as it may collide with the floor
+
+maximum_arena_width: 20
+maximum_arena_height: 20
+
+
+############
+## Sensor settings
+############
+## RGB_camera
+fov_horizontal: 58.0
+fov_vertical: 45.0
+depth_range_max: 5.0
+depth_range_min: 0.05
+RGB_image_x_resolution: 640.0
+RGB_image_y_resolution: 480.0
+RGB_image_x_offset: 320.5
+RGB_image_y_offset: 240.5
+RGB_focal_length: 524.2422531097977
+
+## thermal_camera
+fov_horizontal_thermal_cam: 48
+fov_vertical_thermal_cam: 45
+thermal_range_max: 15
+thermal_image_x_resolution: 160.0
+thermal_image_y_resolution: 120.0
+thermal_image_x_offset: 79.5
+thermal_image_y_offset: 59.5
+
+
+############
+## Vehicle settings
+############
+# 0: iris
+vehicle_type: 0
+
+
+## UAV Start Pose
+uav_pose_x: -8.0
+uav_pose_y: -8.0
+uav_pose_z: 1.0
+uav_pose_yaw: 0.0
+
+############
+## Mapping settings
+############
+# 0: deep learning victim map
+# 1: thermal victim map
+# 2: fused victim map
+map_type: 0
+
+map_resol_thermal: 0.2
+map_resol_DL: 0.5
+map_resol_combined : 0.2
+
+
+#deep learning map probabilities
+Prob_D_H_for_DL: 0.9
+Prob_D_Hc_for_DL: 0.05
+Prob_Dc_H_for_DL: 0.1
+Prob_Dc_Hc_for_DL: 0.95
+
+#thermal map probabilities
+Prob_D_H_for_thermal: 0.6
+Prob_D_Hc_for_thermal: 0.3
+Prob_Dc_H_for_thermal: 0.4
+Prob_Dc_Hc_for_thermal: 0.7
+
+############
+## Cost Map Obtained for octomap
+############
+
+minmum_z_for_2D_map: 0.8
+maximum_z_for_2D_map:
+publish_2D_map: true
+
+############
+## Navigation settings
+############
+# 0: Straight Line between two points
+# 1: Reactive Planner
+nav_type: 1
+
+uav_fixed_height: 1.0
+extensionRange: 1.0
+bounding_box_x: 0.2
+bounding_box_y: 0.2
+bounding_box_z: 0.2
+overshoot: 0.25
+
+
+############
+## Detector Settings
+############
+
+## thermal blob detector settings
+min_Dist_Between_Blobs: 40.0
+thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
+
+
+
+############
+## View Generation settings
+############
+# 0: Nearest Neighbor (NN)
+# 1: Adaptive NN
+# 2: Frontier
+
+view_generator_type: 0
+view_generator_nn_pos_res_x: 1.0
+view_generator_nn_pos_res_y: 1.0
+view_generator_nn_pos_res_z: 1.0
+view_generator_nn_pos_res_yaw: rad(pi/3)
+view_generator_nn_adaptive_local_minima_threshold: 0.005
+view_generator_nn_adaptive_utility_threshold: 3
+view_generator_nn_adaptive_utility_threshold: 0.3
+frontier_reached_with_distance: 5
+use_inflated_obstacles: true
+frontier_yaw: rad(pi/4)
+
+############
+## View Selecter settings
+############
+# 0: Information Gain (IG)
+view_selecter_type: 0
+
+
+############
+## Topics Name
+############
+topic_ssd_keras: "ssd_detction/box"
+topic_depth_image: "front_cam/depth/image_raw"
+topic_Odometry: "iris/mavros/local_position/pose"
+topic_Position: "iris/mavros/setpoint_position/local"
+topic_segmented_PointCloud: "ssd/segmented_PointCloud"
+
+map_topic_DL: "victim_map/grid_map_DL"
+map_topic_thermal:
+map_topic_combined: "victim_map/grid_map_combined"
 

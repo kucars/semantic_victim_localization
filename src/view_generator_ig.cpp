@@ -6,36 +6,36 @@ view_generator_IG::view_generator_IG():
 {
   // Read parameters
 
-   ros::param::param("~view_generator_nn_pos_res_x", res_x_, 1.0);
-   ros::param::param("~view_generator_nn_pos_res_y", res_y_, 1.0);
-   ros::param::param("~view_generator_nn_pos_res_z", res_z_, 1.0);
-   ros::param::param("~view_generator_nn_pos_res_yaw", res_yaw_, M_PI/3.0); // (pi/3)
+  ros::param::param("~view_generator_nn_pos_res_x", res_x_, 1.0);
+  ros::param::param("~view_generator_nn_pos_res_y", res_y_, 1.0);
+  ros::param::param("~view_generator_nn_pos_res_z", res_z_, 1.0);
+  ros::param::param("~view_generator_nn_pos_res_yaw", res_yaw_, M_PI/3.0); // (pi/3)
 
-   ros::param::param("~object_bounds_x_min", obj_bounds_x_min_,-1.0);
-   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 1.0);
-   ros::param::param("~object_bounds_y_min", obj_bounds_y_min_,-1.0);
-   ros::param::param("~object_bounds_y_max", obj_bounds_y_max_, 1.0);
-   ros::param::param("~object_bounds_z_min", obj_bounds_z_min_, 0.0);
-   ros::param::param("~object_bounds_z_max", obj_bounds_z_max_, 1.0);
+  ros::param::param("~object_bounds_x_min", obj_bounds_x_min_,-1.0);
+  ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 1.0);
+  ros::param::param("~object_bounds_y_min", obj_bounds_y_min_,-1.0);
+  ros::param::param("~object_bounds_y_max", obj_bounds_y_max_, 1.0);
+  ros::param::param("~object_bounds_z_min", obj_bounds_z_min_, 0.0);
+  ros::param::param("~object_bounds_z_max", obj_bounds_z_max_, 1.0);
 
-   ros::param::param("~nav_bounds_x_min", nav_bounds_x_min_,-10.0);
-   ros::param::param("~nav_bounds_x_max", nav_bounds_x_max_, 10.0);
-   ros::param::param("~nav_bounds_y_min", nav_bounds_y_min_,-10.0);
-   ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
-   ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
-   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+  ros::param::param("~nav_bounds_x_min", nav_bounds_x_min_,-10.0);
+  ros::param::param("~nav_bounds_x_max", nav_bounds_x_max_, 10.0);
+  ros::param::param("~nav_bounds_y_min", nav_bounds_y_min_,-10.0);
+  ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
+  ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
+  ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
 
-   ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
-   ros::param::param("~extensionRange", extensionRange_, 1.0);
-   ros::param::param("~bounding_box_x", boundingbox_x_, 0.2);
-   ros::param::param("~bounding_box_y", boundingbox_y_, 0.2);
-   ros::param::param("~bounding_box_z", boundingbox_z_, 0.2);
-   ros::param::param("~overshoot", dOvershoot_, 0.25);
+  ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
+  ros::param::param("~extensionRange", extensionRange_, 1.0);
+  ros::param::param("~bounding_box_x", boundingbox_x_, 0.2);
+  ros::param::param("~bounding_box_y", boundingbox_y_, 0.2);
+  ros::param::param("~bounding_box_z", boundingbox_z_, 0.2);
+  ros::param::param("~overshoot", dOvershoot_, 0.25);
 
-   ros::NodeHandle nh_;
+  ros::NodeHandle nh_;
 
-     pub_view_marker_array_ = nh_.advertise<visualization_msgs::MarkerArray>("generated_pose_marker_array", 10);
-     pub_view_drone_marker_ = nh_.advertise<visualization_msgs::Marker>("drone_marker", 10);
+  pub_view_marker_array_ = nh_.advertise<visualization_msgs::MarkerArray>("generated_pose_marker_array", 10);
+  pub_view_drone_marker_ = nh_.advertise<visualization_msgs::Marker>("drone_marker", 10);
 
 }
 
@@ -58,12 +58,12 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
   double Occupied_threshold= 0.8;
 
   // check that the point in sampled at vacant area of the 2D occlusion map
-   octomap::OcTreeKey key_= occlusion_map->m_octree->coordToKey(p.position.x,p.position.y,p.position.z);
+  octomap::OcTreeKey key_= occlusion_map->m_octree->coordToKey(p.position.x,p.position.y,p.position.z);
 
- // if (occlusion_map->Get2DMapValue(key_) != 0)
- // { std::cout << "rejected by occluson_map" << std::endl;
+  // if (occlusion_map->Get2DMapValue(key_) != 0)
+  // { std::cout << "rejected by occluson_map" << std::endl;
   //  return false;
- // }
+  // }
 
 
   // check that the box (of size 1m^3) around the sampled point has not occlusion
@@ -76,7 +76,7 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
         if ((node->getOccupancy() >= 0.8)) return false;
       }
     }
-   }
+  }
 
   return true;
 }
@@ -87,19 +87,19 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
   if (!isInsideBounds(p) ){
     //std::cout << "rejectedbyvalidity" << std::endl;
     return false;
-}
+  }
 
   if (!isSafe(p)){
     //std::cout << "rejectedbySafety" << std::endl;
     return false;
-}
+  }
 
   if (manager_ == NULL) {
     ROS_ERROR_THROTTLE(1, "Planner not set up: No octomap available!");
-    //return true;
+    return false;
   }
 
-
+  /*
   // Check for collision of new connection plus some overshoot distance.
   boundingbox_[0]=boundingbox_x_;
   boundingbox_[1]=boundingbox_y_;
@@ -124,6 +124,9 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
     return true;
 
   return false;
+  */
+  return true;
+
 }
 
 
@@ -221,10 +224,10 @@ void view_generator_IG::visualizeSelectedArrowMarker(geometry_msgs::Pose selecte
   for (int i=0; i<All_poses.markers.size();i++)
     if (ComparePoses(All_poses.markers[i].pose,selected_pose))
     {
-        All_poses.markers[i].color.r=0;
-        All_poses.markers[i].color.g=0;
-        All_poses.markers[i].color.b=1.0;
-        All_poses.markers[i].color.a=1.0;
+      All_poses.markers[i].color.r=0;
+      All_poses.markers[i].color.g=0;
+      All_poses.markers[i].color.b=1.0;
+      All_poses.markers[i].color.a=1.0;
     }
 }
 
@@ -236,8 +239,8 @@ bool view_generator_IG::ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::P
         (Pose1.position.y-Pose2.position.y) +
         (Pose1.position.z-Pose2.position.z) +
         (pose_conversion::getYawFromQuaternion(Pose1.orientation) -pose_conversion::getYawFromQuaternion (Pose2.orientation))
-         )==0.0) return true;
-      return false;
+        )==0.0) return true;
+  return false;
 }
 
 
@@ -289,52 +292,52 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
 
 
   //Generating 3-D state lattice as z-axis movement is restrained (fixed)
-   int cnt=0;
-   for (int i_x=-1; i_x<=1; i_x++)
+  int cnt=0;
+  for (int i_x=-1; i_x<=1; i_x++)
+  {
+    for (int i_y=-1; i_y<=1; i_y++)
     {
-      for (int i_y=-1; i_y<=1; i_y++)
+      // for (int i_z=-5; i_z<=5; i_z++)
+      //{
+      for (int i_yaw=-1; i_yaw<=1; i_yaw++)
       {
-       // for (int i_z=-5; i_z<=5; i_z++)
-        //{
-          for (int i_yaw=-1; i_yaw<=1; i_yaw++)
-          {
-            // Do not generate any viewpoints in current location
+        // Do not generate any viewpoints in current location
 
-            if (!generate_at_current_location && i_x==0 && i_y==0)
-            continue;
+        if (!generate_at_current_location && i_x==0 && i_y==0)
+          continue;
 
-            if (i_x==0 && i_y==0 && i_yaw==0)
-            continue;
+        if (i_x==0 && i_y==0 && i_yaw==0)
+          continue;
 
-            geometry_msgs::Pose p;
-            p.position.x = currX + res_x_*i_x*cos(currYaw) + res_y_*i_y*sin(currYaw);
-            p.position.y = currY - res_x_*i_x*sin(currYaw) + res_y_*i_y*cos(currYaw);
-            p.position.z = 1.0 ;//+ res_z_*i_z; // z-axis movement is fixed
+        geometry_msgs::Pose p;
+        p.position.x = currX + res_x_*i_x*cos(currYaw) + res_y_*i_y*sin(currYaw);
+        p.position.y = currY - res_x_*i_x*sin(currYaw) + res_y_*i_y*cos(currYaw);
+        p.position.z = 1.0 ;//+ res_z_*i_z; // z-axis movement is fixed
 
-            p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + res_yaw_*i_yaw);
-            initial_poses.push_back(p);
-           // std::cout << "Pose Number " << cnt << std::endl;
-           //std::cout << p << "\n";
-           // cnt++;
-          }
-       // }
+        p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + res_yaw_*i_yaw);
+        initial_poses.push_back(p);
+        // std::cout << "Pose Number " << cnt << std::endl;
+        //std::cout << p << "\n";
+        // cnt++;
       }
-   }
-
-
-    for (int i=0; i<initial_poses.size(); i++)
-    {
-      if ( isValidViewpoint(initial_poses[i]) )
-      {
-        generated_poses.push_back(initial_poses[i]);
-      }
-      else
-      {
-        rejected_poses.push_back(initial_poses[i]);
-      }
+      // }
     }
+  }
 
-    std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
+
+  for (int i=0; i<initial_poses.size(); i++)
+  {
+    if ( isValidViewpoint(initial_poses[i]) )
+    {
+      generated_poses.push_back(initial_poses[i]);
+    }
+    else
+    {
+      rejected_poses.push_back(initial_poses[i]);
+    }
+  }
+
+  std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
 
 }
 

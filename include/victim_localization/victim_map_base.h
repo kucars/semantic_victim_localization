@@ -24,7 +24,7 @@ typedef geometry_msgs::PoseStamped PoseStamped;
 
 using namespace grid_map;
 
-struct detector_status {
+struct Status {
   bool victim_found;
   Position victim_loc;
 };
@@ -40,17 +40,21 @@ protected://get it from config ..
   double Prob_Dc_Hc; //P(Dc|Hc)
 
 public:
+  Victim_Map_Base();
+  ~Victim_Map_Base();
+
+  std::string map_topic;
   std::string layer_name="general";//="victim";
   ros::NodeHandle nh_;
   ros::Publisher pub_map;
   ros::Subscriber sub_loc;
   ros::Publisher pub_polygon;
-
+  double map_resol;
 
   float const_;
   geometry_msgs::Pose current_loc_;
   double current_yaw_;
-  detector_status status;
+  Status map_status;
 
 
   double HFOV_deg;
@@ -69,7 +73,7 @@ public:
 
 
   //Detection_info//
-  Position detect_loc_;
+  Position detect_victim_loc_;
   bool is_detect_;
   Point p1; // rectangle corners for projected map update
   Point p2;
@@ -79,10 +83,8 @@ public:
   //**************//
 
   virtual void Update(){};
-  virtual detector_status getDetectionStatus();
-  std::string VictimMpaType();
-
-
+  virtual Status getMapResultStatus();
+  std::string VictimMapType();
 
   Position approximate_detect(Position x);
   //bool valid(Position loc);
@@ -93,52 +95,13 @@ public:
   std::string getlayer_name();
   void setlayer_name(std::string layer_);
   void setCurrentPose(geometry_msgs::Pose ps);
-  void setDetectionResult(detector_status status);
+  void setDetectionResult(Status detection_status);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
   void setRaytracing(RayTracing *Ray);
 
   grid_map::GridMap Project_3d_rayes_to_2D_plane();
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
-
-  //%%%%%
-  std::vector<Eigen::Vector3d> rays_far_plane_;
-  std::vector<octomap::point3d> rays_far_plane_at_pose_;
-  Eigen::Matrix3d  camera_rotation_mtx_; // Camera rotation mtx
-
-
-
-
-  std::string camera_frame;
-  std::string base_frame;
-
-  double tree_resolution;
-  double calculateIG(geometry_msgs::Pose p);
-
-  double calculateIG_New(geometry_msgs::Pose p);
-  double getCellEntropy(Index cell_);
-
-  octomap::OcTree *tree_;
-  bool isEntropyLow();
-  bool isNodeInBounds(octomap::OcTreeKey &key);
-  bool isNodeFree(octomap::OcTreeNode node);
-  bool isNodeOccupied(octomap::OcTreeNode node);
-  bool isNodeUnknown(octomap::OcTreeNode node);
-  bool isPointInBounds(octomap::point3d &p);
-
-  void   getCameraRotationMtxs();
-  double getNodeOccupancy(octomap::OcTreeNode* node);
-  double getNodeEntropy(octomap::OcTreeNode* node);
-  int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
-
-  //%%%%
-  double computeRelativeRays();
-  void computeRaysAtPose(geometry_msgs::Pose p);
-
-
-
-  Victim_Map_Base();
-  ~Victim_Map_Base();
 
 };
 

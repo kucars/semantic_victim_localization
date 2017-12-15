@@ -144,16 +144,16 @@ void TestNBZ::UpdateMap()
 
   if (detection_enabled)
     Map_->setDetectionResult(Victim_detection_DL_->getClusterCentroid()
-                           ,Victim_detection_DL_->getClusterCentroidResultStatus());
+                           ,Victim_detection_DL_->getDetectorStatus());
   else Map_->setDetectionResult((vehicle_->getPose()).position,0);
 
   Map_->Update();
 
-  if (Map_->getDetectionStatus().victim_found)
+  if (Map_->getMapResultStatus().victim_found)
   {
     std::cout << cc.magenta << "Victim Found at Location: " << "(x,y)=" << "(" <<
-                 (Map_->getDetectionStatus().victim_loc)[0] << "," <<
-                 (Map_->getDetectionStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
+                 (Map_->getMapResultStatus().victim_loc)[0] << "," <<
+                 (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
     state = NBVState::TERMINATION_MET;
     return;
   }

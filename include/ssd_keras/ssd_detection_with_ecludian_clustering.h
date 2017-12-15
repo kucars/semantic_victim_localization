@@ -63,12 +63,10 @@
 #include <victim_localization/DL_msgs_boxes.h>
 #include "victim_localization/DL_box.h"
 
-#include <victim_localization/victim_map_base.h>
+#include <victim_localization/victim_detector_base.h>
 
 
-
-
-class SSD_Detection_with_clustering
+class SSD_Detection_with_clustering : public victim_detector_base
 {
 public:
   SSD_Detection_with_clustering();
@@ -79,16 +77,21 @@ public:
   bool detection_Cluster_succeed; //
   ros::Publisher pub_segemented_human_pointcloud;
   ros::Publisher pub_setpoint;
+  double image_x_resol;
+  double image_y_resol;
+  double image_x_offset;
+  double image_y_offset;
+  double RGB_FL;
+
 
   //added for ssd client
   bool Detection_success;
   victim_localization::DL_box srv;
   ros::ServiceClient client ;
   void DetectionService();
-  void SetCurrentSetpoint(geometry_msgs::Pose setpoint);
-  geometry_msgs::PoseStamped setpoint_;
 
-
+  ros::NodeHandle nh_;
+  ros::NodeHandle nh_private;
   tf::TransformListener *tf_listener;
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image,geometry_msgs::PoseStamped> MySyncPolicy;
   message_filters::Subscriber<sensor_msgs::Image> *depth_in_;
@@ -99,9 +102,12 @@ public:
   void CallBackData(const sensor_msgs::ImageConstPtr& input_depth,
                     const geometry_msgs::PoseStamped::ConstPtr& loc);
   void FindClusterCentroid();
-  detector_status getClusterCentroidResultStatus();
+  Status getDetectorStatus();
   geometry_msgs::Point getClusterCentroid();
   void PublishSegmentedPointCloud(const pcl::PointCloud<pcl::PointXYZ> input_PointCloud);
+  void performDetection();
+
+
 };
 
 #endif // SSD_DETECTION_H

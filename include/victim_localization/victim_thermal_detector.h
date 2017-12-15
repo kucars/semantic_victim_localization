@@ -19,14 +19,13 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include <victim_localization/victim_map_base.h>
+#include <victim_localization/victim_detector_base.h>
 
 
-
-class victim_thermal_detector
+class victim_thermal_detector : public victim_detector_base
 {
 public:
-  victim_thermal_detector(ros::NodeHandle& nh_,ros::NodeHandle& pnh_);
+  victim_thermal_detector();
   ~victim_thermal_detector();
 
   image_transport::Subscriber  sub_image;
@@ -37,14 +36,19 @@ public:
   double minAreaVictim_;
   double minDistBetweenBlobs_;
   double blob_temperature_;
+  sensor_msgs::ImageConstPtr input_image;
   cv::Mat img_proc;
   Position victim_loc;
   bool victim_found;
 
   void imageCallback(const sensor_msgs::ImageConstPtr& img);
-  geometry_msgs::Point GetDetectionResult();
+  void performDetection();
 
+  void BlobDetection();
+  Status getDetectorStatus();
 
+  ros::NodeHandle nh_;
+  ros::NodeHandle nh_private;
 
 };
 

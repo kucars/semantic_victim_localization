@@ -1,7 +1,6 @@
 #ifndef REACTIVEPATHPLANNER_H
 #define REACTIVEPATHPLANNER_H
 
-#include "victim_localization/navigation_base.h"
 #include <ros/ros.h>
 #include "sspp/pathplanner.h"
 
@@ -16,12 +15,16 @@
 #include <sspp/sspp_srv.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
+#include "sspp/reactive_planner_server.h"
+#include "victim_localization/navigation_base.h"
 
-class ReactivePathPlanner : public navigation_base
+class ReactivePathPlanner : public navigationBase
 {
 public:
   ReactivePathPlanner();
+
   sspp::sspp_srv planningService;
+  ReactivePlannerServer *reactivePlannerServer;
 
   double uav_fixed_height;
   double extensionRange_;
@@ -32,6 +35,8 @@ public:
 
    std::string methodName(void);
    bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
+   void start();
+
 };
 
 #endif // REACTIVEPATHPLANNER_H

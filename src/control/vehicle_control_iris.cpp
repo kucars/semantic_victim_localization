@@ -223,7 +223,7 @@ void VehicleControlIris::setWaypointIncrement(double x, double y, double z, doub
 }
 
 
-void VehicleControlIris::start()
+void VehicleControlIris::start(double x, double y, double z)
 {
   ros::Rate rate(10);
   while(ros::ok() && !is_ready_)
@@ -235,19 +235,11 @@ void VehicleControlIris::start()
 
   // Take off
   std::cout << cc.green << "Taking off\n" << cc.reset;
-
- // if (vehicle_current_pose_.position.z < uav_height_min_)
-  //{
-   // setWaypointIncrement(0, 0, uav_height_min_, 0);
-    setWaypoint(-1.5,0,1.0,0);
-    setOffboardState();
-    moveVehicle(1);
-
-   //}
+  setWaypoint(-1.5,0,1.0,0);
+  setOffboardState();
+  moveVehicle(1);
 
   std::cout << cc.green << "Done taking off\n" << cc.reset;
-
-  //rotateOnTheSpot();
 
   is_ready_ = true;
 }
@@ -268,26 +260,25 @@ void VehicleControlIris::setOffboardState()
 
   std::cout << "Setting_OFFBOARD_MODE\n";
 
-   while(ros::ok() && !vehicle_current_state_.armed){
+  while(ros::ok() && !vehicle_current_state_.armed){
     if(vehicle_current_state_.mode != "OFFBOARD") {
-    //send a few setpoints before starting
-    for(int i = 150; ros::ok() && i > 0; --i){
+      //send a few setpoints before starting
+      for(int i = 150; ros::ok() && i > 0; --i){
         pub_setpoint.publish(ps);
         ros::spinOnce();
         rate_.sleep();
+      }
+
+      set_mode_client.call(offb_set_mode);
     }
 
-  set_mode_client.call(offb_set_mode);
-   }
-
-  else if (!vehicle_current_state_.armed) arming_client.call(arm_cmd);
+    else if (!vehicle_current_state_.armed) arming_client.call(arm_cmd);
 
     pub_setpoint.publish(ps);
     ros::spinOnce();
     rate_.sleep();
-}
-   std::cout << cc.cyan <<"Request: Setting_OFFBOARD_MODE--> granted\n" << cc.reset;
-
+  }
+  std::cout << cc.cyan <<"Request: Setting_OFFBOARD_MODE--> Request granted\n" << cc.reset;
 }
 
 
@@ -320,7 +311,7 @@ geometry_msgs::Pose VehicleControlIris::transformGlobal2Setpoint (const geometry
 
   // Rotate orientation
   double yaw = pose_conversion::getYawFromQuaternion(p_global.orientation);
-//  yaw += M_PI_2;
+  //  yaw += M_PI_2;
   p_set.orientation = pose_conversion::getQuaternionFromYaw(yaw);
 
   return p_set;

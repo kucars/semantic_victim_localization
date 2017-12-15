@@ -5,9 +5,13 @@
 
 #include <victim_localization/victim_map_base.h>
 #include <victim_localization/victim_map_dl.h>
+#include <victim_localization/victim_map_thermal.h>
+#include <victim_localization/victim_map_combined.h>
 #include <control/vehicle_control_base.h>
 #include <control/vehicle_control_iris.h>
+#include <victim_localization/victim_detector_base.h>
 #include <ssd_keras/ssd_detection_with_ecludian_clustering.h>
+#include <victim_localization/victim_thermal_detector.h>
 #include <victim_localization/view_evaluator_ig.h>
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/view_generator_ig_nn_adaptive.h>
@@ -15,8 +19,10 @@
 #include <victim_localization/Volumetric_Map_Manager.h>
 #include <victim_localization/nbv_history.h>
 
+#include <victim_localization/navigation_base.h>
 #include <victim_localization/ReactivePathPlanner.h>
 #include <victim_localization/straightline.h>
+
 
 
 namespace NBVState {
@@ -25,6 +31,7 @@ enum State {
   IDLE,
   STARTING_ROBOT, STARTING_ROBOT_COMPLETE,
   UPDATE_MAP, UPDATE_MAP_COMPLETE,
+  NAVIGATION, NAVIGATION_COMPLETE,
   MOVING, MOVING_COMPLETE,
   VIEWPOINT_EVALUATION,
   VIEWPOINT_EVALUATION_COMPLETE,
@@ -55,9 +62,14 @@ public:
   Volumetric_Map *Occlusion_Map_;
   costmap_2d::Costmap2DROS *CostMapROS_;
 
-  SSD_Detection_with_clustering *Victim_detection_DL_;
-  view_evaluator_IG *View_evaluate_;
+  victim_detector_base *detector_;
+
+  //Navigation
+  navigationBase *navigation_;
+
   view_generator_IG *view_generate_;
+  view_evaluator_IG *View_evaluate_;
+
   TestNBZ(const ros::NodeHandle &nh_, const ros::NodeHandle &nh_private_);
   NBVState::State state;
   bool is_done_map_update;
@@ -67,9 +79,12 @@ public:
   void initMap();
   void initOctomap();
   void initParameters();
+  void initNavigation();
+
 
   void generateViewpoints();
   void evaluateViewpoints();
+  void navigate();
   void UpdateMap();
   void updateHistory();
 

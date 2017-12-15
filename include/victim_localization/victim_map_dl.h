@@ -9,7 +9,6 @@ class victim_map_DL: public Victim_Map_Base
 {
 
 private:
-  std::string DL_map_topic="victim_map/grid_map_DL";
   std::string DL_polygon_topic="polygon_DL";
   std::string DL_layer_name="victim_DL";
 

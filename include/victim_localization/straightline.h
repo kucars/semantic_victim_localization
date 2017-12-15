@@ -4,7 +4,7 @@
 #include "victim_localization/navigation_base.h"
 
 
-class straightLine : public navigation_base
+class straightLine : public navigationBase
 {
 public:
   straightLine();
@@ -20,6 +20,8 @@ public:
 
   std::string methodName(void);
   bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
+  void start(){};
+
 };
 
 #endif // STRAIGHTLINE_H

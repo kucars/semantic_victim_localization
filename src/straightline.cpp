@@ -1,7 +1,8 @@
 #include "victim_localization/straightline.h"
 
 
-straightLine::straightLine()
+straightLine::straightLine():
+navigationBase()
 {
   ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
   ros::param::param("~extensionRange", extensionRange_, 1.0);

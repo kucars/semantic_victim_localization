@@ -1,13 +1,13 @@
 #include "victim_localization/victim_thermal_detector.h"
 
 
-victim_thermal_detector::victim_thermal_detector(ros::NodeHandle &nh_, ros::NodeHandle &pnh_)
+victim_thermal_detector::victim_thermal_detector():
+victim_detector_base()
 {
   ros::param::param<double>("~min_Dist_Between_Blobs", minDistBetweenBlobs_ , 40.0);
   ros::param::param<double>("~thermal_min_Area_Victim", minAreaVictim_ , 40.0);
 
   image_transport::ImageTransport it(nh_);
-  image_transport::ImageTransport p_it(pnh_);
   sub_image = it.subscribe("thermal_camera/image_raw", 1, &victim_thermal_detector::imageCallback,this);
   pub_detection_ = it.advertise("image_detection1", 10);
 }
@@ -15,7 +15,9 @@ victim_thermal_detector::victim_thermal_detector(ros::NodeHandle &nh_, ros::Node
 
 victim_thermal_detector::~victim_thermal_detector(){}
 
-void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img){
+void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img)
+{
+  input_image=img;
   cv_bridge::CvImageConstPtr cv_ptr;
   try
   {
@@ -30,7 +32,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
 }
 
 
-  void victim_thermal_detector::PerformBlobDetection(void){
+  void victim_thermal_detector::BlobDetection(void){
   victim_found=false;  //initially set victim_found to false
 
   //Perform blob detection
@@ -133,14 +135,19 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
 
 
 
-      cvImg.header = img->header;
+      cvImg.header = input_image->header;
       cvImg.encoding = sensor_msgs::image_encodings::MONO8;
       pub_detection_.publish(cvImg.toImageMsg());
    }
 }
 
-detector_status victim_thermal_detector::GetDetectionResult(){
-  detector_status status;
+  void victim_thermal_detector::performDetection(){
+    BlobDetection();
+  }
+
+
+Status victim_thermal_detector::getDetectorStatus(){
+  Status status;
   status.victim_found = victim_found;
   status.victim_loc=victim_loc;
   return status;

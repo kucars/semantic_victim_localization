@@ -29,15 +29,15 @@ void TestNBZ::initVehicle(){
     ros::Duration(2.0).sleep();
 
     double x, y, z, yaw;
-    ros::param::param<double>("~uav_pose_x_" , -8);
-    ros::param::param<double>("~uav_pose_y_" , y, -8);
-    ros::param::param<double>("~uav_pose_z_" , z, 1);
-    ros::param::param<double>("~uav_pose_yaw_" , yaw, 0);
+    ros::param::param<double>("~uav_pose_x" ,x, -8.0);
+    ros::param::param<double>("~uav_pose_y" , y, -8.0);
+    ros::param::param<double>("~uav_pose_z" , z, 1.0);
+    ros::param::param<double>("~uav_pose_yaw" , yaw, 0.0);
 
     vehicle_->setWaypoint(x, y, z, yaw);
 
     printf("Starting vehicle\n");
-    vehicle_->start();
+    vehicle_->start(x,y,z);
     printf("Moving vehicle\n");
     vehicle_->moveVehicle(1.5);
     printf("Done moving\n");
@@ -52,9 +52,32 @@ void TestNBZ::initMap(){
     default:
     case 0:
       Map_ = new victim_map_DL();
+      detector_ = new SSD_Detection_with_clustering() ;
+      break;
+    case 1:
+      Map_ = new victim_map_Thermal();
+      detector_ = new victim_thermal_detector() ;
       break;
     }
 }
+
+void TestNBZ::initNavigation(){
+  int nav_type;
+    ros::param::param("~nav_type", nav_type, 1);
+    switch(nav_type)
+    {
+    default:
+    case 0:
+      navigation_ = new straightLine();
+      break;
+    case 1:
+      navigation_ = new ReactivePathPlanner();
+      break;
+    }
+    navigation_->setConfiguration(nh,nh_private,manager_);
+    navigation_->start();
+}
+
 
 void TestNBZ::initOctomap(){
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
@@ -64,7 +87,6 @@ void TestNBZ::initOctomap(){
   CostMapROS_ = new costmap_2d::Costmap2DROS ("costmap",tf_);
   CostMapROS_->start();
   Occlusion_Map_->SetCostMapRos(CostMapROS_);
-
 
   std::cout << "here1" << std::endl;
 
@@ -76,14 +98,11 @@ void TestNBZ::initParameters(){
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
   View_evaluate_ = new view_evaluator_IG();
-  view_generate_ = new view_generator_ig_nn_adaptive();  //try the adaptive_nn
+  view_generate_ = new view_generator_IG();  //try the adaptive_nn
   history_=  new nbv_history();
-   Ray= new RayTracing(view_generate_);
+  Ray= new RayTracing(view_generate_);
   view_generate_->setHistory(history_);
   view_generate_->setOcclusionMap(Occlusion_Map_);
-
-
-  if (detection_enabled) Victim_detection_DL_ = new SSD_Detection_with_clustering();
 
   //Passing the Mapping and view_generator module to the view_evaluator
   Map_->setRaytracing(Ray);
@@ -120,15 +139,42 @@ void TestNBZ::evaluateViewpoints()
   p_ = View_evaluate_->getTargetPose();
   if ( std::isnan(p_.position.x) )
   {
-    std::cout << "[test_NBZ] " << cc.red << "View selecter determined all poses are invalid. Terminating.\n" << cc.reset;
+    std::cout << "[test_NBZ] " << cc.red << "View evaluator determined all poses are invalid. Terminating.\n" << cc.reset;
     state = NBVState::TERMINATION_MET;
     return;
   }
-  vehicle_->setWaypoint(p_);
 
 
   std::cout << "[test_NBZ] " << cc.green << "Done evaluating viewpoints\n" << cc.reset;
   state = NBVState::VIEWPOINT_EVALUATION_COMPLETE;
+}
+
+void TestNBZ::navigate()
+{
+  if (state != NBVState::NAVIGATION)
+  {
+    std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to navigate to viewpoint out of order\n" << cc.reset;
+    return;
+  }
+
+  std::cout << "[test_NBZ] " << cc.green << "Navigating to viewpoint\n" << cc.reset;
+  navigation_->setCurrentPose(vehicle_->getPose());
+
+  std::vector<geometry_msgs::Pose> path_;
+  navigation_->GeneratePath(p_,path_);
+  if (path_.size()==0) {
+     printf("WARNING: pose can not be evaluated, Switch Back To GENERATE POINT\n");
+     state =NBVState::UPDATE_MAP_COMPLETE;
+     return;
+  }
+
+
+   for (int i=0;i<path_.size();i++)
+  {
+  vehicle_->setWaypoint(path_[i]);
+  }
+   std::cout << "[test_NBZ] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
+   state = NBVState::NAVIGATION_COMPLETE;
 }
 
 void TestNBZ::generateViewpoints()
@@ -172,30 +218,29 @@ void TestNBZ::UpdateMap()
   Map_->setCurrentPose(vehicle_->getPose());
 
   if (detection_enabled){
-    if (Victim_detection_DL_->detection_Cluster_succeed==true)
-    Map_->setDetectionResult(Victim_detection_DL_->getClusterCentroidResultStatus());
+    if ((detector_->getDetectorStatus()).victim_found ==true)
+    Map_->setDetectionResult(detector_->getDetectorStatus());
   }
   else {
-  detector_status status_tem;
-  status_tem.victim_found= false;
+  Status status_temp;
+  status_temp.victim_found= false;
    Position g(0,0);
-  status_tem.victim_loc=g;
-   Map_->setDetectionResult(status_tem);
+  status_temp.victim_loc=g;
+   Map_->setDetectionResult(status_temp);
 }
   Map_->Update();
 
-  if (Map_->getDetectionStatus().victim_found)
+  if (Map_->getMapResultStatus().victim_found)
   {
     std::cout << cc.magenta << "Victim Found at Location: " << "(x,y)=" << "(" <<
-                 (Map_->getDetectionStatus().victim_loc)[0] << "," <<
-                 (Map_->getDetectionStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
+                 (Map_->getMapResultStatus().victim_loc)[0] << "," <<
+                 (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
     state = NBVState::TERMINATION_MET;
     return;
   }
 
     state = NBVState::VIEWPOINT_GENERATION_COMPLETE;
 }
-
 
 void TestNBZ::runStateMachine(){
   ROS_INFO("test_NBZ: Starting vehicle. Waiting for current position information.");
@@ -219,15 +264,13 @@ void TestNBZ::runStateMachine(){
            state = NBVState::STARTING_ROBOT_COMPLETE;
            break;
          }
-        // vehicle_->start();
          break;
 
        case (NBVState::STARTING_ROBOT_COMPLETE):
        case(NBVState::STARTING_DETECTION):
        if (detection_enabled) {
-         Victim_detection_DL_->SetCurrentSetpoint(p_);
-         Victim_detection_DL_->DetectionService();
-         Victim_detection_DL_->FindClusterCentroid();
+         detector_->SetCurrentSetpoint(p_);
+         detector_->performDetection();
        }
        state = NBVState::DETECTION_COMPLETE;
        break;
@@ -249,6 +292,11 @@ void TestNBZ::runStateMachine(){
      break;
 
      case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
+       state = NBVState::NAVIGATION;
+       navigate();
+       break;
+
+     case NBVState::NAVIGATION_COMPLETE:
        vehicle_->moveVehicle(1.0);
        updateHistory();
        state = NBVState::STARTING_DETECTION;
@@ -278,6 +326,7 @@ int main(int argc, char **argv)
   test_->initMap();
   test_->initVehicle();
   test_->initOctomap();
+  test_->initNavigation();
   test_->initParameters();
 
   test_->runStateMachine();

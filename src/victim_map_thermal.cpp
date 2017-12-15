@@ -2,38 +2,42 @@
 #include "victim_localization/victim_map_thermal.h"
 
 victim_map_Thermal::victim_map_Thermal():
-  Victim_Map_Base(),
-  thermal_vic_loc(&detect_loc_)
+  Victim_Map_Base()
 {
+  ros::param::param<std::string>("~map_topic_thermal", map_topic , "victim_map/grid_map_thermal");
+  ros::param::param<double>("~map_resol_thermal", map_resol , 0.2);
+
   tf_listener = new tf::TransformListener();
 
   setlayer_name(Thermal_layer_name);
   // Create grid map
   map.setFrameId("map");
-  map.setGeometry(Length(x_arena_max,y_arena_max), 1); //(Map is 20 by 20 meter with a resolution of 1m).
+  map.setGeometry(Length(x_arena_max,y_arena_max), map_resol); //(Map is 20 by 20 meter with a resolution of 0.2m).
   ROS_INFO("Created Map with size %f x %f m (%i x %i cells).",
            map.getLength().x(), map.getLength().y(),
            map.getSize()(0), map.getSize()(1));
 
-  map.add(layer_name,0.5);
+  map.add(layer_name,0.5); // initialize map probability to 0.5
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
 
-  pub_map=nh_.advertise<grid_map_msgs::GridMap>(DL_map_topic, 1, true);
+  pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
   //Camera Settings
-  ros::param::param<double>("~fov_horizontal", HFOV_deg , 48);
-  ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
-  ros::param::param<double>("~depth_range_max", max_thermal_d , 15);
+  ros::param::param<double>("~fov_horizontal_thermal_cam", HFOV_deg , 48);
+  ros::param::param<double>("~fov_vertical_thermal_cam", VFOV_deg , 45);
+  ros::param::param<double>("~thermal_range_max", max_thermal_d , 15);
   ros::param::param<double>("~thermal_image_x_resolution", thermal_img_x_res , 160.0);
   ros::param::param<double>("~thermal_image_y_resolution", thermal_img_y_res , 120.0);
   ros::param::param<double>("~thermal_image_x_offset", thermal_x_offset , 79.5);
   ros::param::param<double>("~thermal_image_x_offset", thermal_y_offset , 59.5);
 
   //Values for probability
-  ros::param::param<double>("~Prob_D_H_for_DL", Prob_D_H , 0.6);
-  ros::param::param<double>("~Prob_D_Hc_for_DL", Prob_D_Hc , 0.3);
-  ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.4);
-  ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.7);
+  ros::param::param<double>("~Prob_D_H_for_thermal", Prob_D_H , 0.6);
+  ros::param::param<double>("~Prob_D_Hc_for_thermal", Prob_D_Hc , 0.3);
+  ros::param::param<double>("~Prob_Dc_H_for_thermal", Prob_Dc_H , 0.4);
+  ros::param::param<double>("~Prob_Dc_Hc_for_thermal", Prob_Dc_Hc , 0.7);
+
+  victimMapName="victim map thermal";
 }
 
 
@@ -56,19 +60,19 @@ void victim_map_Thermal::Update(){
   ThermalRayStart[0]=CamCenterLoc[0];
   ThermalRayStart[1]=CamCenterLoc[1];
 
-  if (thermal_vic_loc[0] >= thermal_x_offset){
-    ThermalRayEnd[0]=CamCenterLoc[0] + max_thermal_d*cos(CamYaw+(((thermal_vic_loc[0]-thermal_x_offset)*Half_HFOV_RAD)/thermal_x_offset)) ;
-    ThermalRayEnd[1]=CamCenterLoc[1] + max_thermal_d*sin(CamYaw+(((thermal_vic_loc[0]-thermal_x_offset)*Half_HFOV_RAD)/-thermal_x_offset)) ;
+  if (detect_victim_loc_[0] >= thermal_x_offset){
+    ThermalRayEnd[0]=CamCenterLoc[0] + max_thermal_d*cos(CamYaw+(((detect_victim_loc_[0]-thermal_x_offset)*Half_HFOV_RAD)/thermal_x_offset)) ;
+    ThermalRayEnd[1]=CamCenterLoc[1] + max_thermal_d*sin(CamYaw+(((detect_victim_loc_[0]-thermal_x_offset)*Half_HFOV_RAD)/-thermal_x_offset)) ;
    }
     else {
-    ThermalRayEnd[0]=CamCenterLoc[0] + max_thermal_d*cos(CamYaw+(((thermal_vic_loc[0]-thermal_x_offset)*-Half_HFOV_RAD)/(-thermal_x_offset))) ;
-    ThermalRayEnd[1]=CamCenterLoc[1] + max_thermal_d*sin(CamYaw+(((thermal_vic_loc[0]-thermal_x_offset)*-Half_HFOV_RAD)/(thermal_x_offset))) ;
+    ThermalRayEnd[0]=CamCenterLoc[0] + max_thermal_d*cos(CamYaw+(((detect_victim_loc_[0]-thermal_x_offset)*-Half_HFOV_RAD)/(-thermal_x_offset))) ;
+    ThermalRayEnd[1]=CamCenterLoc[1] + max_thermal_d*sin(CamYaw+(((detect_victim_loc_[0]-thermal_x_offset)*-Half_HFOV_RAD)/(thermal_x_offset))) ;
    }
 
   if (is_detect_== true)  GenerateRayVector(temp_Map,ThermalRayStart,ThermalRayEnd);
 
- status.victim_found=false; //initialize detection to false
-
+ map_status.victim_found=false; //initialize detection to false
+ double Detec_prob=0;
  for (grid_map::GridMapIterator iterator(temp_Map);
                      !iterator.isPastEnd(); ++iterator) {
     Position position;
@@ -83,7 +87,7 @@ void victim_map_Thermal::Update(){
       {
         if (P_prior>0.01 )
         {
-          double Detec_prob=(Prob_D_H* P_prior)/((Prob_D_H* P_prior)+(Prob_D_Hc* (1-P_prior)));
+          Detec_prob=(Prob_D_H* P_prior)/((Prob_D_H* P_prior)+(Prob_D_Hc* (1-P_prior)));
           map.atPosition(layer_name, position)= Detec_prob;         
         }
         else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
@@ -95,8 +99,8 @@ void victim_map_Thermal::Update(){
 
       if (Detec_prob>0.9) {
       //std::cout << "Detec_prob" << std::endl;
-      status.victim_found=true;
-      status.victim_loc=position;
+      map_status.victim_found=true;
+      map_status.victim_loc=position;
       }
   }
     }
@@ -115,7 +119,7 @@ void victim_map_Thermal::GenerateRayVector
     Index index=*iterator;
     Map.getPosition(index, position);
     if (!raytracing_->isInsideBounds(position)) continue;
-    if(temp_Map.atPosition("temp", position)==0) // if the cell is free ( contains no obsticales)
+    if(Map.atPosition("temp", position)==0) // if the cell is free ( contains no obsticales)
       ThermalRay.push_back(position);
   }
 }
@@ -124,8 +128,6 @@ void victim_map_Thermal::GetCameraCenter2World
                           (geometry_msgs::PoseStamped &CamCentertoWorld){
 
   geometry_msgs::PoseStamped CamCenter;
-  geometry_msgs::PoseStamped CamCentertoWorld;
-
   CamCenter.header.frame_id = "front_cam_depth_frame";
   CamCenter.header.stamp = ros::Time::now();
   CamCenter.pose.position.x=0; CamCenter.pose.position.y=0; CamCenter.pose.position.z=0;
@@ -146,7 +148,7 @@ void victim_map_Thermal::GetCameraCenter2World
 
 
 bool victim_map_Thermal::IsInsideRay(Position P){
-  for (i=0;i<ThermalRay.size();i++){
+  for (int i=0;i<ThermalRay.size();i++){
     if ((ThermalRay[i][0]==P[0]) && (ThermalRay[i][1]==P[1]))
       return true;
   }

@@ -17,10 +17,11 @@ Victim_Map_Base::Victim_Map_Base()
   sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 100, &Victim_Map_Base::callbackdrawFOV, this);
 
   //initialize_victim_to_false
-  status.victim_loc=Position(std::numeric_limits<double>::quiet_NaN(),
+  map_status.victim_loc=Position(std::numeric_limits<double>::quiet_NaN(),
                              std::numeric_limits<double>::quiet_NaN());
 
-  status.victim_found=false;
+  map_status.victim_found=false;
+  victimMapName="victim Map base";
 }
 
 Victim_Map_Base::~Victim_Map_Base(){}
@@ -153,9 +154,9 @@ void Victim_Map_Base::setCurrentPose(geometry_msgs::Pose ps) {
   current_yaw_=pose_conversion::getYawFromQuaternion(current_loc_.orientation);
 }
 
-void Victim_Map_Base::setDetectionResult(detector_status status) {
-  detect_loc_=status.victim_loc;
-  is_detect_=status.victim_found;
+void Victim_Map_Base::setDetectionResult(Status detection_status) {
+  detect_victim_loc_=detection_status.victim_loc;
+  is_detect_=detection_status.victim_found;
 }
 
 void Victim_Map_Base::setRaytracing(RayTracing *Ray){
@@ -163,12 +164,11 @@ void Victim_Map_Base::setRaytracing(RayTracing *Ray){
 }
 
 
-detector_status Victim_Map_Base::getDetectionStatus(){
- return status;
+Status Victim_Map_Base::getMapResultStatus(){
+ return map_status;
 }
 
 
-std::string Victim_Map_Base::VictimMpaType(){
-  victimMapName="victim Map base";
+std::string Victim_Map_Base::VictimMapType(){
   return victimMapName;
 }

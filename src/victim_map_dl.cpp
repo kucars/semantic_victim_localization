@@ -5,23 +5,30 @@ victim_map_DL::victim_map_DL():
   Victim_Map_Base()
 {
   setlayer_name(DL_layer_name);
+
+  ros::param::param<std::string>("~map_topic_DL", map_topic , "victim_map/grid_map_DL");
+  ros::param::param<double>("~map_resol_DL", map_resol , 0.5);
+
   // Create grid map
   map.setFrameId("map");
-  map.setGeometry(Length(x_arena_max,y_arena_max), 1); //(Map is 20 by 20 meter with a resolution of 1m).
+  map.setGeometry(Length(x_arena_max,y_arena_max), map_resol); //(Map is 20 by 20 meter with a resolution of 1m).
   ROS_INFO("Created Map with size %f x %f m (%i x %i cells).",
            map.getLength().x(), map.getLength().y(),
            map.getSize()(0), map.getSize()(1));
 
-  map.add(layer_name,0.5);
+  map.add(layer_name,0.5); // initialize probability in the map to 0.5
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
 
-  pub_map=nh_.advertise<grid_map_msgs::GridMap>(DL_map_topic, 1, true);
+  pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
   //Values for probability
   ros::param::param<double>("~Prob_D_H_for_DL", Prob_D_H , 0.9);
   ros::param::param<double>("~Prob_D_Hc_for_DL", Prob_D_Hc , 0.05);
   ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.1);
   ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.95);
+
+
+  victimMapName="victim map DL";
 
   //pub_polygon=nh_.advertise<geometry_msgs::PolygonStamped>(DL_polygon_topic, 1, true);
 }
@@ -34,11 +41,11 @@ void victim_map_DL::Update(){
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
   Position D_loc;
-  D_loc[0]=detect_loc_[0];
-  D_loc[1]=detect_loc_[0];
+  D_loc[0]=detect_victim_loc_[0];
+  D_loc[1]=detect_victim_loc_[0];
   D_loc=approximate_detect(D_loc);
 
-  status.victim_found=false; //initialize detection to false
+  map_status.victim_found=false; //initialize detection to false
 
   for (grid_map::GridMapIterator iterator(temp_Map);
        !iterator.isPastEnd(); ++iterator) {
@@ -58,8 +65,8 @@ void victim_map_DL::Update(){
 
           if (Detec_prob>0.9) {
             //std::cout << "Detec_prob" << std::endl;
-            status.victim_found=true;
-            status.victim_loc=position;
+            map_status.victim_found=true;
+            map_status.victim_loc=position;
           }
         }
 

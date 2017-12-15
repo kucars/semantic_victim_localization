@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:property name="M_PI_" value="3.1415926535897931" />
+
+  <xacro:macro name="generic_thermal_camera" params="name parent *origin ros_topic cam_info_topic update_rate res_x res_y image_format hfov">
+    <joint name="${name}_thermal_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}"/>
+      <child link="${name}_thermal_link"/>
+    </joint>
+    
+    <link name="${name}_thermal_link">
+      <inertial>
+        <mass value="0.001" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+        <!--Dimensions taken from http://www.optris.global/thermal-imager-optris-pi200-pi230-->
+          <box size="0.01 0.01 0.01" /> <!--<box size="0.075 0.045 0.045" /> -->
+
+        </geometry>
+        <material name="Blue">
+          <color rgba="0.0 0.0 0.8 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+
+        <!--Dimensions taken from http://www.optris.global/thermal-imager-optris-pi200-pi230-->
+          <box size="0.01 0.01 0.01" /> <!--<box size="0.075 0.045 0.045" /> -->
+        </geometry>
+      </collision>
+    </link>
+    
+    <joint name="${name}_thermal_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="${-M_PI_/2} 0.0 ${-M_PI_/2}" />
+      <parent link="${name}_thermal_link" />
+      <child link="${name}_thermal_optical_frame"/>
+    </joint>
+  
+    <link name="${name}_thermal_optical_frame"/>
+    
+    <gazebo reference="${name}_thermal_link">
+      <sensor type="camera" name="${name}_camera_sensor">
+        <update_rate>${update_rate}</update_rate>
+        <camera>
+          <horizontal_fov>${hfov * M_PI_/180.0}</horizontal_fov>
+          <image>
+            <format>${image_format}</format>
+            <width>${res_x}</width>
+            <height>${res_y}</height>
+          </image>
+          <clip>
+            <near>0.01</near>
+            <far>100</far>
+          </clip>
+        </camera>
+
+    <plugin name="thermal_camera_controller" filename="libgazebo_ros_thermal_camera_color.so">
+        <alwaysOn>true</alwaysOn>
+         <updateRate>${update_rate}</updateRate>
+        <imageTopicName>/${name}/image_raw</imageTopicName>
+         <cameraInfoTopicName>/${name}/camera_info</cameraInfoTopicName>
+        <frameName>${name}_optical_frame</frameName>
+        </plugin>
+     </sensor>
+    </gazebo>
+  </xacro:macro>
+
+</robot>
+

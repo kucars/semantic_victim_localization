@@ -1,6 +1,6 @@
 <?xml version='1.0'?>
 <sdf version='1.5'>
-  <model name='heat_victim_woman'>
+  <model name='heat_victim_woman_red_signature'>
     <static>true</static>
     <pose frame=''>2 -3 0 1.57 0 0</pose>
     <link name='defaultModel_0::custom_0'>
@@ -12,7 +12,7 @@
         <pose frame=''>0 0 0 0 -0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://heat_victim_woman/girl-brunette-dae/girl-brunette.dae</uri>
+            <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
             <scale>1 1 1</scale>
           </mesh>
         </geometry>
@@ -28,7 +28,7 @@
       <collision name='custom_0_collision'>
         <geometry>
           <mesh>
-            <uri>model://heat_victim_woman/girl-brunette-dae/girl-brunette.dae</uri>
+            <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
             <scale>1 1 1</scale>
           </mesh>
         </geometry>

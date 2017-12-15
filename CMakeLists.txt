@@ -124,8 +124,8 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS message_runtime roscpp geometry_msgs visualization_msgs octomap_world tf
-  DEPENDS Eigen libudev-dev
+  CATKIN_DEPENDS message_runtime roscpp geometry_msgs visualization_msgs octomap_world tf sspp
+  DEPENDS Eigen
   #LIBRARIES Victim_Localization
   #CATKIN_DEPENDS roscpp rospy
   #DEPENDS system_lib
@@ -143,7 +143,6 @@ include_directories(
     ${GAZEBO_INCLUDE_DIRS}
     ${OCTOMAP_INCLUDE_DIRS}
     ${PCL_INCLUDE_DIRS}
-    ${sspp_INCLUDE_DIRS}
     include #Adds my own custom class headers
     include/vicitm_localization
     include/control
@@ -158,22 +157,29 @@ link_libraries(${OCTOMAP_LIBRARIES})
 
 add_executable (test_NBV
     src/test_NBV.cpp
-    src/victim_map_base.cpp
-    src/victim_map_dl.cpp
+
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
     src/view_evaluator_ig.cpp
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
     src/view_generator_ig_frontier.cpp
-    src/ssd_detection_with_ecludian_clustering.cpp
     src/Volumetric_Map_Manager.cpp
     src/raytracing.cpp
     src/nbv_history.cpp
 
+    src/victim_map_base.cpp
+    src/victim_map_dl.cpp
+    src/victim_map_thermal.cpp
+    src/victim_map_combined.cpp
+
     src/navigation_base.cpp
     src/straightline.cpp
     src/ReactivePathPlanner.cpp
+
+    src/victim_detector_base.cpp
+    src/victim_thermal_detector.cpp
+    src/ssd_detection_with_ecludian_clustering.cpp
     )
 add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
 
@@ -186,6 +192,7 @@ target_link_libraries(test_NBV
     ${CGAL_LIBRARY}
     ${CGAL_Core_LIBRARY}
     ${rviz_visual_tools_LIBRARIES}
+    SSPathPlanner
 )
 
 add_executable(takeoff src/takeoff.cpp)
@@ -193,20 +200,7 @@ target_link_libraries(takeoff ${catkin_LIBRARIES})
 
 add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-target_link_libraries(thermalVictim ${catkin_LIBRARIES}
-${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-${Eigen_LIBRARIES}
-${OCTOMAP_LIBRARIES}
-${PCL_LIBRARIES}
-${CGAL_LIBRARY}
-${CGAL_Core_LIBRARY}
-${rviz_visual_tools_LIBRARIES}
-irimager
-irimageprocessing
-ircore
-udev
-)
-
+target_link_libraries(thermalVictim ${catkin_LIBRARIES})
 
 
 #add_executable(pointc src/Volumetric_Map_Manager.cpp )
