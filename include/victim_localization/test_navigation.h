@@ -9,12 +9,14 @@
 
 class test_navigation
 {
+  tf::TransformListener tf_;
 public:
   test_navigation(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private );
   ReactivePathPlanner *planner_;
   VehicleControlIris *vehicle_;
   volumetric_mapping::OctomapManager *manager_;
   Volumetric_Map *Volumetric_Map_;
+  costmap_2d::Costmap2DROS *CostMapROS_;
   std::vector <geometry_msgs::Pose> Setpoints_;
   std::thread thread_1;
   std::thread thread_2;

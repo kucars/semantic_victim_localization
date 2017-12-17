@@ -316,3 +316,8 @@ void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmap_)
   costmap_ros_=costmap_;
 }
 
+void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
+{
+  x_size=m_gridmap.info.width;
+  y_size=m_gridmap.info.height;
+}

@@ -6,7 +6,7 @@
     <arg name="resolution" default="0.3" />
     <arg name="visualize_max_z" default="2.5" />
     <arg name="sensor_max_range" default="5.0" />
-    <arg name="param_file" default="$(find rrt_explorer)/resource/exploration.yaml" />
+    <arg name="param_file" default="$(find victim_localization)/config/exploration.yaml" />
     <arg name="debug" default="false"/>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >

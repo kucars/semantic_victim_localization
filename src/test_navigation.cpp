@@ -13,6 +13,10 @@ void test_navigation::Configuration()
   manager_ = new volumetric_mapping::OctomapManager(nh_, nh_private_);
   Volumetric_Map_ = new Volumetric_Map(manager_);
 
+  CostMapROS_ = new costmap_2d::Costmap2DROS ("costmap",tf_);
+  CostMapROS_->start();
+  Volumetric_Map_->SetCostMapRos(CostMapROS_);
+
   vehicle_ = new VehicleControlIris();
   planner_ = new ReactivePathPlanner();
   planner_->setConfiguration(nh_,nh_private_,manager_);
@@ -47,7 +51,7 @@ void test_navigation::Takeoff()
 
     if( vehicle_->isReady() && manager_->getMapSize().norm() > 0.0)
     {
-      vehicle_->rotateOnTheSpot();
+      vehicle_->rotateOnTheSpot(x,y,z);
       break;
     }
   }
@@ -58,21 +62,20 @@ void test_navigation::Takeoff()
 
 void test_navigation::executeplanner()
 {
+   setpoints();
 
-    thread_2 = std::thread(&test_navigation::plannerthread,this); // keep publishing the drone current
-    thread_2.join();
-}
-
-void test_navigation::plannerthread()
-{
-  thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
-
-  for (int i=0;i<Setpoints_.size();i++)
+  for(int i=0;i<Setpoints_.size();i++)
   {
-                                                                            // location until the Planner service is done
+    printf("Staring the Planner in test navigation node... \n");
+
+    thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
+
+    double grid_size_x, grid_size_y;                                                                        // location until the Planner service is done
+    Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
+    planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
+
     std::vector <geometry_msgs::Pose> path;
     planner_->setCurrentPose(vehicle_->getPose());
-    printf("second thread started... \n");
     if (planner_->GeneratePath(Setpoints_[i],path)) {
       printf("path found...\n");
       thread_1.detach(); // detached the thread.
@@ -93,6 +96,8 @@ void test_navigation::plannerthread()
 
   }
 }
+
+
 
 void test_navigation::setpoints()
 {
@@ -120,7 +125,7 @@ void test_navigation::setpoints()
 
 void test_navigation::PublishCurrentPose(geometry_msgs::Pose p)
 {
-  while (true)
+  while (ros::ok())
   {
     std::cout << "keep publishing ... \n";
     geometry_msgs::PoseStamped ps;
@@ -129,7 +134,8 @@ void test_navigation::PublishCurrentPose(geometry_msgs::Pose p)
     ps.pose = p;
     //std::cout << "pose to go to: " << p << "\n";
     vehicle_->pub_setpoint.publish(ps);
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    ros::spinOnce();
+    ros::Rate(10).sleep();
   }
 }
 

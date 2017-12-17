@@ -207,26 +207,12 @@ add_executable (navigation_test
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
-    src/view_evaluator_ig.cpp
-    src/view_generator_ig.cpp
-    src/view_generator_ig_nn_adaptive.cpp
-    src/view_generator_ig_frontier.cpp
     src/Volumetric_Map_Manager.cpp
     src/raytracing.cpp
-    src/nbv_history.cpp
-
-    src/victim_map_base.cpp
-    src/victim_map_dl.cpp
-    src/victim_map_thermal.cpp
-    src/victim_map_combined.cpp
 
     src/navigation_base.cpp
     src/straightline.cpp
     src/ReactivePathPlanner.cpp
-
-    src/victim_detector_base.cpp
-    src/victim_thermal_detector.cpp
-    src/ssd_detection_with_ecludian_clustering.cpp
     )
 add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
 

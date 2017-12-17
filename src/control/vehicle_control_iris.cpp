@@ -203,7 +203,52 @@ void VehicleControlIris::rotateOnTheSpot(){
   }
 }
 
+void VehicleControlIris::rotateOnTheSpot(double x, double y, double z){
+  ROS_INFO("Perfroming -- rotation");
+  geometry_msgs::PoseStamped rotatingPose;
+  rotatingPose.pose.position.x = x;
+  rotatingPose.pose.position.y = y;
+  rotatingPose.pose.position.z = z;
+  int seqNum=0 ;
+  double angleStep  = 0.05;
+  double angle = 0;
+  bool done = false;
+  double deltaTime = 1.0;
+  ros::Time lastTimeTurnTime = ros::Time::now();
+  ros::Rate rate(20);
 
+  while(!done)
+  {
+    if(ros::Time::now() - lastTimeTurnTime > ros::Duration(deltaTime))
+    {
+      ROS_INFO_THROTTLE(0.2,"Turning around");
+      tf::Quaternion quat = tf::Quaternion(tf::Vector3(0.0, 0.0, 1.0), angle);
+
+      setpoint_.position.x    = rotatingPose.pose.position.x;
+      setpoint_.position.y    = rotatingPose.pose.position.y;
+      setpoint_.position.z    = rotatingPose.pose.position.z;
+      setpoint_.orientation.x = quat[0] ;
+      setpoint_.orientation.y = quat[1] ;
+      setpoint_.orientation.z = quat[2] ;
+      setpoint_.orientation.w = quat[3] ;
+      //ROS_INFO("   - Trying to  rotate to: [%f %f %f %f]",setpoint_.pose.position.x,setpoint_.pose.position.y,setpoint_.pose.position.z,180*angle/M_PI);
+      //ROS_INFO("   - Current Pose      is: [%f %f %f]",currentPose.pose.position.x,currentPose.pose.position.y,currentPose.pose.position.z);
+      angle+=(angleStep*2.0*M_PI);
+      if(angle>=2.0*M_PI)
+        done = true;
+      lastTimeTurnTime = ros::Time::now();
+    }
+
+    geometry_msgs::PoseStamped ps;
+    ps.header.frame_id = "base_link";
+    ps.header.stamp = ros::Time::now();
+    ps.pose = setpoint_;
+
+    pub_setpoint.publish(ps);
+    ros::spinOnce();
+    rate.sleep();
+  }
+}
 
 void VehicleControlIris::setWaypointIncrement(double x, double y, double z, double yaw)
 {
