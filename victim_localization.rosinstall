@@ -1,7 +1,7 @@
 - git:
     local-name: Firmware
     uri: https://github.com/PX4/Firmware.git
-    version: 8f1ae31dd2fe724bdf06a238283a72459b6c88a
+    version: 72eafe7e7212f3279a87b18e9a2698d9c6110411
 
 - git:
     local-name: rotors_simulator
