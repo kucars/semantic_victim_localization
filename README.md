@@ -20,6 +20,6 @@ catkin build
 To run the main program, run the following commands in two separate terminals:
 
 ```
-roslaunch Victim-Localization test.launch
-roslaunch Victim-Localization NBV_test.launch
+roslaunch victim_localization test.launch
+roslaunch victim_localization NBV_test.launch
 ```
