@@ -30,7 +30,7 @@
        <param name="map_publish_frequency" type="double" value="1.0" />
        <rosparam command="load" file="$(arg param_file)" />
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
-       <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
+       <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
 </node>
 
 <!-- Launch the grid map visualizer -->

@@ -657,7 +657,7 @@
     </sensor>
   </gazebo>
   <joint name="thermal_cam_joint" type="fixed">
-    <origin rpy="0 0.26179 0" xyz="0.0 0.0 -0.06"/>
+    <origin rpy="0 0.26179 0" xyz="0.0 0.0 -0.05"/>
     <parent link="base_link"/>
     <child link="thermal_cam_link"/>
   </joint>
@@ -715,7 +715,7 @@
     </sensor>
   </gazebo>
   <joint name="thermal_cam_thermal_joint" type="fixed">
-    <origin rpy="0 0.26179 0" xyz="0.0 0.0 -0.06"/>
+    <origin rpy="0 0.26179 0" xyz="0.0 0.0 -0.05"/>
     <parent link="base_link"/>
     <child link="thermal_cam_thermal_link"/>
   </joint>

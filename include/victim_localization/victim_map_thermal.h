@@ -2,6 +2,7 @@
 #define VICTIM_MAP_THERMAL_H
 
 #include "victim_localization/victim_map_base.h"
+#include "victim_localization/victim_thermal_detector.h"
 
 
 
@@ -23,7 +24,9 @@ private:
 
 public:
   victim_map_Thermal();
+  victim_thermal_detector *detector_;
   void Update();
+  void runDetector();
   void GetCameraCenter2World (geometry_msgs::PoseStamped &CamCentertoWorld);
   void GenerateRayVector(grid_map::GridMap Map,Position start,Position End);
   bool IsInsideRay(Position P);

@@ -11,16 +11,16 @@
 class VehicleControlIris : public VehicleControlBase
 {
 private:
+  double uav_height_min_;
+  double uav_height_max_;
+
+public:
   ros::Subscriber sub_odom;
   ros::Subscriber sub_state;
   ros::ServiceClient arming_client;
   ros::ServiceClient set_mode_client;
   ros::Publisher  pub_setpoint;
 
-  double uav_height_min_;
-  double uav_height_max_;
-
-public:
   VehicleControlIris();
 
 //private:

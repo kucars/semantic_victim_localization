@@ -1,5 +1,5 @@
-#include "victim_localization/victim_map_base.h"
 #include "victim_localization/victim_map_thermal.h"
+
 
 victim_map_Thermal::victim_map_Thermal():
   Victim_Map_Base()
@@ -8,6 +8,7 @@ victim_map_Thermal::victim_map_Thermal():
   ros::param::param<double>("~map_resol_thermal", map_resol , 0.2);
 
   tf_listener = new tf::TransformListener();
+  detector_ = new victim_thermal_detector();
 
   setlayer_name(Thermal_layer_name);
   // Create grid map
@@ -37,11 +38,17 @@ victim_map_Thermal::victim_map_Thermal():
   ros::param::param<double>("~Prob_Dc_H_for_thermal", Prob_Dc_H , 0.4);
   ros::param::param<double>("~Prob_Dc_Hc_for_thermal", Prob_Dc_Hc , 0.7);
 
+  // for debugging
+  ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
+
   victimMapName="victim map thermal";
 }
 
 
 void victim_map_Thermal::Update(){
+
+  runDetector();
+
 
   grid_map::GridMap temp_Map;
   temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(raytracing_->current_pose_);
@@ -155,3 +162,22 @@ bool victim_map_Thermal::IsInsideRay(Position P){
   return false;
 }
 
+void victim_map_Thermal::runDetector()
+{
+  // added if statement for debugging
+  if (detection_enabled){
+   // run thermal detector
+  detector_->SetCurrentSetpoint(current_loc_);
+  detector_->performDetection();
+
+    if ((detector_->getDetectorStatus()).victim_found ==true)
+    this->setDetectionResult(detector_->getDetectorStatus());
+  }
+  else {
+  Status status_temp;
+  status_temp.victim_found= false;
+   Position g(0,0);
+  status_temp.victim_loc=g;
+   this->setDetectionResult(status_temp);
+}
+}

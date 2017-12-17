@@ -235,9 +235,11 @@ void VehicleControlIris::start(double x, double y, double z)
 
   // Take off
   std::cout << cc.green << "Taking off\n" << cc.reset;
-  setWaypoint(-1.5,0,1.0,0);
+  setWaypoint(x,y,0.3,0);
   setOffboardState();
   moveVehicle(1);
+  setWaypoint(x,y,z,0);
+
 
   std::cout << cc.green << "Done taking off\n" << cc.reset;
 

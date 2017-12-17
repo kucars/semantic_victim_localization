@@ -50,6 +50,7 @@ public:
   ros::Subscriber sub_loc;
   ros::Publisher pub_polygon;
   double map_resol;
+  bool detection_enabled;
 
   float const_;
   geometry_msgs::Pose current_loc_;
@@ -83,7 +84,9 @@ public:
   //**************//
 
   virtual void Update(){};
+  virtual void runDetector(){};
   virtual Status getMapResultStatus();
+
   std::string VictimMapType();
 
   Position approximate_detect(Position x);
@@ -91,7 +94,6 @@ public:
   void publish_Map();
   grid_map::Polygon draw_FOV();
   void callbackdrawFOV(const PoseStamped &ps_stamped);
-
   std::string getlayer_name();
   void setlayer_name(std::string layer_);
   void setCurrentPose(geometry_msgs::Pose ps);

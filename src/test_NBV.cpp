@@ -28,20 +28,27 @@ void TestNBZ::initVehicle(){
     // Set starting position
     ros::Duration(2.0).sleep();
 
-    double x, y, z, yaw;
-    ros::param::param<double>("~uav_pose_x" ,x, -8.0);
-    ros::param::param<double>("~uav_pose_y" , y, -8.0);
-    ros::param::param<double>("~uav_pose_z" , z, 1.0);
-    ros::param::param<double>("~uav_pose_yaw" , yaw, 0.0);
 
-    vehicle_->setWaypoint(x, y, z, yaw);
+         vehicle_ = new VehicleControlIris();
+    
+        // Set starting position
+        ros::Duration(2.0).sleep();
+    
+        double x_, y_, z_, yaw_;
+        ros::param::param<double>("~uav_pose_x" ,x_, -8.0);
+        ros::param::param<double>("~uav_pose_y" , y_, -8.0);
+        ros::param::param<double>("~uav_pose_z" , z_, 1.0);
+        ros::param::param<double>("~uav_pose_yaw" , yaw_, 0.0);
+    
+        vehicle_->setWaypoint(x_, y_, z_, yaw_);
+    
+        printf("Starting vehicle\n");
+        vehicle_->start(x_,y_,z_);
+        printf("Moving vehicle\n");
+        vehicle_->moveVehicle(1.5);
+        printf("Done moving\n");
+      }
 
-    printf("Starting vehicle\n");
-    vehicle_->start(x,y,z);
-    printf("Moving vehicle\n");
-    vehicle_->moveVehicle(1.5);
-    printf("Done moving\n");
-  }
 
 void TestNBZ::initMap(){
   int map_type;
@@ -52,11 +59,9 @@ void TestNBZ::initMap(){
     default:
     case 0:
       Map_ = new victim_map_DL();
-      detector_ = new SSD_Detection_with_clustering() ;
       break;
     case 1:
       Map_ = new victim_map_Thermal();
-      detector_ = new victim_thermal_detector() ;
       break;
     }
 }
@@ -217,17 +222,6 @@ void TestNBZ::UpdateMap()
 
   Map_->setCurrentPose(vehicle_->getPose());
 
-  if (detection_enabled){
-    if ((detector_->getDetectorStatus()).victim_found ==true)
-    Map_->setDetectionResult(detector_->getDetectorStatus());
-  }
-  else {
-  Status status_temp;
-  status_temp.victim_found= false;
-   Position g(0,0);
-  status_temp.victim_loc=g;
-   Map_->setDetectionResult(status_temp);
-}
   Map_->Update();
 
   if (Map_->getMapResultStatus().victim_found)
@@ -306,6 +300,7 @@ void TestNBZ::runStateMachine(){
      loop_rate.sleep();
  }
 }
+
 
 
 

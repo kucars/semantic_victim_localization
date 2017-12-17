@@ -72,6 +72,9 @@ void ReactivePathPlanner::start()
 
 {
   //initiate the reactive planner service
+
+  std::cout << "plannner ready to run it" << std::endl;
   reactivePlannerServer= new ReactivePlannerServer(nh_,nh_private_,manager_);
+  std::cout << "plannner runne4d..." << std::endl;
 }
 

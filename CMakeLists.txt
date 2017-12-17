@@ -202,7 +202,45 @@ add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(thermalVictim ${catkin_LIBRARIES})
 
+add_executable (navigation_test
+    src/test_navigation.cpp
 
+    src/control/vehicle_control_base.cpp
+    src/control/vehicle_control_iris.cpp
+    src/view_evaluator_ig.cpp
+    src/view_generator_ig.cpp
+    src/view_generator_ig_nn_adaptive.cpp
+    src/view_generator_ig_frontier.cpp
+    src/Volumetric_Map_Manager.cpp
+    src/raytracing.cpp
+    src/nbv_history.cpp
+
+    src/victim_map_base.cpp
+    src/victim_map_dl.cpp
+    src/victim_map_thermal.cpp
+    src/victim_map_combined.cpp
+
+    src/navigation_base.cpp
+    src/straightline.cpp
+    src/ReactivePathPlanner.cpp
+
+    src/victim_detector_base.cpp
+    src/victim_thermal_detector.cpp
+    src/ssd_detection_with_ecludian_clustering.cpp
+    )
+add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(navigation_test
+    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${CGAL_Core_LIBRARY}
+    ${rviz_visual_tools_LIBRARIES}
+    SSPathPlanner
+)
 #add_executable(pointc src/Volumetric_Map_Manager.cpp )
 #add_dependencies(pointc  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #target_link_libraries(pointc ${catkin_LIBRARIES})

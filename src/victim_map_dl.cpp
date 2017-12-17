@@ -1,10 +1,10 @@
-#include "victim_localization/victim_map_base.h"
 #include "victim_localization/victim_map_dl.h"
 
 victim_map_DL::victim_map_DL():
   Victim_Map_Base()
 {
   setlayer_name(DL_layer_name);
+  detector_ = new SSD_Detection_with_clustering();
 
   ros::param::param<std::string>("~map_topic_DL", map_topic , "victim_map/grid_map_DL");
   ros::param::param<double>("~map_resol_DL", map_resol , 0.5);
@@ -34,6 +34,9 @@ victim_map_DL::victim_map_DL():
 }
 
 void victim_map_DL::Update(){
+
+  //run deep learning detector
+  runDetector();
 
   grid_map::GridMap temp_Map;
   temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(raytracing_->current_pose_);
@@ -80,7 +83,26 @@ void victim_map_DL::Update(){
   publish_Map();
 }
 
+void victim_map_DL::runDetector()
+{
 
+  // added if statement for debugging
+  if (detection_enabled){
+   // run thermal detector
+  detector_->SetCurrentSetpoint(current_loc_);
+  detector_->performDetection();
+
+    if ((detector_->getDetectorStatus()).victim_found ==true)
+    this->setDetectionResult(detector_->getDetectorStatus());
+  }
+  else {
+  Status status_temp;
+  status_temp.victim_found= false;
+   Position g(0,0);
+  status_temp.victim_loc=g;
+   this->setDetectionResult(status_temp);
+}
+}
 
 
 

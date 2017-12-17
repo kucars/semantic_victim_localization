@@ -1,0 +1,51 @@
+- git:
+    local-name: Firmware
+    uri: https://github.com/PX4/Firmware.git
+    version: 40aa785
+
+- git:
+    local-name: rotors_simulator
+    uri: https://github.com/kuri-kustar/rotors_simulator.git
+    version:  be50de52a658e280fc91a9e0ef9bddf5001dbb44
+
+- git:
+    local-name: catkin_simple
+    uri: https://github.com/catkin/catkin_simple.git
+    version: fcd87fa0ad3d7d92c1af8d4d1d1fe1d0ea23a93c
+
+
+- git:
+    local-name: catkin_simple
+    uri: https://github.com/catkin/catkin_simple.git
+    version: fcd87fa0ad3d7d92c1af8d4d1d1fe1d0ea23a93c
+
+
+- git:
+    local-name: kuri_usar_sim
+    uri: https://github.com/kuri-kustar/kuri_usar_sim.git
+    version: c80ed10bb08f9fddf09109970d8a008b5eeb0256
+
+- git:
+    local-name: costmap_2d
+    uri: https://github.com/AbdulrahmanGoian/costmap_2d.git
+    version: bc56b96308cdc3a9958b8c424c7d959d95a824d9
+
+- git:
+    local-name: octomap_related_packages
+    uri: https://github.com/AbdulrahmanGoian/octomap_related_packages.git
+    version: 71a3c9198acc26f469766f9a97ccea8eef296642
+
+- git:
+    local-name: grid-map
+    uri: https://github.com/AbdulrahmanGoian/grid-map
+    version: 47e0ee877fcefef18bf6f3d1b2e92f8bec3f270d
+
+- git:
+    local-name: sspp
+    uri: https:https://github.com/AbdulrahmanGoian/sspp.git
+    version: 5e9e9c4dfb8a7a80773326b9e6d64ef6c4f931a8
+
+- git:
+    local-name: Thermal-Camera-Plugin
+    uri: https://github.com/AbdulrahmanGoian/Thermal-Camera-Plugin.git
+    version: 37d19d934effafbd00485b69a6b2b3e7826e4b2f

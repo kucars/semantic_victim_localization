@@ -35,8 +35,21 @@ void victim_map_combined::Update()
   victim_map_dl_->Update();
   victim_map_Thermal_->Update();
 
+  // update map
   map[this->getlayer_name()]= alpha*victim_map_dl_->map[victim_map_dl_->getlayer_name()] +
                               beta*victim_map_Thermal_->map[victim_map_Thermal_->getlayer_name()];
+
+  map_status.victim_found=false; //initialize detection to false
+
+  grid_map::Matrix& data = map[this->getlayer_name()];
+  for (GridMapIterator iterator(map); !iterator.isPastEnd(); ++iterator) {
+      const Index index(*iterator);
+      if (data(index(0), index(1)) > 0.9 ) {
+        map_status.victim_found=true;
+        map.getPosition(index,map_status.victim_loc);
+        break;
+      }
+  }
 
   publish_Map();
 }
