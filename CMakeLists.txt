@@ -227,6 +227,23 @@ target_link_libraries(navigation_test
     ${rviz_visual_tools_LIBRARIES}
     SSPathPlanner
 )
+
+add_executable (iris_commander
+    src/control/iris_drone_commander.cpp
+
+    src/control/vehicle_control_base.cpp
+    src/control/vehicle_control_iris.cpp
+    )
+
+add_dependencies(iris_commander ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(iris_commander
+    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+)
+
 #add_executable(pointc src/Volumetric_Map_Manager.cpp )
 #add_dependencies(pointc  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 #target_link_libraries(pointc ${catkin_LIBRARIES})

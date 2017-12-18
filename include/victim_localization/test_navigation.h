@@ -24,6 +24,10 @@ public:
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
+  ros::Subscriber sub_sp;
+  ros::Publisher pub_sp;
+  bool start_PS;
+  geometry_msgs::PoseStamped hover_pose;
 
   void Configuration();
   void Takeoff();
@@ -31,6 +35,8 @@ public:
   void setpoints();
   void PublishCurrentPose(geometry_msgs::Pose p);
   void plannerthread();
+  void PublishSPCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
+
 
 };
 

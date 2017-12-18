@@ -2,8 +2,11 @@
 
 test_navigation::test_navigation(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private ):
   nh_(nh),
-  nh_private_(nh_private)
+  nh_private_(nh_private),
+  start_PS(false)
 {
+  sub_sp=nh_.subscribe<geometry_msgs::PoseStamped>("iris/mavros/local_position/pose",10,&test_navigation::PublishSPCallback,this);
+  pub_sp=nh_.advertise<geometry_msgs::PoseStamped>("/iris/mavros/local_position/pose",10);
 
   ROS_INFO("test_navigation: Begin!");
 }
@@ -52,6 +55,9 @@ void test_navigation::Takeoff()
     if( vehicle_->isReady() && manager_->getMapSize().norm() > 0.0)
     {
       vehicle_->rotateOnTheSpot(x,y,z);
+      start_PS=true;
+      hover_pose.pose = vehicle_->getPose();
+      hover_pose.header.frame_id="world";
       break;
     }
   }
@@ -68,7 +74,7 @@ void test_navigation::executeplanner()
   {
     printf("Staring the Planner in test navigation node... \n");
 
-    thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
+    //thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
 
     double grid_size_x, grid_size_y;                                                                        // location until the Planner service is done
     Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
@@ -78,14 +84,14 @@ void test_navigation::executeplanner()
     planner_->setCurrentPose(vehicle_->getPose());
     if (planner_->GeneratePath(Setpoints_[i],path)) {
       printf("path found...\n");
-      thread_1.detach(); // detached the thread.
+      //thread_1.detach(); // detached the thread.
 
       for(int j=0;j<path.size();j++)
       {
         vehicle_->setWaypoint(path[j]);
         vehicle_->moveVehicle(1.0);
       }
-      thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current pose
+      //thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current pose
     }
 
     else
@@ -154,6 +160,14 @@ int main(int argc, char **argv)
   test_->Configuration();
   test_->Takeoff();
   test_->executeplanner();
+  ros::spin();
 
   return 0;
+}
+
+void test_navigation::PublishSPCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
+  if (start_PS=true){
+    hover_pose.header.stamp=ros::Time::now();
+    pub_sp.publish(hover_pose);
+  }
 }

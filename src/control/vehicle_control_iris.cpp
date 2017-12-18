@@ -14,8 +14,10 @@ VehicleControlIris::VehicleControlIris():
   std::string topic_state;
   std::string topic_arming;
   std::string topic_set_mode;
+  std::string topic_setpoint;
 
   ros::param::param("~topic_odometry", topic_odometry, std::string("/ground_truth/odometry"));
+  ros::param::param("~topic_setpoint", topic_setpoint, std::string("/iris/mavros/setpoint_position/local"));
   ros::param::param("~topic_state", topic_state, std::string("iris/mavros/state"));
   ros::param::param("~topic_arming", topic_arming, std::string("iris/mavros/cmd/arming"));
   ros::param::param("~topic_set_mode", topic_set_mode, std::string("iris/mavros/set_mode"));
@@ -25,6 +27,7 @@ VehicleControlIris::VehicleControlIris():
   // Callbacks
   sub_odom = ros_node.subscribe(topic_odometry, 1, &VehicleControlIris::callbackOdometry, this);
   sub_state = ros_node.subscribe(topic_state, 10, &VehicleControlIris::callbackState, this);
+  sub_setpoint = ros_node.subscribe(topic_setpoint, 10,&VehicleControlIris::callbackSP, this);
   pub_setpoint = ros_node.advertise<geometry_msgs::PoseStamped>("/iris/mavros/setpoint_position/local", 10);
   arming_client  = ros_node.serviceClient<mavros_msgs::CommandBool>(topic_arming);
   set_mode_client = ros_node.serviceClient<mavros_msgs::SetMode>(topic_set_mode);
@@ -49,6 +52,13 @@ void VehicleControlIris::callbackOdometry(const nav_msgs::Odometry& odom_msg)
     is_ready_ = true;
   }
 }
+
+void VehicleControlIris::callbackSP(const geometry_msgs::PoseStamped::ConstPtr& msg)
+{
+  setpoint_last_received = ros::Time::now();
+  setpoint_last_pose.pose = msg->pose;
+}
+
 
 void VehicleControlIris::callbackState(const mavros_msgs::State& state_msg)
 {
@@ -94,8 +104,6 @@ void VehicleControlIris::moveVehicle(double threshold_sensitivity)
   geometry_msgs::Pose setpoint_world;
   setpoint_world = transformSetpoint2Global(setpoint_);
 
-  //check if the drone is in offboard and
-
   // Wait till we've reached the waypoint
   ros::Rate rate_(30);
   while(ros::ok() && (!isNear(setpoint_world, vehicle_current_pose_, threshold_sensitivity) || !isStationary(threshold_sensitivity) ) )
@@ -115,6 +123,14 @@ void VehicleControlIris::setSpeed(double speed)
     return; //Ignore invalid speeds
 }
 
+void VehicleControlIris::FollowPath(nav_msgs::Path path)
+{
+   for (int i=0;i<path.poses.size();i++)
+   {
+     setWaypoint(path.poses[i].pose);
+     moveVehicle();
+   }
+}
 
 void VehicleControlIris::setWaypoint(double x, double y, double z, double yaw)
 {
