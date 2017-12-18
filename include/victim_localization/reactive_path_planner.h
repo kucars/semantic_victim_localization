@@ -15,7 +15,7 @@
 #include <sspp/sspp_srv.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Pose.h>
-#include "sspp/reactive_planner_server.h"
+#include "victim_localization/reactive_planner_server.h"
 #include "victim_localization/navigation_base.h"
 
 class ReactivePathPlanner : public navigationBase

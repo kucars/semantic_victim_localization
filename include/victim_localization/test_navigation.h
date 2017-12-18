@@ -1,9 +1,9 @@
 #ifndef TEST_NAVIGATION_H
 #define TEST_NAVIGATION_H
 
-#include "victim_localization/ReactivePathPlanner.h"
+#include "victim_localization/reactive_path_planner.h"
 #include "control/vehicle_control_iris.h"
-#include "victim_localization/Volumetric_Map_Manager.h"
+#include "victim_localization/volumetric_map_manager.h"
 #include "mutex"
 #include "thread"
 

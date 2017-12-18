@@ -16,11 +16,11 @@
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/view_generator_ig_nn_adaptive.h>
 #include <victim_localization/view_generator_ig_frontier.h>
-#include <victim_localization/Volumetric_Map_Manager.h>
+#include <victim_localization/volumetric_map_manager.h>
 #include <victim_localization/nbv_history.h>
 
 #include <victim_localization/navigation_base.h>
-#include <victim_localization/ReactivePathPlanner.h>
+#include <victim_localization/reactive_path_planner.h>
 #include <victim_localization/straightline.h>
 
 

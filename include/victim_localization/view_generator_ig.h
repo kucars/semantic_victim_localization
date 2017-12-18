@@ -13,7 +13,7 @@
 #include <victim_localization/common.h>
 #include <octomap_world/octomap_manager.h>
 #include <victim_localization/nbv_history.h>
-#include <victim_localization/Volumetric_Map_Manager.h>
+#include <victim_localization/volumetric_map_manager.h>
 
 
 //typedef geometry_msgs::Pose Pose;

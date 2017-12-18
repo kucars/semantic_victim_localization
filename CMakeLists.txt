@@ -164,7 +164,7 @@ add_executable (test_NBV
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
     src/view_generator_ig_frontier.cpp
-    src/Volumetric_Map_Manager.cpp
+    src/volumetric_map_manager.cpp
     src/raytracing.cpp
     src/nbv_history.cpp
 
@@ -175,7 +175,9 @@ add_executable (test_NBV
 
     src/navigation_base.cpp
     src/straightline.cpp
-    src/ReactivePathPlanner.cpp
+    src/reactive_path_planner.cpp
+    src/reactive_planner_server.cpp
+
 
     src/victim_detector_base.cpp
     src/victim_thermal_detector.cpp
@@ -207,12 +209,13 @@ add_executable (navigation_test
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
-    src/Volumetric_Map_Manager.cpp
+    src/volumetric_map_manager.cpp
     src/raytracing.cpp
 
     src/navigation_base.cpp
     src/straightline.cpp
-    src/ReactivePathPlanner.cpp
+    src/reactive_path_planner.cpp
+    src/reactive_planner_server.cpp
     )
 add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
 

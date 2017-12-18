@@ -7,7 +7,7 @@
 #include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
 #include <tf_conversions/tf_eigen.h>
-#include <victim_localization/Volumetric_Map_Manager.h>
+#include <victim_localization/volumetric_map_manager.h>
 #include <octomap_world/octomap_manager.h>
 #include <victim_localization/common.h>
 

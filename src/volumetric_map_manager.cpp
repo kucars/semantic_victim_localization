@@ -1,4 +1,4 @@
-#include <victim_localization/Volumetric_Map_Manager.h>
+#include <victim_localization/volumetric_map_manager.h>
 #include <string.h>
 
 Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
