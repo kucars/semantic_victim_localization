@@ -7,6 +7,7 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
+#include <nav_msgs/Path.h>
 
 #include "victim_localization/common.h"
 
@@ -26,6 +27,7 @@ public:
   mavros_msgs::State vehicle_current_state_;
 
   geometry_msgs::Pose setpoint_;
+  nav_msgs::Path setpath_;
 
   VehicleControlBase();
   virtual void initialize(){};

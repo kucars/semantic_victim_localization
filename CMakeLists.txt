@@ -86,11 +86,14 @@ add_message_files(
 add_service_files(
   FILES
   DL_box.srv
+  rotate_action.srv
+  waypoint_action.srv
+  path_action.srv
 )
 
 generate_messages(
   DEPENDENCIES
-  std_msgs geometry_msgs
+  std_msgs geometry_msgs nav_msgs
 )
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -160,6 +163,8 @@ add_executable (test_NBV
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
+    src/control/drone_communicator.cpp
+
     src/view_evaluator_ig.cpp
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
@@ -209,6 +214,7 @@ add_executable (navigation_test
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
+    src/control/drone_communicator.cpp
     src/volumetric_map_manager.cpp
     src/raytracing.cpp
 
@@ -233,6 +239,7 @@ target_link_libraries(navigation_test
 
 add_executable (iris_commander
     src/control/iris_drone_commander.cpp
+    src/control/drone_communicator.cpp
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp

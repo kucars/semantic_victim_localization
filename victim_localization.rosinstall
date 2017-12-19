@@ -15,20 +15,9 @@
 
 
 - git:
-    local-name: catkin_simple
-    uri: https://github.com/catkin/catkin_simple.git
-    version: fcd87fa0ad3d7d92c1af8d4d1d1fe1d0ea23a93c
-
-
-- git:
     local-name: kuri_usar_sim
     uri: https://github.com/kuri-kustar/kuri_usar_sim.git
     version: c80ed10bb08f9fddf09109970d8a008b5eeb0256
-
-- git:
-    local-name: costmap_2d
-    uri: https://github.com/AbdulrahmanGoian/costmap_2d.git
-    version: bc56b96308cdc3a9958b8c424c7d959d95a824d9
 
 - git:
     local-name: octomap_related_packages
@@ -42,8 +31,8 @@
 
 - git:
     local-name: sspp
-    uri: https:https://github.com/AbdulrahmanGoian/sspp.git
-    version: 5e9e9c4dfb8a7a80773326b9e6d64ef6c4f931a8
+    uri: https:https://github.com/kuri-kustar/sspp.git
+    version: de7b5fa73cf1677f5c139fba9b9422909135a966
 
 - git:
     local-name: Thermal-Camera-Plugin

@@ -123,11 +123,16 @@ void VehicleControlIris::setSpeed(double speed)
     return; //Ignore invalid speeds
 }
 
-void VehicleControlIris::FollowPath(nav_msgs::Path path)
+void VehicleControlIris::setPath(nav_msgs::Path path)
 {
-   for (int i=0;i<path.poses.size();i++)
+  setpath_ = path;
+}
+
+void VehicleControlIris::FollowPath(double threshold_sensitivity)
+{
+   for (int i=0;i<setpath_.poses.size();i++)
    {
-     setWaypoint(path.poses[i].pose);
+     setWaypoint(setpath_.poses[i].pose);
      moveVehicle();
    }
 }
@@ -233,7 +238,7 @@ void VehicleControlIris::rotateOnTheSpot(double x, double y, double z){
   ros::Time lastTimeTurnTime = ros::Time::now();
   ros::Rate rate(20);
 
-  while(!done)
+  while(ros::ok())
   {
     if(ros::Time::now() - lastTimeTurnTime > ros::Duration(deltaTime))
     {
@@ -250,8 +255,7 @@ void VehicleControlIris::rotateOnTheSpot(double x, double y, double z){
       //ROS_INFO("   - Trying to  rotate to: [%f %f %f %f]",setpoint_.pose.position.x,setpoint_.pose.position.y,setpoint_.pose.position.z,180*angle/M_PI);
       //ROS_INFO("   - Current Pose      is: [%f %f %f]",currentPose.pose.position.x,currentPose.pose.position.y,currentPose.pose.position.z);
       angle+=(angleStep*2.0*M_PI);
-      if(angle>=2.0*M_PI)
-        done = true;
+      if(angle>=2.0*M_PI) break;
       lastTimeTurnTime = ros::Time::now();
     }
 
@@ -378,4 +382,14 @@ geometry_msgs::Pose VehicleControlIris::transformGlobal2Setpoint (const geometry
   p_set.orientation = pose_conversion::getQuaternionFromYaw(yaw);
 
   return p_set;
+}
+
+geometry_msgs::Pose VehicleControlIris::getlastSP()
+{
+  return setpoint_last_pose.pose;
+}
+
+ros::Time VehicleControlIris::getlastSPTime()
+{
+  return setpoint_last_received;
 }

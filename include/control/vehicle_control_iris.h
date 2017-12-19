@@ -37,16 +37,20 @@ public:
   bool isStationary(double threshold_sensitivity = 1);
 
   void setOffboardState();
-  void FollowPath(nav_msgs::Path path);
+  void FollowPath(double threshold_sensitivity = 1);
   void moveVehicle(double threshold_sensitivity = 1);
   void setSpeed(double speed);
   void setWaypoint(double x, double y, double z, double yaw);
   void setWaypoint(double x, double y, double z, geometry_msgs::Quaternion orientation_);
   void setWaypoint(geometry_msgs::Pose p);
   void setWaypointIncrement(double x, double y, double z, double yaw);
+  void setPath(nav_msgs::Path path) ;
   void start(double x, double y, double z);
   void rotateOnTheSpot();
   void rotateOnTheSpot(double x, double y, double z);
+
+  geometry_msgs::Pose getlastSP();
+  ros::Time getlastSPTime();
 
   geometry_msgs::Pose transformSetpoint2Global (const geometry_msgs::Pose p_set);
   geometry_msgs::Pose transformGlobal2Setpoint (const geometry_msgs::Pose p_global);

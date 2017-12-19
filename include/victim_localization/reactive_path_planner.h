@@ -17,6 +17,7 @@
 #include <geometry_msgs/Pose.h>
 #include "victim_localization/reactive_planner_server.h"
 #include "victim_localization/navigation_base.h"
+#include "nav_msgs/Path.h"
 
 class ReactivePathPlanner : public navigationBase
 {
@@ -34,7 +35,7 @@ public:
   double dOvershoot_;
 
    std::string methodName(void);
-   bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
+   bool GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path);
    void start();
 
 };

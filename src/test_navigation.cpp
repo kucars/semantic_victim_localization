@@ -3,11 +3,8 @@
 test_navigation::test_navigation(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private ):
   nh_(nh),
   nh_private_(nh_private),
-  start_PS(false)
+  Selectpath_(true)
 {
-  sub_sp=nh_.subscribe<geometry_msgs::PoseStamped>("iris/mavros/local_position/pose",10,&test_navigation::PublishSPCallback,this);
-  pub_sp=nh_.advertise<geometry_msgs::PoseStamped>("/iris/mavros/local_position/pose",10);
-
   ROS_INFO("test_navigation: Begin!");
 }
 
@@ -20,57 +17,87 @@ void test_navigation::Configuration()
   CostMapROS_->start();
   Volumetric_Map_->SetCostMapRos(CostMapROS_);
 
-  vehicle_ = new VehicleControlIris();
-  planner_ = new ReactivePathPlanner();
-  planner_->setConfiguration(nh_,nh_private_,manager_);
-  planner_->start();
+  //planner_ = new ReactivePathPlanner();
+  //planner_->setConfiguration(nh_,nh_private_,manager_);
+  //planner_->start();
+
+  drone_communicator_ = new drone_communicator(nh_,nh_private_,manager_);
 }
 
-void test_navigation::Takeoff()
+
+void test_navigation::state_machine()
 {
+  ROS_INFO("test_navigation... started");
+  state = NavigationState::STARTING_ROBOT;
 
-  double x, y, z, yaw;
-  ros::param::param<double>("~uav_pose_x" ,x, -1.5);
-  ros::param::param<double>("~uav_pose_y" , y, 0.0);
-  ros::param::param<double>("~uav_pose_z" , z, 1.0);
-  ros::param::param<double>("~uav_pose_yaw" , yaw, 0.0);
-
-  vehicle_->setWaypoint(x, y, z, yaw);
-
-  printf("Starting vehicle\n");
-  vehicle_->start(x,y,z);
-  printf("Moving vehicle\n");
-  vehicle_->moveVehicle(1.0);
-  printf("Done moving\n");
-
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(30);
   while (ros::ok())
   {
-    vehicle_->moveVehicle(1);
-
-    if (manager_->getMapSize().norm() <= 0.0)
-
-      continue;
-
-    if( vehicle_->isReady() && manager_->getMapSize().norm() > 0.0)
+    switch(state)
     {
-      vehicle_->rotateOnTheSpot(x,y,z);
-      start_PS=true;
-      hover_pose.pose = vehicle_->getPose();
-      hover_pose.header.frame_id="world";
+
+    case NavigationState::STARTING_ROBOT:
+
+      if (!drone_communicator_->GetStatus()) break;
+      state = NavigationState::STARTING_ROBOT_COMPLETE;
+      this->GetTestPath();
+      if (Selectpath_)
+      {
+        state = NavigationState::NAVIGATION_PATH;
+        break;
+      }
+      else
+      {
+        state = NavigationState::NAVIGATION_WAYPOINT;
+        break;
+      }
+    case(NavigationState::NAVIGATION_WAYPOINT):
+      ROS_INFO("Move to Position [ %f %f %f]",path_.poses[0].pose.position.x,
+      path_.poses[0].pose.position.y,path_.poses[0].pose.position.z);
+
+      if (!drone_communicator_->Execute_waypoint(path_.poses[0].pose)) break;
+
+      state = NavigationState::WAITING_FOR_WAYPOINT;
+      break;
+
+    case(NavigationState::WAITING_FOR_WAYPOINT):
+      if (!drone_communicator_->GetStatus()) break;
+       ROS_INFO("WAYPOINT.... REACHED");
+       state= NavigationState::IDEL;
+      break;
+
+    case(NavigationState::NAVIGATION_PATH):
+       Num_points = path_.poses.size()-1;
+      ROS_INFO("Move to path started with [ %f %f %f] and end with  [ %f %f %f] "
+               ,path_.poses[0].pose.position.x,path_.poses[0].pose.position.y,
+                path_.poses[0].pose.position.z,path_.poses[Num_points].pose.position.x,
+                path_.poses[Num_points].pose.position.y,path_.poses[Num_points].pose.position.z);
+
+      if (!drone_communicator_->Execute_path(path_)) break;
+
+      state = NavigationState::WAITING_FOR_PATH;
+      break;
+
+    case(NavigationState::WAITING_FOR_PATH):
+      if (!drone_communicator_->GetStatus()) break;
+       ROS_INFO("PATH.... REACHED");
+       state= NavigationState::IDEL;
+      break;
+
+    case(NavigationState::IDEL):
+      ROS_INFO("The navigation test is done");
       break;
     }
+    ros::spinOnce();
+    loop_rate.sleep();
   }
-  ros::spinOnce();
-  loop_rate.sleep();
 }
-
 
 void test_navigation::executeplanner()
 {
-   setpoints();
+  this->GetTestPath();
 
-  for(int i=0;i<Setpoints_.size();i++)
+  for(int i=0;i<path_.poses.size();i++)
   {
     printf("Staring the Planner in test navigation node... \n");
 
@@ -80,69 +107,43 @@ void test_navigation::executeplanner()
     Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
-    std::vector <geometry_msgs::Pose> path;
-    planner_->setCurrentPose(vehicle_->getPose());
-    if (planner_->GeneratePath(Setpoints_[i],path)) {
+    nav_msgs::Path path;
+    planner_->setCurrentPose(drone_communicator_->GetPose());
+    if (planner_->GeneratePath(path_.poses[i].pose,path)) {
       printf("path found...\n");
-      //thread_1.detach(); // detached the thread.
-
-      for(int j=0;j<path.size();j++)
-      {
-        vehicle_->setWaypoint(path[j]);
-        vehicle_->moveVehicle(1.0);
-      }
-      //thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current pose
+      drone_communicator_->Execute_path(path);
     }
 
     else
     {
-      std::cout << "no path found let check the other setpoint... " << std::endl;
-      vehicle_->moveVehicle(1.0);
+      std::cout << "no path found for setpoint " << i <<  "let check the other setpoint..."  << std::endl;
     }
 
   }
 }
 
-
-
-void test_navigation::setpoints()
+void test_navigation::GetTestPath()
 {
-  geometry_msgs::Pose Setpoint_1;
-  Setpoint_1.position.x= -4;
-  Setpoint_1.position.y = 0;
-  Setpoint_1.position.z = 1;
-  Setpoint_1.orientation =  pose_conversion::getQuaternionFromYaw(2.0);
+  geometry_msgs::PoseStamped Setpoint_1;
+  Setpoint_1.pose.position.x= -4;
+  Setpoint_1.pose.position.y = 1;
+  Setpoint_1.pose.position.z = 1;
+  Setpoint_1.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);
 
-  geometry_msgs::Pose Setpoint_2;
-  Setpoint_2.position.x= -4;
-  Setpoint_2.position.y = 1;
-  Setpoint_2.position.z = 1;
-  Setpoint_2.orientation =  pose_conversion::getQuaternionFromYaw(0.0);
+  geometry_msgs::PoseStamped Setpoint_2;
+  Setpoint_2.pose.position.x= -4;
+  Setpoint_2.pose.position.y = 0;
+  Setpoint_2.pose.position.z = 1;
+  Setpoint_2.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);
 
-  geometry_msgs::Pose Setpoint_3;
-  Setpoint_3.position.x= -1;
-  Setpoint_3.position.y = 0;
-  Setpoint_3.position.z = 0;
-  Setpoint_3.orientation =  pose_conversion::getQuaternionFromYaw(2.0);
-  Setpoints_.push_back(Setpoint_1);
-  Setpoints_.push_back(Setpoint_2);
-  Setpoints_.push_back(Setpoint_3);
-}
-
-void test_navigation::PublishCurrentPose(geometry_msgs::Pose p)
-{
-  while (ros::ok())
-  {
-    std::cout << "keep publishing ... \n";
-    geometry_msgs::PoseStamped ps;
-    ps.header.frame_id = "world";
-    ps.header.stamp = ros::Time::now();
-    ps.pose = p;
-    //std::cout << "pose to go to: " << p << "\n";
-    vehicle_->pub_setpoint.publish(ps);
-    ros::spinOnce();
-    ros::Rate(10).sleep();
-  }
+  geometry_msgs::PoseStamped Setpoint_3;
+  Setpoint_3.pose.position.x= -4.7;
+  Setpoint_3.pose.position.y = -2.7;
+  Setpoint_3.pose.position.z = 1;
+  Setpoint_3.pose.orientation =  pose_conversion::getQuaternionFromYaw(2.0);
+  path_.poses.push_back(Setpoint_1);
+  path_.poses.push_back(Setpoint_2);
+  path_.poses.push_back(Setpoint_3);
 }
 
 int main(int argc, char **argv)
@@ -158,16 +159,9 @@ int main(int argc, char **argv)
   test_navigation *test_;
   test_ = new test_navigation(nh,nh_private);
   test_->Configuration();
-  test_->Takeoff();
-  test_->executeplanner();
+  test_->state_machine();
   ros::spin();
 
   return 0;
 }
 
-void test_navigation::PublishSPCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
-  if (start_PS=true){
-    hover_pose.header.stamp=ros::Time::now();
-    pub_sp.publish(hover_pose);
-  }
-}

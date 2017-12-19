@@ -6,7 +6,7 @@ ReactivePathPlanner::ReactivePathPlanner()
   navigationBase();
 }
 
-bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path)
+bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
 {
  if (getDistance(current_pose_,end)< d_close) // terminate if the end pose is at the robot current pose
    return false;
@@ -40,10 +40,13 @@ bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end, std::vector<geom
      tf::poseMsgToTF(planningService.response.path[i], pose);
      double yaw = tf::getYaw(pose.getRotation());
      tf::Quaternion quat = tf::Quaternion(tf::Vector3(0.0, 0.0, 1.0), yaw);
+     Path.poses[i].pose=planningService.response.path[i];
    }
 
-   Path.insert(Path.end(),planningService.response.path.begin(),
-                                planningService.response.path.end());
+
+   //Path.insert(Path.end(),planningService.response.path.begin(),
+                               // planningService.response.path.end());
+
    return true;
  }
  else
