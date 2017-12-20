@@ -158,50 +158,6 @@ link_libraries(${OCTOMAP_LIBRARIES})
 
 ## add executable
 
-add_executable (test_NBV
-    src/test_NBV.cpp
-
-    src/control/vehicle_control_base.cpp
-    src/control/vehicle_control_iris.cpp
-    src/control/drone_communicator.cpp
-
-    src/view_evaluator_ig.cpp
-    src/view_generator_ig.cpp
-    src/view_generator_ig_nn_adaptive.cpp
-    src/view_generator_ig_frontier.cpp
-    src/volumetric_map_manager.cpp
-    src/raytracing.cpp
-    src/nbv_history.cpp
-
-    src/victim_map_base.cpp
-    src/victim_map_dl.cpp
-    src/victim_map_thermal.cpp
-    src/victim_map_combined.cpp
-
-    src/navigation_base.cpp
-    src/straightline.cpp
-    src/reactive_path_planner.cpp
-    src/reactive_planner_server.cpp
-
-
-    src/victim_detector_base.cpp
-    src/victim_thermal_detector.cpp
-    src/ssd_detection_with_ecludian_clustering.cpp
-    )
-add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(test_NBV
-    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    ${catkin_LIBRARIES}
-    ${Eigen_LIBRARIES}
-    ${OCTOMAP_LIBRARIES}
-    ${PCL_LIBRARIES}
-    ${CGAL_LIBRARY}
-    ${CGAL_Core_LIBRARY}
-    ${rviz_visual_tools_LIBRARIES}
-    SSPathPlanner
-)
-
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})
 

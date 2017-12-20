@@ -22,10 +22,16 @@
 class ReactivePathPlanner : public navigationBase
 {
 public:
-  ReactivePathPlanner();
+  ReactivePathPlanner(const ros::NodeHandle &nh, const ros::NodeHandle &nh_private, volumetric_mapping::OctomapManager *manager);
 
   sspp::sspp_srv planningService;
   ReactivePlannerServer *reactivePlannerServer;
+
+  ros::NodeHandle nh_;
+  ros::NodeHandle nh_private_;
+  volumetric_mapping::OctomapManager *manager_;
+
+ // ros::ServiceClient clientPath_;
 
   double uav_fixed_height;
   double extensionRange_;

@@ -21,7 +21,7 @@
  ***************************************************************************/
 #include <ros/ros.h>
 #include "sspp/pathplanner.h"
-
+#include <math.h>
 #include <ros/package.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -31,6 +31,7 @@
 #include <octomap_world/octomap_manager.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <sspp/sspp_srv.h>
+#include <nav_msgs/Path.h>
 
 class ReactivePlannerServer
 {
@@ -59,11 +60,14 @@ private:
   bool sampleOrientations = false;
   bool debug = false;
   std::vector<std::pair<Eigen::Vector3d, double> > occupied_box_vector;
-public:
+  public:
   ReactivePlannerServer(const ros::NodeHandle& nh_, const ros::NodeHandle& nh_private_, volumetric_mapping::OctomapManager * mapManager_);
   ~ReactivePlannerServer();
-  bool plannerCallback(sspp::sspp_srv::Request &req, sspp::sspp_srv::Response &res);
-  void callback(const sensor_msgs::PointCloud2::ConstPtr &cloudIn);
+  //bool plannerCallback(sspp::sspp_srv::Request &req, sspp::sspp_srv::Response &res);
+  //void callback(const sensor_msgs::PointCloud2::ConstPtr &cloudIn);
+  bool PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,nav_msgs::Path &path_);
   void getConfigsFromRosParams();
   void SetDynamicGridSize(double x, double y, double z);
+  void SetOriginPose(double x, double y, double z);
+
 };

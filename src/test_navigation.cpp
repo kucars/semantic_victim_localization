@@ -3,7 +3,7 @@
 test_navigation::test_navigation(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private ):
   nh_(nh),
   nh_private_(nh_private),
-  Selectpath_(true)
+  Selectpath_(false)
 {
   ROS_INFO("test_navigation: Begin!");
 }
@@ -17,9 +17,8 @@ void test_navigation::Configuration()
   CostMapROS_->start();
   Volumetric_Map_->SetCostMapRos(CostMapROS_);
 
-  //planner_ = new ReactivePathPlanner();
-  //planner_->setConfiguration(nh_,nh_private_,manager_);
-  //planner_->start();
+  planner_ = new ReactivePathPlanner(nh_,nh_private_,manager_);
+  planner_->start();
 
   drone_communicator_ = new drone_communicator(nh_,nh_private_,manager_);
 }
@@ -31,8 +30,8 @@ void test_navigation::state_machine()
   state = NavigationState::STARTING_ROBOT;
 
   ros::Rate loop_rate(30);
-  while (ros::ok())
-  {
+  while (ros::ok()){
+
     switch(state)
     {
 
@@ -55,8 +54,20 @@ void test_navigation::state_machine()
       ROS_INFO("Move to Position [ %f %f %f]",path_.poses[0].pose.position.x,
       path_.poses[0].pose.position.y,path_.poses[0].pose.position.z);
 
-      if (!drone_communicator_->Execute_waypoint(path_.poses[0].pose)) break;
+      planner_->setCurrentPose(drone_communicator_->GetPose());
 
+      //if (!drone_communicator_->Execute_waypoint(path_.poses[0].pose)) break;
+      Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
+      planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
+
+      Volumetric_Map_->GetActiveOrigin(grid_origin_x,grid_origin_y);
+      planner_->reactivePlannerServer->SetOriginPose(grid_origin_x,grid_origin_x,round(drone_communicator_->GetPose().position.z));
+
+
+      if (planner_->GeneratePath(path_.poses[0].pose,path_to_waypoint)) {
+        printf("path found...\n");
+        drone_communicator_->Execute_path(path_to_waypoint);
+      }
       state = NavigationState::WAITING_FOR_WAYPOINT;
       break;
 
@@ -106,7 +117,6 @@ void test_navigation::executeplanner()
     double grid_size_x, grid_size_y;                                                                        // location until the Planner service is done
     Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
-
     nav_msgs::Path path;
     planner_->setCurrentPose(drone_communicator_->GetPose());
     if (planner_->GeneratePath(path_.poses[i].pose,path)) {
@@ -124,8 +134,10 @@ void test_navigation::executeplanner()
 
 void test_navigation::GetTestPath()
 {
+  //thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
+
   geometry_msgs::PoseStamped Setpoint_1;
-  Setpoint_1.pose.position.x= -4;
+  Setpoint_1.pose.position.x= -2.5;
   Setpoint_1.pose.position.y = 1;
   Setpoint_1.pose.position.z = 1;
   Setpoint_1.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);

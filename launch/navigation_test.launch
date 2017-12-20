@@ -23,7 +23,7 @@
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
 </node>
 
-<node pkg="victim_localization" type="iris_commander" name="iris_commander" output="screen"  if="$(arg debug)" launch-prefix="gdb -ex run --args" />
+<node pkg="victim_localization" type="iris_commander" name="iris_commander" output="screen"  if="$(arg debug)" />
 <node pkg="victim_localization" type="navigation_test" name="navigation_test" output="screen" if="$(arg debug)"  launch-prefix="gdb -ex run --args" >
        <param name="tf_frame" type="string" value="$(arg tf_frame)" />
        <param name="resolution" type="double" value="$(arg resolution)" />

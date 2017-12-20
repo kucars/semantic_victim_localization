@@ -1,8 +1,11 @@
 #include "victim_localization/straightline.h"
 
 
-straightLine::straightLine():
-navigationBase()
+  straightLine::straightLine(const ros::NodeHandle &nh, const ros::NodeHandle &nh_private, volumetric_mapping::OctomapManager *manager):
+  nh_(nh),
+  nh_private_(nh_private),
+  manager_(manager),
+  navigationBase()
 {
   ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
   ros::param::param("~extensionRange", extensionRange_, 1.0);

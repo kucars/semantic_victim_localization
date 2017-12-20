@@ -1,4 +1,4 @@
-#include <victim_localization/volumetric_map_manager.h>
+﻿#include <victim_localization/volumetric_map_manager.h>
 #include <string.h>
 
 Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
@@ -318,6 +318,19 @@ void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmap_)
 
 void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
 {
-  x_size=m_gridmap.info.width;
-  y_size=m_gridmap.info.height;
+   x_size= round(m_gridmap.info.width * m_gridmap.info.resolution);
+   y_size= round(m_gridmap.info.height * m_gridmap.info.resolution);
+ /* if (x>y) {
+  x_size=round(m_gridmap.info.width * m_gridmap.info.resolution);
+  y_size= x_size;
+  }
+  else {
+    y_size = round(m_gridmap.info.height * m_gridmap.info.resolution);
+    x_size = y_size;
+  }*/
+}
+void Volumetric_Map::GetActiveOrigin(double &x_origin, double &y_origin)
+{
+ x_origin=round(m_gridmap.info.origin.position.x ) + round(m_gridmap.info.width * m_gridmap.info.resolution);
+ y_origin=round (m_gridmap.info.origin.position.y ) + round((m_gridmap.info.height * m_gridmap.info.resolution));
 }

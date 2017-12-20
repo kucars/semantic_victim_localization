@@ -16,9 +16,6 @@ class navigationBase
 {
 public:
   navigationBase();
-  ros::NodeHandle nh_;
-  ros::NodeHandle nh_private_;
-  volumetric_mapping::OctomapManager *manager_;
   geometry_msgs::Pose current_pose_;
 
 
@@ -34,11 +31,9 @@ public:
 
 
   void setCurrentPose(geometry_msgs::Pose p);
-  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
+
   virtual std::string methodName(void);
   virtual bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
-  void setConfiguration(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private,
-                                         volumetric_mapping::OctomapManager *manager);
 
   virtual void start(){};
 

@@ -183,6 +183,8 @@ public:
       nav_msgs::OccupancyGrid m_gridmap;
       std::shared_ptr<OcTreeT> m_octree;
       void GetActiveOctomapSize(double &x_size, double &y_size);
+      void GetActiveOrigin(double &x_origin, double &y_origin);
+
 
 
 

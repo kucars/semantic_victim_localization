@@ -7,8 +7,11 @@
 class straightLine : public navigationBase
 {
 public:
-  straightLine();
+  straightLine(const ros::NodeHandle &nh, const ros::NodeHandle &nh_private, volumetric_mapping::OctomapManager *manager);
 
+  ros::NodeHandle nh_;
+  ros::NodeHandle nh_private_;
+  volumetric_mapping::OctomapManager *manager_;
   double uav_fixed_height;
   double extensionRange_;
   double boundingbox_x_;

@@ -16,19 +16,6 @@ void navigationBase::setCurrentPose(geometry_msgs::Pose p)
   current_pose_ = p;
 }
 
-void navigationBase::setOctomapManager(volumetric_mapping::OctomapManager *manager)
-{
-  manager_ = manager;
-}
-
-
-void navigationBase::setConfiguration(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private,
-                                       volumetric_mapping::OctomapManager *manager)
-{
-  nh_=nh;
-  nh_private_=nh_private;
-  manager_ = manager;
-}
 
 double navigationBase::getDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2)
 {

@@ -23,15 +23,21 @@ public:
   ReactivePathPlanner *planner_;
   drone_communicator *drone_communicator_;
   volumetric_mapping::OctomapManager *manager_;
+
   Volumetric_Map *Volumetric_Map_;
   costmap_2d::Costmap2DROS *CostMapROS_;
   nav_msgs::Path path_;
+  nav_msgs::Path path_to_waypoint;
+
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
 
   geometry_msgs::Pose set_waypoint;
   nav_msgs::Path set_path;
+  double grid_size_x, grid_size_y;
+  double grid_origin_x, grid_origin_y;
+
 
  NavigationState::State state;
 
@@ -43,7 +49,6 @@ public:
   void plannerthread();
   void PublishSPCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void state_machine();
-
 
   bool Selectpath_;
   int Num_points;

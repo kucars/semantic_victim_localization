@@ -20,14 +20,13 @@
  *   51 Franklin Steet, Fifth Floor, Boston, MA  02111-1307, USA.          *
  ***************************************************************************/
 #include <victim_localization/reactive_planner_server.h>
-
 ReactivePlannerServer::ReactivePlannerServer(const ros::NodeHandle& nh_, const ros::NodeHandle& nh_private_, volumetric_mapping::OctomapManager *mapManager_):
   nh(nh_),
   nh_private(nh_private_),
   mapManager(mapManager_)
 {
-  sub = nh.subscribe<sensor_msgs::PointCloud2>("cloud_pcd", 1, &ReactivePlannerServer::callback,this);
-  planningService = nh.advertiseService("sspp_planner", &ReactivePlannerServer::plannerCallback, this);
+ // sub = nh.subscribe<sensor_msgs::PointCloud2>("cloud_pcd", 1, &ReactivePlannerServer::callback,this);
+  //planningService = nh_private.advertiseService("sspp_planner", &ReactivePlannerServer::plannerCallback, this);
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/sspp_visualisation"));
   visualTools->loadMarkerPub();
   gridStart.position.x = 0.0;
@@ -37,9 +36,6 @@ ReactivePlannerServer::ReactivePlannerServer(const ros::NodeHandle& nh_, const r
   getConfigsFromRosParams();
   visualTools->deleteAllMarkers();
   visualTools->enableBatchPublishing();
-  Eigen::Vector3d origin(0,0,0);
-  Eigen::Vector3d envBox(15,15,10);
-  mapManager->setFree(origin,envBox);
   ROS_INFO("Starting the reactive planning");
 }
 
@@ -55,7 +51,7 @@ ReactivePlannerServer::~ReactivePlannerServer()
   */
 }
 
-bool ReactivePlannerServer::plannerCallback(sspp::sspp_srv::Request& req, sspp::sspp_srv::Response& res)
+bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,nav_msgs::Path &path_)
 {
 
   mapManager->getAllOccupiedBoxes(&occupied_box_vector);
@@ -65,15 +61,24 @@ bool ReactivePlannerServer::plannerCallback(sspp::sspp_srv::Request& req, sspp::
 
   if(occupied_box_vector.size()<=0 || mapManager->getMapSize().norm() <= 0.0)
   {
+    std::cout << "error comeing from here....." << std::endl;
     ROS_INFO_THROTTLE(1, "Planner not set up: Octomap is empty!");
     return false;
   }
 
   ros::Time timer_start = ros::Time::now();
 
-  start.p   = req.start;
-  end.p     = req.end;
-  gridStart = req.grid_start;
+  start.p   = start_;
+  end.p     = end_;
+
+  // round the start and end poses
+  start.p.position.x   =  round(start.p.position.x );   start.p.position.y=round(start.p.position.y);   start.p.position.z=round(start.p.position.z);
+  end.p.position.x   =  round(end.p.position.x );   end.p.position.y=round(end.p.position.y);   end.p.position.z=round(end.p.position.z);
+  //gridStart = start.p;
+  std::cout << "rounded position..." << std::endl;
+
+  std::cout << start.p << std::endl;
+  std::cout << end.p << std::endl;
 
   visualTools->publishSphere(start.p, rviz_visual_tools::BLUE, 0.3,"start_pose");
   visualTools->publishSphere(end.p, rviz_visual_tools::ORANGE, 0.3,"end_pose");
@@ -100,8 +105,18 @@ bool ReactivePlannerServer::plannerCallback(sspp::sspp_srv::Request& req, sspp::
   pathPlanner->setHeuristicFucntion(&distanceHeuristic);
 
   // Generate Grid Samples and visualise it
+
+  std::cout << "input map data as follow" << std::endl;
+  std::cout << gridStart << std::endl;
+  std::cout << gridSize << std::endl;
+  std::cout << gridRes << std::endl;
+  std::cout << sampleOrientations << std::endl;
+  std::cout << orientationSamplingRes << std::endl;
+
   pathPlanner->generateRegularGrid(gridStart, gridSize, gridRes, sampleOrientations, orientationSamplingRes,false, true);
   std::vector<geometry_msgs::Point> searchSpaceNodes = pathPlanner->getSearchSpace();
+
+  std::cout << "\n\n---->>> Total Nodes in search Space ="<< searchSpaceNodes.size();
 
   std::vector<geometry_msgs::PoseArray> sensorsPoseSS;
   geometry_msgs::PoseArray robotPoseSS;
@@ -176,7 +191,15 @@ bool ReactivePlannerServer::plannerCallback(sspp::sspp_srv::Request& req, sspp::
     path = path->next;
   }
 
-  res.path = pathPoses.poses;
+  // getting the path
+  geometry_msgs::PoseStamped ps;
+  ps.header.frame_id="world";
+  ps.header.stamp= ros::Time::now();
+  for (int i=0; i<pathPoses.poses.size(); i++) {
+    ps.pose = pathPoses.poses[i];
+    path_.poses.push_back(ps);
+  }
+
 
   std::cout << "\nDistance calculated from the path: " << dist << "m\n";
 
@@ -234,18 +257,22 @@ void ReactivePlannerServer::getConfigsFromRosParams()
   nh_private.param("tree_progress_display_freq",treeProgressDisplayFrequency,treeProgressDisplayFrequency);
 }
 
-void ReactivePlannerServer::callback(const sensor_msgs::PointCloud2::ConstPtr& cloudIn)
+/*void ReactivePlannerServer::callback(const sensor_msgs::PointCloud2::ConstPtr& cloudIn)
 {
   gotCloud = true;
   mapManager->insertPointcloudWithTf(cloudIn);
 }
-
+*/
 void ReactivePlannerServer::SetDynamicGridSize(double x, double y, double z)
 {
   gridSize.x=x;
   gridSize.y=y;
   gridSize.z=z;
- // Eigen::Vector3d origin(0,0,0);
- // Eigen::Vector3d envBox(x,y,0);
- // mapManager->setFree(origin,envBox);
+}
+
+void ReactivePlannerServer::SetOriginPose(double x, double y, double z)
+{
+  gridStart.position.x=x;
+  gridStart.position.y=y;
+  gridStart.position.z=z;
 }
