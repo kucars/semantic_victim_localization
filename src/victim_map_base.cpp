@@ -12,6 +12,8 @@ Victim_Map_Base::Victim_Map_Base()
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
 
+  ros::param::param<bool>("~detection_enabled", detection_enabled , false); // added for debugging purpose
+
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
 
   sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 100, &Victim_Map_Base::callbackdrawFOV, this);

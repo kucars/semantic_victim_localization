@@ -46,7 +46,7 @@ void victim_map_DL::Update(){
   Position D_loc;
   D_loc[0]=detect_victim_loc_[0];
   D_loc[1]=detect_victim_loc_[0];
-  D_loc=approximate_detect(D_loc);
+  //D_loc=approximate_detect(D_loc);
 
   map_status.victim_found=false; //initialize detection to false
 

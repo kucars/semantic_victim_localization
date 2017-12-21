@@ -5,7 +5,7 @@ float32 entropy_total
 string method_generation
 string method_selection
 geometry_msgs/Pose selected_pose
-float32 selected_utility_entropy
+float32 selected_utility
 
 float32 time_iteration
-[] utilities
+float32[] utilities

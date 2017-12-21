@@ -43,6 +43,7 @@ public:
   geometry_msgs::Pose current_pose_;
   std::vector<geometry_msgs::Pose> generated_poses;
   std::vector<geometry_msgs::Pose> rejected_poses;
+  int nav_type;
 
   // Visualizer
   int vis_marker_array_prev_size_;
@@ -59,7 +60,9 @@ public:
 
   bool isInsideBounds(geometry_msgs::Pose p);
   bool isSafe(geometry_msgs::Pose p);
+  bool isCollide(geometry_msgs::Pose p);
   bool isValidViewpoint(geometry_msgs::Pose p);
+
 
   //generate views
   void generateViews(bool check);
@@ -74,7 +77,7 @@ public:
 
   bool ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2);
   void visualizeDrawSphere(geometry_msgs::Pose p, double r);
-   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
+  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
 
 };

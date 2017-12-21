@@ -187,6 +187,8 @@ add_executable (test_NBV
     src/victim_detector_base.cpp
     src/victim_thermal_detector.cpp
     src/ssd_detection_with_ecludian_clustering.cpp
+
+    src/utilities/time_profiler.cpp
     )
 add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
 

@@ -44,8 +44,8 @@ vehicle_type: 0
 
 
 ## UAV Start Pose
-uav_pose_x: -8.0
-uav_pose_y: -8.0
+uav_pose_x: -1.5
+uav_pose_y: 0
 uav_pose_z: 1.0
 uav_pose_yaw: 0.0
 
@@ -79,7 +79,7 @@ Prob_Dc_Hc_for_thermal: 0.7
 ############
 
 minmum_z_for_2D_map: 0.8
-maximum_z_for_2D_map:
+maximum_z_for_2D_map: 1.2
 publish_2D_map: true
 
 ############
@@ -87,7 +87,7 @@ publish_2D_map: true
 ############
 # 0: Straight Line between two points
 # 1: Reactive Planner
-nav_type: 1
+nav_type: 0
 
 uav_fixed_height: 1.0
 extensionRange: 1.0
@@ -143,6 +143,6 @@ topic_Position: "iris/mavros/setpoint_position/local"
 topic_segmented_PointCloud: "ssd/segmented_PointCloud"
 
 map_topic_DL: "victim_map/grid_map_DL"
-map_topic_thermal:
+map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
 

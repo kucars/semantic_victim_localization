@@ -95,8 +95,6 @@ def callback(data):
       'Distance Travelled',
       'Utility (Total)',
       'Time Iteration (ms)',
-      'Count',
-      'Utility 1', 'Utility 2', 'Utility 3', '...'
       ])
 
   # Iterations went back in time. Indicates start of new NBV loop. Exit program
@@ -130,9 +128,7 @@ def callback(data):
     data.distance_total,
     data.selected_utility,
     data.time_iteration,
-    len(data.utilities)
     ]
-    + list(data.utilities) # Convert tuple to list
     )
 
 def cleanup_before_exit():

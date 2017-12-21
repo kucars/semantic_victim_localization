@@ -42,6 +42,9 @@ public:
 
    std::string methodName(void);
    bool GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path);
+   void SetDynamicGridSize(double x, double y,double z);
+   void SetOriginPose(double x, double y,double z);
+
    void start();
 
 };

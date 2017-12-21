@@ -19,6 +19,7 @@
        <rosparam command="load" file="$(arg param_file)" />
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
+       <rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
 </node>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" unless="$(arg debug)">
@@ -31,7 +32,14 @@
        <rosparam command="load" file="$(arg param_file)" />
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
+       <rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
 </node>
+
+
+<!-- Launch iris_commander to manager iris drone-->
+
+<node pkg="victim_localization" type="iris_commander" name="iris_commander"/>
+
 
 <!-- Launch the grid map visualizer -->
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">

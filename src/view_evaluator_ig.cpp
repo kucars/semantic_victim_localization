@@ -33,8 +33,6 @@ view_evaluator_IG::view_evaluator_IG():
 
 double view_evaluator_IG::getCellEntropy(Position cell_)
 {
- // std::cout << "possible_location4" << std::endl;
-
   double p= mapping_module_->map.atPosition(MapLayer,cell_);
   return - p*log(p) - (1-p)*log(1-p);
 }
@@ -53,7 +51,7 @@ void view_evaluator_IG::update_parameters()
 {
   MapLayer = mapping_module_->getlayer_name();
   current_pose_ = view_gen_->current_pose_;
-  tree_ = view_gen_->manager_->octree_.get();
+  tree_ = view_gen_->manager_->octree_;
 
   current_yaw_=pose_conversion::getYawFromQuaternion(current_pose_.orientation);
 
@@ -63,7 +61,7 @@ void view_evaluator_IG::update_parameters()
      info_entropy_total_+=mapping_module_->map.at(mapping_module_->layer_name,*iterator);
 }
 
-double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX project FOV from camera center not drone center
+double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
  // std::cout << "tested Pose: " << p <<std::endl;
   grid_map::GridMap temp_Map;
   grid_map::Polygon polygon_view;
@@ -76,11 +74,9 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX proje
     Position position;
     Index index=*iterator;
     temp_Map.getPosition(index, position);
-    //std::cout << "possible_location5" << std::endl;
     if(temp_Map.atPosition("temp", position)==0){
       IG_view+=getCellEntropy(position);
     }
-    //std::cout << "yes" << std::endl;
    // std::cout << "loc: " << position << "  value: "<< temp_Map.atPosition("temp", position) << " count: " << count << std::endl;
      //std::cout << "loc: " << position << " count: " << count << std::endl;
     count++;
@@ -88,10 +84,10 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX proje
   return IG_view;
 }
 
-void view_evaluator_IG::evaluate(){      //TOFIX project FOV from camera center not drone center
+void view_evaluator_IG::evaluate(){
 
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
-   info_utilities_.clear();
+  info_utilities_.clear();
 
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 

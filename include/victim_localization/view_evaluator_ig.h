@@ -30,9 +30,9 @@ public:
    view_generator_IG *view_gen_;
    Victim_Map_Base *mapping_module_;
 
-protected:
+public:
    ros::NodeHandle nh_;
-   octomap::OcTree *tree_;
+   std::shared_ptr<octomap::OcTree> tree_;
   //ros::NodeHandle nh_private_;
   ros::Subscriber pointcloud_sub_;
 

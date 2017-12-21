@@ -22,7 +22,7 @@ public:
   Eigen::Vector3d boundingbox_;
 
   std::string methodName(void);
-  bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
+  bool GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path);
   void start(){};
 
 };

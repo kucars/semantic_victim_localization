@@ -9,6 +9,7 @@
 #include <victim_localization/victim_map_combined.h>
 #include <control/vehicle_control_base.h>
 #include <control/vehicle_control_iris.h>
+#include <control/drone_communicator.h>
 #include <victim_localization/victim_detector_base.h>
 #include <ssd_keras/ssd_detection_with_ecludian_clustering.h>
 #include <victim_localization/victim_thermal_detector.h>
@@ -30,15 +31,13 @@ enum State {
   INITIALIZING,
   IDLE,
   STARTING_ROBOT, STARTING_ROBOT_COMPLETE,
-  UPDATE_MAP, UPDATE_MAP_COMPLETE,
+  START_MAP_UPDATE, UPDATE_MAP_COMPLETE,
   NAVIGATION, NAVIGATION_COMPLETE,
   MOVING, MOVING_COMPLETE,
   VIEWPOINT_EVALUATION,
   VIEWPOINT_EVALUATION_COMPLETE,
   VIEWPOINT_GENERATION,
   VIEWPOINT_GENERATION_COMPLETE,
-  STARTING_DETECTION,
-  DETECTION_COMPLETE,
   TERMINATION_MET,
   TERMINATION_NOT_MET,
 };
@@ -53,8 +52,10 @@ public:
   ros::NodeHandle nh;
   ros::NodeHandle nh_private;
   ros::Publisher  pub_iteration_info;
+  TimeProfiler timer;
 
-  VehicleControlBase *vehicle_;
+
+  drone_communicator *drone_communicator_;
   Victim_Map_Base *Map_;
   RayTracing *Ray;
   nbv_history *history_;
@@ -62,11 +63,18 @@ public:
   volumetric_mapping::OctomapManager *manager_;
   Volumetric_Map *Occlusion_Map_;
   costmap_2d::Costmap2DROS *CostMapROS_;
-
   victim_detector_base *detector_;
+
+  int map_type;
+  int nav_type;
+  ros::Rate NBV_loop_rate;
 
   //Navigation
   navigationBase *navigation_;
+  double grid_size_x,grid_size_y;
+  double grid_origin_x,grid_origin_y;
+  nav_msgs::Path path_to_waypoint;
+
 
   view_generator_IG *view_generate_;
   view_evaluator_IG *View_evaluate_;

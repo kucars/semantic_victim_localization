@@ -32,11 +32,15 @@ view_generator_IG::view_generator_IG():
   ros::param::param("~bounding_box_z", boundingbox_z_, 0.2);
   ros::param::param("~overshoot", dOvershoot_, 0.25);
 
+  nav_type = 1; // 1 is straight line , 2 is reactive planner
+  if (!ros::param::get(ros::this_node::getName() + "/nav_type", nav_type)) {
+    ROS_WARN( "navigation type is unknown for the view generator, default value is set to",
+              std::string(ros::this_node::getName() + "/nav_type"));
+  }
   ros::NodeHandle nh_;
 
   pub_view_marker_array_ = nh_.advertise<visualization_msgs::MarkerArray>("generated_pose_marker_array", 10);
   pub_view_drone_marker_ = nh_.advertise<visualization_msgs::Marker>("drone_marker", 10);
-
 }
 
 bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
@@ -53,17 +57,9 @@ bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
 
 bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 {
-  double resl= manager_->octree_->getResolution();
+  double resl= manager_->getResolution();
   double box_size= obj_bounds_x_max_;
   double Occupied_threshold= 0.8;
-
-  // check that the point in sampled at vacant area of the 2D occlusion map
-  octomap::OcTreeKey key_= occlusion_map->m_octree->coordToKey(p.position.x,p.position.y,p.position.z);
-
-  // if (occlusion_map->Get2DMapValue(key_) != 0)
-  // { std::cout << "rejected by occluson_map" << std::endl;
-  //  return false;
-  // }
 
 
   // check that the box (of size 1m^3) around the sampled point has not occlusion
@@ -71,26 +67,26 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
   for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
     for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
       for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
-        octomap::OcTreeNode* node = manager_->octree_->search(i,j,k);
-        if (node==NULL) continue; // if the point does not exist in Octomap, skip it...
-        if ((node->getOccupancy() >= 0.8)) return false;
+         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))==0) continue; // if the cell is not free , return false
+         return false;
       }
     }
   }
 
   return true;
-}
+}   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
+
 
 
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
 {
   if (!isInsideBounds(p) ){
-    //std::cout << "rejectedbyvalidity" << std::endl;
+    std::cout << "rejectedbyvalidity" << std::endl;
     return false;
   }
 
   if (!isSafe(p)){
-    //std::cout << "rejectedbySafety" << std::endl;
+    std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
 
@@ -99,7 +95,15 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
     return false;
   }
 
-  /*
+if (nav_type==1) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+  if (isCollide(p)){
+    std::cout << "rejectedbycollision" << std::endl;
+  return true;
+}
+}
+
+bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
+
   // Check for collision of new connection plus some overshoot distance.
   boundingbox_[0]=boundingbox_x_;
   boundingbox_[1]=boundingbox_y_;
@@ -108,10 +112,10 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
   Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
   Eigen::Vector3d direction(p.position.x - origin[0], p.position.y - origin[1],
       p.position.z - origin[2]);
-  if (direction.norm() > extensionRange_)
-  {
-    direction = extensionRange_ * direction.normalized();
-  }
+ // if (direction.norm() > extensionRange_)
+ // {
+ //   direction = extensionRange_ * direction.normalized();
+ // }
 
   volumetric_mapping::OctomapManager::CellStatus cellStatus;
   //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
@@ -120,15 +124,12 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
         direction + origin + direction.normalized() * dOvershoot_,
         boundingbox_);
   //std::cout << "status is: " << cellStatus << std::endl;
-  if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)// || cellStatus == volumetric_mapping::OctomapManager::CellStatus::kUnknown)
-    return true;
+  if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)
+    return false;
 
-  return false;
-  */
   return true;
 
 }
-
 
 void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
 {
@@ -287,18 +288,15 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
 
   double currX = current_pose_.position.x;
   double currY = current_pose_.position.y;
-  double currZ = current_pose_.position.z;  // the
+  double currZ = current_pose_.position.z;
   double currYaw = pose_conversion::getYawFromQuaternion(current_pose_.orientation);
 
 
   //Generating 3-D state lattice as z-axis movement is restrained (fixed)
-  int cnt=0;
   for (int i_x=-1; i_x<=1; i_x++)
   {
     for (int i_y=-1; i_y<=1; i_y++)
     {
-      // for (int i_z=-5; i_z<=5; i_z++)
-      //{
       for (int i_yaw=-1; i_yaw<=1; i_yaw++)
       {
         // Do not generate any viewpoints in current location
@@ -312,15 +310,11 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
         geometry_msgs::Pose p;
         p.position.x = currX + res_x_*i_x*cos(currYaw) + res_y_*i_y*sin(currYaw);
         p.position.y = currY - res_x_*i_x*sin(currYaw) + res_y_*i_y*cos(currYaw);
-        p.position.z = 1.0 ;//+ res_z_*i_z; // z-axis movement is fixed
+        p.position.z = uav_fixed_height ;//+ res_z_*i_z; // z-axis movement is fixed
 
         p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + res_yaw_*i_yaw);
         initial_poses.push_back(p);
-        // std::cout << "Pose Number " << cnt << std::endl;
-        //std::cout << p << "\n";
-        // cnt++;
       }
-      // }
     }
   }
 

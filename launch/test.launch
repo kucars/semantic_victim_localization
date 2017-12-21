@@ -25,7 +25,6 @@
 
     <arg name="sdfRobot" default="$(find victim_localization)/urdf/$(arg vehicle)/iris_with_sensors.sdf" />
 
-
     <include file="$(find victim_localization)/launch/posix_sitl.launch">
         <arg name="x" value="$(arg x)"/>
         <arg name="y" value="$(arg y)"/>

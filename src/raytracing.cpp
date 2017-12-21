@@ -184,8 +184,6 @@ double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
 
 grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_)
 {
-  //  // Source: Borrowed partially from
-  //  // https://github.com/uzh-rpg/rpg_ig_active_reconstruction/blob/master/ig_active_reconstruction_octomap/src/code_base/octomap_basic_ray_ig_calculator.inl
   update();
   computeRaysAtPose(p_);
   grid_map::GridMap Pose_map;
@@ -255,13 +253,13 @@ grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
 
      // std::cout << "possible_location1" << std::endl;
 
+     // here you need to add the check box ( 1m up and 1m down the drone pose)
       double prob = getNodeOccupancy(node);
       if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
       if (prob < 0.2)
         if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
     }
-
     }
 
 
@@ -271,6 +269,8 @@ grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
          octomap::OcTreeNode* node = tree_->search(end_key);
          octomap::point3d p = tree_->keyToCoord(end_key);
          Position position(p.x(),p.y());
+
+        if (!isInsideRegionofInterest(p.z())) continue;
 
         if (!isInsideBounds(position)) continue;
 
@@ -310,3 +310,12 @@ bool RayTracing::isInsideBounds(Position p)
   return true;
 }
 
+bool RayTracing::isInsideRegionofInterest(double z , double tolerance)
+{
+  if (z > current_pose_.position.z+tolerance  ||
+      z < current_pose_.position.z-tolerance)
+    return false;
+
+
+  return true;
+}

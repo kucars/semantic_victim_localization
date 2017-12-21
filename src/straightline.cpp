@@ -15,7 +15,7 @@
   ros::param::param("~overshoot", dOvershoot_, 0.25);
 }
 
-bool straightLine::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path)
+bool straightLine::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
 {
  if (getDistance(current_pose_,end)< d_close ) // terminate if the end pose is at the robot current pose
    return false;
@@ -48,7 +48,12 @@ bool straightLine::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_ms
  if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)// || cellStatus == volumetric_mapping::OctomapManager::CellStatus::kUnknown)
  {
    return true;
-   Path.push_back(end);
+
+   geometry_msgs::PoseStamped ps_;
+   ps_.header.frame_id="world";
+   ps_.header.stamp=ros::Time::now();
+   ps_.pose=end;
+   Path.poses.push_back(ps_);
  }
  return false;
 }

@@ -89,5 +89,12 @@ void ReactivePathPlanner::start()
   std::cout << "plannner runne4d..." << std::endl;
 }
 
+void ReactivePathPlanner::SetDynamicGridSize(double x, double y, double z)
+{
+  reactivePlannerServer->SetDynamicGridSize(x,y,z);
+}
 
-
+void ReactivePathPlanner::SetOriginPose(double x, double y, double z)
+{
+  reactivePlannerServer->SetOriginPose(x,y,z);
+}

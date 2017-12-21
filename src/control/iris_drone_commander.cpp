@@ -104,7 +104,6 @@ void iris_drone_commander::Takeoff()
   ROS_INFO("Moving vehicle");
   vehicle_->moveVehicle(1.0);
   ROS_INFO("Done moving");
-
 }
 
 bool iris_drone_commander::execute_rotation(victim_localization::rotate_action::Request &request,

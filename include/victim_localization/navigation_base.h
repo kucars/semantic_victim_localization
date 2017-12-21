@@ -6,6 +6,7 @@
 #include <ros/ros.h>
 #include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
+#include <nav_msgs/Path.h>
 #include <tf_conversions/tf_eigen.h>
 #include <victim_localization/volumetric_map_manager.h>
 #include <octomap_world/octomap_manager.h>
@@ -33,11 +34,11 @@ public:
   void setCurrentPose(geometry_msgs::Pose p);
 
   virtual std::string methodName(void);
-  virtual bool GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path);
+  virtual bool GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path);
 
   virtual void start(){};
-
-
+  virtual void SetDynamicGridSize(double x, double y,double z){};
+  virtual void SetOriginPose(double x, double y,double z){};
 
 };
 

@@ -25,7 +25,7 @@ double navigationBase::getDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p
     (p1.position.z-p2.position.z)*(p1.position.z-p2.position.z) );
 }
 
-bool navigationBase::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path)
+bool navigationBase::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
 {
   std::cout << "[Warning:] " << cc.red << " Navigation method is the Base\n" << cc.reset;
   return false;

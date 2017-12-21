@@ -57,7 +57,7 @@ public:
   double tree_resolution;
   Eigen::Matrix3d camera_rotation_mtx_; // Camera rotation mtx
 
-  std::vector<Eigen::Vector3d> rays_far_plane_;
+std::vector<Eigen::Vector3d> rays_far_plane_;
 std::vector<octomap::point3d> rays_far_plane_at_pose_;
 
 double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
@@ -74,10 +74,10 @@ bool isInsideBounds(Position p);
 
 protected:
 
-  void   update();
+  void  update();
   bool isEntropyLow();
   bool isNodeInBounds(octomap::OcTreeKey &key);
- bool isNodeFree(octomap::OcTreeNode node);
+  bool isNodeFree(octomap::OcTreeNode node);
   bool isNodeOccupied(octomap::OcTreeNode node);
   bool isNodeUnknown(octomap::OcTreeNode node);
   bool isPointInBounds(octomap::point3d &p);
@@ -87,8 +87,7 @@ protected:
   int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
-
-public:
+  bool  isInsideRegionofInterest(double z , double tolerance=1);
 
 };
 
