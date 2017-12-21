@@ -43,6 +43,8 @@ protected:
   double current_yaw_;
   std::string MapLayer;
   geometry_msgs::Pose selected_pose_;
+  double info_distance_total_;
+  std::vector<double> info_utilities_;
 
   double HFOV_deg;
   double VFOV_deg;
@@ -55,9 +57,10 @@ protected:
   double tree_resolution;
   double const_;
   double calculateIG(geometry_msgs::Pose p);
-
-  double calculateIG_New(geometry_msgs::Pose p);
   double getCellEntropy(Position cell_);
+  double calculateDistance(geometry_msgs::Pose p);
+  std::string getMethodName();
+
 
 
 

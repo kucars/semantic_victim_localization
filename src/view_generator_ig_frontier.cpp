@@ -234,3 +234,7 @@ std::vector<geometry_msgs::Pose> view_generator_ig_frontier::setYawtoViewpoint(g
    return Frontier_with_yaws;
 }
 
+std::string view_generator_ig_frontier::getMethodName()
+{
+  return "forntier";
+}

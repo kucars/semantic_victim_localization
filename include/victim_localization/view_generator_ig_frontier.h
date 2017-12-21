@@ -44,6 +44,7 @@ public:
   void resetMaps();
   void setupMapData();
   void setCostMapROS(costmap_2d::Costmap2DROS *CostMapROS_);
+  std::__cxx11::string getMethodName();
 
   costmap_2d::Costmap2DROS* costmap_ros_;
 

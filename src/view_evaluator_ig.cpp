@@ -14,7 +14,8 @@
 #include <victim_localization/victim_map_base.h>
 
 view_evaluator_IG::view_evaluator_IG():
-  info_selected_utility_(-std::numeric_limits<float>::infinity()) //-inf
+  info_selected_utility_(-std::numeric_limits<float>::infinity()), //-inf
+  info_distance_total_(0)
 {
   ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
   ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
@@ -60,7 +61,6 @@ void view_evaluator_IG::update_parameters()
 
     for (grid_map::GridMapIterator iterator(mapping_module_->map); !iterator.isPastEnd(); ++iterator)
      info_entropy_total_+=mapping_module_->map.at(mapping_module_->layer_name,*iterator);
-
 }
 
 double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX project FOV from camera center not drone center
@@ -91,12 +91,19 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){      //TOFIX proje
 void view_evaluator_IG::evaluate(){      //TOFIX project FOV from camera center not drone center
 
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
-   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
+   info_utilities_.clear();
+
+  selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
         double utility = calculateIG(p);
+
+        if (utility>=0)
+    info_utilities_.push_back(utility);
+
+        // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
         {
          info_selected_utility_ = utility;
@@ -111,6 +118,8 @@ void view_evaluator_IG::evaluate(){      //TOFIX project FOV from camera center 
        }
 
       view_gen_->visualize(view_gen_->generated_poses, view_gen_->rejected_poses,selected_pose_);
+
+ info_distance_total_ += calculateDistance(selected_pose_);
 }
 
 geometry_msgs::Pose view_evaluator_IG::getTargetPose()
@@ -119,6 +128,19 @@ geometry_msgs::Pose view_evaluator_IG::getTargetPose()
 }
 
 
+double view_evaluator_IG::calculateDistance(geometry_msgs::Pose p)
+{
+  return sqrt(
+        (p.position.x-current_pose_.position.x)*(p.position.x-current_pose_.position.x) +
+        (p.position.y-current_pose_.position.y)*(p.position.y-current_pose_.position.y) +
+        (p.position.z-current_pose_.position.z)*(p.position.z-current_pose_.position.z)
+        );
+}
+
+std::string view_evaluator_IG::getMethodName()
+{
+  return "IG";
+}
 
 
 

@@ -64,7 +64,7 @@ public:
   //generate views
   void generateViews(bool check);
   virtual void generateViews(); //viewpoints is  generated at current pose
-
+  virtual std::__cxx11::string getMethodName();
 
  //visualize
   void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
@@ -74,7 +74,7 @@ public:
 
   bool ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2);
   void visualizeDrawSphere(geometry_msgs::Pose p, double r);
-  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
+   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
 
 };

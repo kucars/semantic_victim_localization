@@ -23,7 +23,7 @@
 #include <victim_localization/reactive_path_planner.h>
 #include <victim_localization/straightline.h>
 
-
+#include "victim_localization/IterationInfo.h"
 
 namespace NBVState {
 enum State {
@@ -52,6 +52,7 @@ class TestNBZ
 public:
   ros::NodeHandle nh;
   ros::NodeHandle nh_private;
+  ros::Publisher  pub_iteration_info;
 
   VehicleControlBase *vehicle_;
   Victim_Map_Base *Map_;

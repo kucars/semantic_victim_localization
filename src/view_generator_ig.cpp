@@ -357,5 +357,7 @@ void view_generator_IG::setOcclusionMap(Volumetric_Map* Occ)
   occlusion_map = Occ;
 }
 
-
-
+std::string view_generator_IG::getMethodName()
+{
+  return "IG_Base";
+}

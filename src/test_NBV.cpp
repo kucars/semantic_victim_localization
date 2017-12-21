@@ -16,6 +16,7 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
     // Initialization
     // >>>>>>>>>>>>>>>>>
     //ros::NodeHandle nh_private("~");
+   pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("nbv_exploration/iteration_info", 10);
     state = NBVState::INITIALIZING;
     ROS_INFO("test_NBZ: Begin!");
 }
@@ -114,7 +115,6 @@ void TestNBZ::initParameters(){
   view_generate_->setOctomapManager(manager_);
   View_evaluate_->setMappingModule(Map_);
   View_evaluate_->setViewGenerator(view_generate_);
-
 }
 
 void TestNBZ::updateHistory()
@@ -123,6 +123,25 @@ void TestNBZ::updateHistory()
     history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
     history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
     history_->update();
+
+    // Publish information about this iteration
+      if (pub_iteration_info.getNumSubscribers() > 0)
+      {
+        victim_localization::IterationInfo iteration_msg;
+        iteration_msg.iteration        = history_->iteration;
+        iteration_msg.distance_total   = View_evaluate_->info_distance_total_;
+        iteration_msg.entropy_total    = View_evaluate_->info_entropy_total_;
+
+        iteration_msg.method_generation= view_generate_->getMethodName();
+        iteration_msg.method_selection = View_evaluate_->getMethodName();
+        iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
+        iteration_msg.selected_utility                 = View_evaluate_->info_selected_utility_;
+        iteration_msg.utilities        = View_evaluate_->info_utilities_;
+
+        iteration_msg.time_iteration   = timer.getLatestTime("[NBVLoop]Iteration");
+
+         pub_iteration_info.publish(iteration_msg);
+}
 }
 
 void TestNBZ::evaluateViewpoints()
@@ -236,10 +255,12 @@ void TestNBZ::UpdateMap()
     state = NBVState::VIEWPOINT_GENERATION_COMPLETE;
 }
 
-void TestNBZ::runStateMachine(){
+void TestNBZ::runStateMachine()
+{
   ROS_INFO("test_NBZ: Starting vehicle. Waiting for current position information.");
  state = NBVState::STARTING_ROBOT;
 
+ timer.start("NBV: Total Time");
  ros::Rate loop_rate(30);
    while (ros::ok())
    {
@@ -270,6 +291,7 @@ void TestNBZ::runStateMachine(){
        break;
 
      case (NBVState::DETECTION_COMPLETE):
+       timer.start("[NBVLoop]Iteration");
        state = NBVState::UPDATE_MAP;
        UpdateMap();
        if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
@@ -293,12 +315,22 @@ void TestNBZ::runStateMachine(){
      case NBVState::NAVIGATION_COMPLETE:
        vehicle_->moveVehicle(1.0);
        updateHistory();
+       timer.stop("[NBVLoop]Iteration");
        state = NBVState::STARTING_DETECTION;
        break;
      }
      ros::spinOnce();
-     loop_rate.sleep();
+     loop_rate.sleep();     
  }
+   timer.stop("NBV: Total Time");
+
+   // Dump time data
+   timer.dump();
+
+
+   // Clean up
+   std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
+   ros::shutdown();
 }
 
 
