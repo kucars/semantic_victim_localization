@@ -7,7 +7,7 @@ victim_map_DL::victim_map_DL():
   detector_ = new SSD_Detection_with_clustering();
 
   ros::param::param<std::string>("~map_topic_DL", map_topic , "victim_map/grid_map_DL");
-  ros::param::param<double>("~map_resol_DL", map_resol , 0.5);
+  ros::param::param<double>("~map_resol_DL", map_resol , 1.0);
 
   // Create grid map
   map.setFrameId("map");

@@ -90,6 +90,7 @@ add_service_files(
   rotate_action.srv
   waypoint_action.srv
   path_action.srv
+  status_action.srv
 )
 
 generate_messages(

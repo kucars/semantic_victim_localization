@@ -7,6 +7,7 @@
 #include "victim_localization/rotate_action.h"
 #include "victim_localization/waypoint_action.h"
 #include "victim_localization/path_action.h"
+#include "victim_localization/status_action.h"
 
 namespace Command {
 enum State {
@@ -28,12 +29,11 @@ public:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
   ros::Publisher  localPosePub;
-  ros::Publisher CommandStatusPub;
 
   ros::Publisher  waypoint_status;
   ros::Publisher path_status;
 
-  std_msgs::Bool command_status;
+  bool command_status;
   Command::State state;
 
   geometry_msgs::PoseStamped hoverPose;
@@ -43,7 +43,7 @@ public:
   ros::ServiceServer service_rotation;
   ros::ServiceServer service_waypoint;
   ros::ServiceServer service_path;
-
+  ros::ServiceServer service_status;
   void Takeoff();
   void rotate();
   void start();
@@ -55,6 +55,9 @@ public:
 
   bool execute_path(victim_localization::path_action::Request &request,
                      victim_localization::path_action::Response &respond);
+
+  bool check_status(victim_localization::status_action::Request &request,
+                     victim_localization::status_action::Response &respond);
 
 };
 

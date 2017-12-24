@@ -67,12 +67,12 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
   for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
     for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
       for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
-         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))==0) continue; // if the cell is not free , return false
+         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))!=1) continue; // if the cell is not free , return false
+         std::cout << manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))<< std::endl;
          return false;
       }
     }
   }
-
   return true;
 }   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
 
@@ -95,11 +95,13 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
     return false;
   }
 
-if (nav_type==1) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
     std::cout << "rejectedbycollision" << std::endl;
-  return true;
+  return false;
 }
+
+return true;
 }
 
 bool view_generator_IG::isCollide(geometry_msgs::Pose p) {

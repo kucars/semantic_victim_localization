@@ -105,7 +105,7 @@ void VehicleControlIris::moveVehicle(double threshold_sensitivity)
   setpoint_world = transformSetpoint2Global(setpoint_);
 
   // Wait till we've reached the waypoint
-  ros::Rate rate_(30);
+  ros::Rate rate_(10);
   while(ros::ok() && (!isNear(setpoint_world, vehicle_current_pose_, threshold_sensitivity) || !isStationary(threshold_sensitivity) ) )
   {
     pub_setpoint.publish(ps);
@@ -185,7 +185,7 @@ void VehicleControlIris::rotateOnTheSpot(){
   rotatingPose.pose.position.z = vehicle_current_pose_.position.z;
   int seqNum=0 ;
   double angleStep  = 0.05;
-  double angle = 0;
+  double angle = 3.14;
   bool done = false;
   double deltaTime = 1.0;
   ros::Time lastTimeTurnTime = ros::Time::now();
@@ -231,8 +231,8 @@ void VehicleControlIris::rotateOnTheSpot(double x, double y, double z){
   rotatingPose.pose.position.y = y;
   rotatingPose.pose.position.z = z;
   int seqNum=0 ;
-  double angleStep  = 0.05;
-  double angle = 0;
+  double yawStep  = 0.05;
+  double yaw = 0;
   bool done = false;
   double deltaTime = 1.0;
   ros::Time lastTimeTurnTime = ros::Time::now();
@@ -243,33 +243,130 @@ void VehicleControlIris::rotateOnTheSpot(double x, double y, double z){
     if(ros::Time::now() - lastTimeTurnTime > ros::Duration(deltaTime))
     {
       ROS_INFO_THROTTLE(0.2,"Turning around");
-      tf::Quaternion quat = tf::Quaternion(tf::Vector3(0.0, 0.0, 1.0), angle);
+      geometry_msgs::Quaternion quat = pose_conversion::getQuaternionFromYaw(yaw);
+      setpoint_.position.x    = x;
+      setpoint_.position.y    = y;
+      setpoint_.position.z    = z;
 
-      setpoint_.position.x    = rotatingPose.pose.position.x;
-      setpoint_.position.y    = rotatingPose.pose.position.y;
-      setpoint_.position.z    = rotatingPose.pose.position.z;
-      setpoint_.orientation.x = quat[0] ;
-      setpoint_.orientation.y = quat[1] ;
-      setpoint_.orientation.z = quat[2] ;
-      setpoint_.orientation.w = quat[3] ;
+      setpoint_.orientation.x = quat.x ;
+      setpoint_.orientation.y = quat.y ;
+      setpoint_.orientation.z = quat.z ;
+      setpoint_.orientation.w = quat.w ;
       //ROS_INFO("   - Trying to  rotate to: [%f %f %f %f]",setpoint_.pose.position.x,setpoint_.pose.position.y,setpoint_.pose.position.z,180*angle/M_PI);
       //ROS_INFO("   - Current Pose      is: [%f %f %f]",currentPose.pose.position.x,currentPose.pose.position.y,currentPose.pose.position.z);
-      angle+=(angleStep*2.0*M_PI);
-      if(angle>=2.0*M_PI) break;
+
+      ROS_INFO("the values are x_pos %f, y_pos %f, yaw %f", setpoint_.position.x,setpoint_.position.y,yaw);
+
+      yaw-=(yawStep*2.0*M_PI);
+      if(yaw<=-2*M_PI) break;
       lastTimeTurnTime = ros::Time::now();
     }
 
-    geometry_msgs::PoseStamped ps;
-    ps.header.frame_id = "base_link";
-    ps.header.stamp = ros::Time::now();
-    ps.pose = setpoint_;
+     geometry_msgs::PoseStamped ps;
+     ps.header.frame_id = "base_link";
+     ps.header.stamp = ros::Time::now();
+     ps.pose = setpoint_;
 
-    pub_setpoint.publish(ps);
-    ros::spinOnce();
-    rate.sleep();
+     pub_setpoint.publish(ps);
+     ros::spinOnce();
+     rate.sleep();
   }
 }
 
+void VehicleControlIris::Evaluate4Points(double x, double y, double z){
+
+  ROS_INFO("Perfroming -- 4Points Evaluation");
+
+  // generate four points
+  std::vector <geometry_msgs::Pose> FourPoints;
+  geometry_msgs::Pose p;
+  p.position.x= x+0.5;
+  p.position.y= y;
+  p.position.z = z;
+  p.orientation= pose_conversion::getQuaternionFromYaw(M_PI);
+  FourPoints.push_back(p);
+  p.position.x= x+0.5;
+  p.position.y= y;
+  p.position.z = z;
+  p.orientation= pose_conversion::getQuaternionFromYaw(M_PI/2);
+  FourPoints.push_back(p);
+  p.position.x= x;
+  p.position.y= y-0.5;
+  p.orientation = pose_conversion::getQuaternionFromYaw(M_PI/2);
+  FourPoints.push_back(p);
+  p.position.x= x;
+  p.position.y= y-0.5;
+  p.orientation = pose_conversion::getQuaternionFromYaw(0);
+  FourPoints.push_back(p);
+  p.position.x= x-0.5;
+  p.position.y= y;
+  p.orientation = pose_conversion::getQuaternionFromYaw(0);
+  FourPoints.push_back(p);
+  p.position.x= x-0.5;
+  p.position.y= y;
+  p.orientation = pose_conversion::getQuaternionFromYaw(-M_PI/2);
+  FourPoints.push_back(p);
+  p.position.x= x;
+  p.position.y= y+0.5;
+  p.orientation = pose_conversion::getQuaternionFromYaw(-M_PI/2);
+  FourPoints.push_back(p);
+
+  for (int i=0; i<FourPoints.size(); i++)
+  {
+    setWaypoint(FourPoints[i]);
+    moveVehicle(2);
+  }
+}
+/*
+ *   while(ros::ok())
+  {
+    if(ros::Time::now() - lastTimeTurnTime > ros::Duration(deltaTime))
+    {
+      ROS_INFO_THROTTLE(0.2,"Turning around");
+      geometry_msgs::Quaternion quat = pose_conversion::getQuaternionFromYaw(yaw);
+      if (x_inc_step<= 2*circleRadius)
+      {
+      setpoint_.position.x    = x - circleRadius + x_inc_step;
+      setpoint_.position.y    =sqrt(pow(circleRadius,2) - pow(x - setpoint_.position.x,2))+y;
+      setpoint_.position.z    = rotatingPose.pose.position.z;
+      x_poses.push_back(setpoint_.position.x);
+      y_poses.push_back(setpoint_.position.y);
+      }
+      else
+      {
+      x_poses.pop_back();
+      y_poses.pop_back();
+      setpoint_.position.x    = x_poses.back();
+      setpoint_.position.y    = y -(y_poses.back()-y);
+      setpoint_.position.z    = rotatingPose.pose.position.z;
+      }
+      setpoint_.orientation.x = quat.x ;
+      setpoint_.orientation.y = quat.y ;
+      setpoint_.orientation.z = quat.z ;
+      setpoint_.orientation.w = quat.w ;
+      //ROS_INFO("   - Trying to  rotate to: [%f %f %f %f]",setpoint_.pose.position.x,setpoint_.pose.position.y,setpoint_.pose.position.z,180*angle/M_PI);
+      //ROS_INFO("   - Current Pose      is: [%f %f %f]",currentPose.pose.position.x,currentPose.pose.position.y,currentPose.pose.position.z);
+
+      ROS_INFO("the values are x_pos %f, y_pos %f, yaw %f", setpoint_.position.x,setpoint_.position.y,yaw);
+
+      yaw-=(yawStep*2.0*M_PI);
+      x_inc_step+=(positionStep*2.0*circleRadius);
+      if(yaw<=-2*M_PI) break;
+      lastTimeTurnTime = ros::Time::now();
+    }
+
+     geometry_msgs::PoseStamped ps;
+     ps.header.frame_id = "base_link";
+     ps.header.stamp = ros::Time::now();
+     ps.pose = setpoint_;
+
+     pub_setpoint.publish(ps);
+     ros::spinOnce();
+     rate.sleep();
+    //moveVehicle(0.8);
+  }
+}
+*/
 void VehicleControlIris::setWaypointIncrement(double x, double y, double z, double yaw)
 {
   geometry_msgs::Pose setpoint_world;
@@ -288,7 +385,7 @@ void VehicleControlIris::setWaypointIncrement(double x, double y, double z, doub
 }
 
 
-void VehicleControlIris::start(double x, double y, double z)
+void VehicleControlIris::start(double x, double y, double z, double yaw)
 {
   ros::Rate rate(10);
   while(ros::ok() && !is_ready_)
@@ -300,10 +397,10 @@ void VehicleControlIris::start(double x, double y, double z)
 
   // Take off
   std::cout << cc.green << "Taking off\n" << cc.reset;
-  setWaypoint(x,y,0.3,0);
+  setWaypoint(x,y,0.3,yaw);
   setOffboardState();
   moveVehicle(1);
-  setWaypoint(x,y,z,0);
+  setWaypoint(x,y,z,yaw);
 
 
   std::cout << cc.green << "Done taking off\n" << cc.reset;

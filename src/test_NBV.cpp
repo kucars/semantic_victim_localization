@@ -13,11 +13,10 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
   nh_private(nh_private_),
   NBV_loop_rate(30)
 {
+    pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
     // >>>>>>>>>>>>>>>>>
     // Initialization
     // >>>>>>>>>>>>>>>>>
-    //ros::NodeHandle nh_private("~");
-    pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("nbv_exploration/iteration_info", 10);
     state = NBVState::INITIALIZING;
     ROS_INFO("test_NBZ: Begin!");
 }
@@ -154,7 +153,13 @@ void TestNBZ::navigate()
   switch(nav_type)
   {
   default:
-  case 0:  // move through path if reactive planner is used
+  case 0: // move to waypoint if strigntline navigation is used
+    std::cout << "now exectuing waypoint...." << std::endl;
+    drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose());
+    break;
+
+
+  case 1:  // move through path if reactive planner is used
     path_to_waypoint.poses.clear();
     Occlusion_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     navigation_->SetDynamicGridSize(grid_size_x,grid_size_y,0);
@@ -169,21 +174,19 @@ void TestNBZ::navigate()
     else {
       printf("path Not Found...\n");
     }
-    break;
-  case 1: // move to waypoint if strigntline navigation is used
-    drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose());
-    break;
+  break;
   }
+
+  if (!drone_communicator_->GetStatus())
+  {
   std::cout << "[test_NBZ] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
-
-
   // wait for the drone commander node until it moves the drone to the viewpoint
  while (ros::ok() && !drone_communicator_->GetStatus())
- {
+   {
    ros::spinOnce();
    NBV_loop_rate.sleep();
- }
-
+   }
+   }
    std::cout << "[test_NBZ] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
    state = NBVState::NAVIGATION_COMPLETE;
 }
@@ -199,6 +202,7 @@ void TestNBZ::generateViewpoints()
    std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
 
   view_generate_->setCurrentPose(drone_communicator_->GetPose());
+ // std::cout << "curretn pose: " << drone_communicator_->GetPose() <<" "<< std::endl;
   view_generate_->generateViews();
 
   if (view_generate_->generated_poses.size() == 0)
@@ -251,12 +255,11 @@ void TestNBZ::runStateMachine()
      case NBVState::STARTING_ROBOT:
      if (!drone_communicator_->GetStatus())
        break; // check if the drone is ready from drone commander node
-     state = NBVState::STARTING_ROBOT_COMPLETE;
+     state = NBVState::START_MAP_UPDATE;
        break;
 
-       case (NBVState::STARTING_ROBOT_COMPLETE):
-       state=NBVState::START_MAP_UPDATE; // detect and update map
-       timer.start("[NBVLoop]Iteration");
+       case NBVState::START_MAP_UPDATE:
+       timer.start("[NBVLoop]Iteration");  // detect and update map
        UpdateMap();
        if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
        break;
@@ -298,8 +301,6 @@ void TestNBZ::runStateMachine()
    std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
    ros::shutdown();
 }
-
-
 
 
 int main(int argc, char **argv)

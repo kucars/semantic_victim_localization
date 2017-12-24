@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from victim_localizaton.msg import IterationInfo
+from victim_localization.msg import IterationInfo
 from numpy import mean, array, hypot, diff, convolve, arange, sin, cos, ones, pi, matrix
 import time
 import signal
@@ -106,8 +106,6 @@ def callback(data):
   entropy_total[method].append(data.entropy_total)
   distance[method].append(data.distance_total)
   time_iteration[method].append(data.time_iteration)
-  time_generation[method].append(data.time_generation)
-  time_selection[method].append(data.time_selection)
   selected_utility[method].append(data.selected_utility)
 
   entropy_change = '';

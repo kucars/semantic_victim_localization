@@ -31,7 +31,7 @@ public:
 
   VehicleControlBase();
   virtual void initialize(){};
-  virtual void start(double x, double y, double z){};
+  virtual void start(double x, double y, double z, double yaw){};
   virtual void setOffboardState(geometry_msgs::PoseStamped ps){};
   virtual bool isReady(){};
   virtual bool isStationary(double threshold_sensitivity){};

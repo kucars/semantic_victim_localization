@@ -8,6 +8,7 @@
 #include "victim_localization/rotate_action.h"
 #include "victim_localization/path_action.h"
 #include "victim_localization/waypoint_action.h"
+#include "victim_localization/status_action.h"
 
 
 namespace Command {
@@ -37,10 +38,12 @@ public:
   ros::ServiceClient clientExecuteRotation ;
   ros::ServiceClient clientExecuteWaypoint;
   ros::ServiceClient clientExecutePath;
+  ros::ServiceClient ClientCheckStatus;
 
   victim_localization::rotate_action rotate_srv;
   victim_localization::waypoint_action waypoint_srv;
   victim_localization::path_action path_srv;
+  victim_localization::status_action status_srv;
 
   geometry_msgs::Pose Waypoint_;
   nav_msgs::Path Path_;
@@ -57,7 +60,6 @@ public:
 
   bool Execute_waypoint(geometry_msgs::Pose p);
   bool Execute_path(nav_msgs::Path path);
-
 };
 
 #endif // DRONE_COMMUNICATOR_H

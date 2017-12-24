@@ -128,7 +128,7 @@ void VehicleControlFloatingSensor::setWaypointIncrement(double x, double y, doub
 }
 
 
-void VehicleControlFloatingSensor::start(double x, double y, double z)
+void VehicleControlFloatingSensor::start(double x, double y, double z, double yaw)
 {
   ros::Rate rate(10);
   while(ros::ok() && !is_ready_)

@@ -45,9 +45,11 @@ public:
   void setWaypoint(geometry_msgs::Pose p);
   void setWaypointIncrement(double x, double y, double z, double yaw);
   void setPath(nav_msgs::Path path) ;
-  void start(double x, double y, double z);
+  void start(double x, double y, double z, double yaw);
   void rotateOnTheSpot();
   void rotateOnTheSpot(double x, double y, double z);
+  void Evaluate4Points(double x, double y, double z);
+
 
   geometry_msgs::Pose getlastSP();
   ros::Time getlastSPTime();
