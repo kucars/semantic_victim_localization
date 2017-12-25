@@ -64,6 +64,7 @@ public:
   std::string topic_pointcloud_  = "/front_cam/depth/points";
   ros::Subscriber pointcloud_sub_;
   costmap_2d::Costmap2DROS *costmap_ros_;
+  costmap_2d::Costmap2D *costmap_;
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;

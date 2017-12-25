@@ -57,7 +57,6 @@ public:
 
   drone_communicator *drone_communicator_;
   Victim_Map_Base *Map_;
-  RayTracing *Ray;
   nbv_history *history_;
 
   volumetric_mapping::OctomapManager *manager_;
@@ -67,6 +66,8 @@ public:
 
   int map_type;
   int nav_type;
+  int view_generator_type;
+
   ros::Rate NBV_loop_rate;
 
   //Navigation
@@ -89,6 +90,7 @@ public:
   void initOctomap();
   void initParameters();
   void initNavigation();
+  void initViewGenerator();
 
 
   void generateViewpoints();

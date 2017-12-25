@@ -14,9 +14,14 @@
 #include <octomap_world/octomap_manager.h>
 #include <victim_localization/nbv_history.h>
 #include <victim_localization/volumetric_map_manager.h>
+#include <grid_map_ros/grid_map_ros.hpp>
+#include <grid_map_msgs/GridMap.h>
+#include <string.h>
 
 
 //typedef geometry_msgs::Pose Pose;
+
+using namespace grid_map;
 
 class view_generator_IG
 {
@@ -38,6 +43,9 @@ public:
   volumetric_mapping::OctomapManager *manager_;
   nbv_history *nbv_history_;
   Volumetric_Map *occlusion_map;
+  costmap_2d::Costmap2D *costmap_;
+  costmap_2d::Costmap2DROS *costmap_ros_;
+
   double obj_bounds_x_max_, obj_bounds_y_max_, obj_bounds_z_max_;
   double obj_bounds_x_min_, obj_bounds_y_min_, obj_bounds_z_min_;
   geometry_msgs::Pose current_pose_;
@@ -61,16 +69,20 @@ public:
   bool isInsideBounds(geometry_msgs::Pose p);
   bool isSafe(geometry_msgs::Pose p);
   bool isCollide(geometry_msgs::Pose p);
-  bool isValidViewpoint(geometry_msgs::Pose p);
+  bool isValidViewpoint(geometry_msgs::Pose p , bool check_safety=true);
+
+  //victim_map parameters
+  grid_map::GridMap victim_map;
+  std::string map_layer;
 
 
   //generate views
   void generateViews(bool check);
   virtual void generateViews(); //viewpoints is  generated at current pose
-  virtual std::__cxx11::string getMethodName();
+  virtual std::string getMethodName();
 
  //visualize
-  void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
+  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
   visualization_msgs::Marker visualizeDeleteArrowMarker(int id);
   visualization_msgs::Marker visualizeCreateArrowMarker(int id, geometry_msgs::Pose pose, bool valid, double max_z = 0, double min_z = 0);
   void visualizeSelectedArrowMarker(geometry_msgs::Pose selected_pose, visualization_msgs::MarkerArray &All_poses);
@@ -79,7 +91,8 @@ public:
   void visualizeDrawSphere(geometry_msgs::Pose p, double r);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
-
+  void setvictimmap(grid_map::GridMap map,std::string layer_name);
+  void setCostMapROS(costmap_2d::Costmap2DROS *CostMapROS_);
 };
 
 #endif // VIEW_GENERATOR_IG_H

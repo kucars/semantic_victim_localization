@@ -17,9 +17,11 @@ private:
 
 
 public:
-  victim_map_DL();
+  victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   void Update();
   void runDetector();
+
+
 
 };
 

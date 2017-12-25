@@ -16,7 +16,7 @@ maximum_arena_height: 20
 ## Sensor settings
 ############
 ## RGB_camera
-fov_horizontal: 58.0
+fov_horizontal: 48.0
 fov_vertical: 45.0
 depth_range_max: 5.0
 depth_range_min: 0.05
@@ -58,7 +58,7 @@ uav_pose_yaw: 0.0
 map_type: 0
 
 map_resol_thermal: 0.2
-map_resol_DL: 1.0
+map_resol_DL: 0.5
 map_resol_combined : 0.2
 
 
@@ -114,7 +114,7 @@ thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 # 1: Adaptive NN
 # 2: Frontier
 
-view_generator_type: 0
+view_generator_type: 2
 view_generator_nn_pos_res_x: 1.0
 view_generator_nn_pos_res_y: 1.0
 view_generator_nn_pos_res_z: 1.0

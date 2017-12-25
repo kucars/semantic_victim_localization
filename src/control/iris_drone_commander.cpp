@@ -38,7 +38,7 @@ void iris_drone_commander::start(){
   ROS_INFO("test_NBZ: Starting vehicle. Waiting for current position information.");
 
   state = Command::STARTING_DRONE;
-  ros::Rate rate(20);
+  ros::Rate rate(30);
 
   while(ros::ok())
   {
@@ -137,7 +137,7 @@ bool iris_drone_commander::execute_path(victim_localization::path_action::Reques
 
 bool iris_drone_commander::check_status(victim_localization::status_action::Request &request, victim_localization::status_action::Response &respond)
 {
-  std::cout << "the status is called " << command_status << std::endl;
+ // std::cout << "the status is called " << command_status << std::endl;
  respond.resp =command_status;
  return true;
 }

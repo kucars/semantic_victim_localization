@@ -1,9 +1,10 @@
 #include "victim_localization/victim_map_dl.h"
 
-victim_map_DL::victim_map_DL():
-  Victim_Map_Base()
+victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
+  Victim_Map_Base(nh,nh_private)
 {
   setlayer_name(DL_layer_name);
+
   detector_ = new SSD_Detection_with_clustering();
 
   ros::param::param<std::string>("~map_topic_DL", map_topic , "victim_map/grid_map_DL");
@@ -17,7 +18,7 @@ victim_map_DL::victim_map_DL():
            map.getSize()(0), map.getSize()(1));
 
   map.add(layer_name,0.5); // initialize probability in the map to 0.5
-  const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
+  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
@@ -27,6 +28,7 @@ victim_map_DL::victim_map_DL():
   ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.1);
   ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.95);
 
+  raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
 
   victimMapName="victim map DL";
 
@@ -34,12 +36,11 @@ victim_map_DL::victim_map_DL():
 }
 
 void victim_map_DL::Update(){
-
   //run deep learning detector
   runDetector();
 
   grid_map::GridMap temp_Map;
-  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(raytracing_->current_pose_);
+  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose());
 
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
@@ -82,6 +83,7 @@ void victim_map_DL::Update(){
   }
   publish_Map();
 }
+
 
 void victim_map_DL::runDetector()
 {

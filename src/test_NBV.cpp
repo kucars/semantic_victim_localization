@@ -28,10 +28,10 @@ void TestNBZ::initMap(){
     {
     default:
     case 0:
-      Map_ = new victim_map_DL();
+      Map_ = new victim_map_DL(nh,nh_private);
       break;
     case 1:
-      Map_ = new victim_map_Thermal();
+      Map_ = new victim_map_Thermal(nh,nh_private);
       break;
     }
 }
@@ -51,6 +51,23 @@ void TestNBZ::initNavigation(){
     navigation_->start();
 }
 
+void TestNBZ::initViewGenerator(){
+    ros::param::param("~view_generator_type", view_generator_type, 0);
+
+    switch(view_generator_type)
+    {
+    default:
+    case 0:
+      view_generate_ = new view_generator_IG();
+      break;
+    case 1:
+      view_generate_ = new view_generator_ig_nn_adaptive();
+      break;
+    case 2:
+      view_generate_ = new view_generator_ig_frontier();
+    break;
+    }
+}
 
 void TestNBZ::initOctomap(){
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
@@ -67,20 +84,19 @@ void TestNBZ::initParameters(){
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
   View_evaluate_ = new view_evaluator_IG();
-  view_generate_ = new view_generator_IG();  //try the adaptive_nn
   history_=  new nbv_history();
-  Ray= new RayTracing(view_generate_);
   view_generate_->setHistory(history_);
   view_generate_->setOcclusionMap(Occlusion_Map_);
+  view_generate_->setCostMapROS(CostMapROS_);
 
   //Passing the Mapping and view_generator module to the view_evaluator
-  Map_->setRaytracing(Ray);
   view_generate_->setOctomapManager(manager_);
   View_evaluate_->setMappingModule(Map_);
   View_evaluate_->setViewGenerator(view_generate_);
 
   // initialize vehicle communicator
   drone_communicator_ = new drone_communicator(nh,nh_private,manager_);
+  Map_->setDroneCommunicator(drone_communicator_);
 }
 
 void TestNBZ::updateHistory()
@@ -202,6 +218,8 @@ void TestNBZ::generateViewpoints()
    std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
 
   view_generate_->setCurrentPose(drone_communicator_->GetPose());
+  view_generate_->setvictimmap(Map_->map,Map_->getlayer_name());
+
  // std::cout << "curretn pose: " << drone_communicator_->GetPose() <<" "<< std::endl;
   view_generate_->generateViews();
 
@@ -320,6 +338,7 @@ int main(int argc, char **argv)
   test_->initMap();
   test_->initOctomap();
   test_->initNavigation();
+  test_->initViewGenerator();
   test_->initParameters();
 
   test_->runStateMachine();

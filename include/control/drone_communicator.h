@@ -58,6 +58,8 @@ public:
   void callbackCommandStatus(const std_msgs::Bool::ConstPtr& msg);
   bool GetStatus();
 
+  ros::Time previous_time;
+
   bool Execute_waypoint(geometry_msgs::Pose p);
   bool Execute_path(nav_msgs::Path path);
 };

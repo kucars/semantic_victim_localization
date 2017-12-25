@@ -4,37 +4,37 @@
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/victim_map_base.h>
 #include <costmap_2d/costmap_2d.h>
+#include "rviz_visual_tools/rviz_visual_tools.h"
+#include <math.h>
+
 
 
 
 class view_generator_ig_frontier: public view_generator_IG
 {
 public:
-  costmap_2d::Costmap2D *costmap_;
-  grid_map::GridMap *victim_map;
-  std::string map_layer;
   double frontier_yaw_res_;
   void setvictimmap(grid_map::GridMap *map,std::string layer_name);
   std::vector<geometry_msgs::Pose> setYawtoViewpoint(geometry_msgs::Pose vp);
 
-
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
 
   view_generator_ig_frontier();
-  bool FindFrontiers(std::vector<geometry_msgs::Pose> &frontiers, std::vector<geometry_msgs::Pose> &noFrontiers);
+  std::vector<geometry_msgs::Pose> FindFrontiers();
 
   bool isFrontier(Index point);
   bool isFreeFrontiers(Index point);
   bool isFrontierReached(Index point);
   double getYawToUnknown(Index point);
   inline void getAdjacentPoints(Index point, Index points[]);
-  inline int downleft(Index point);
-  inline int downright(Index point);
-  inline int down(Index point);
-  inline int up(Index point);
-  inline int upleft(Index point);
-  inline int upright(Index point);
-  inline int left(Index point);
-  inline int right(Index point);
+  inline Index downleft(Index point);
+  inline Index downright(Index point);
+  inline Index down(Index point);
+  inline Index up(Index point);
+  inline Index upleft(Index point);
+  inline Index upright(Index point);
+  inline Index left(Index point);
+  inline Index right(Index point);
   inline bool IsValid(int point){
     return (point>=0);
   }
@@ -44,9 +44,7 @@ public:
   void resetMaps();
   void setupMapData();
   void setCostMapROS(costmap_2d::Costmap2DROS *CostMapROS_);
-  std::__cxx11::string getMethodName();
-
-  costmap_2d::Costmap2DROS* costmap_ros_;
+  std::string getMethodName();
 
   const unsigned char* occupancy_grid_array_;
   boost::shared_array<unsigned int> exploration_trans_array_;
@@ -64,6 +62,15 @@ public:
 
   double dist_for_frontier_reached;
   bool use_inflated_obs_;
+
+
+  virtual void generateViews();
+  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses,
+                         std::vector<geometry_msgs::Pose> invalid_poses,
+                         geometry_msgs::Pose selected_pose);
+
+  void visualize();
+  bool checkValidity(int costmap_index);
 
 };
 

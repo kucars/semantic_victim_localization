@@ -1,10 +1,10 @@
 #include "victim_localization/victim_map_combined.h"
 
-victim_map_combined::victim_map_combined():
-  Victim_Map_Base()
+victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
+  Victim_Map_Base(nh,nh_private)
 { 
-  victim_map_dl_=new victim_map_DL();
-  victim_map_Thermal_= new victim_map_Thermal();
+  victim_map_dl_=new victim_map_DL(nh_,nh_private_);
+  victim_map_Thermal_= new victim_map_Thermal(nh_,nh_private_);
 
   ros::param::param<std::string>("~map_topic_combined", map_topic , "victim_map/grid_map_combined");
   ros::param::param<double>("~map_resol_combined", map_resol , 0.2);

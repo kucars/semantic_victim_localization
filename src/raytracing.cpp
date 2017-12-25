@@ -1,9 +1,8 @@
 #include "victim_localization/raytracing.h"
 
-RayTracing::RayTracing(view_generator_IG *vg):
-  view_gen_ (vg)
+Raytracing::Raytracing(double map_res_):
+  map_res (map_res_)
 {
-
   double fov_h, fov_v, r_max, r_min;
   ros::param::param("~fov_horizontal", fov_h, 58.0);
   ros::param::param("~fov_vertical", fov_v, 45.0);
@@ -21,32 +20,46 @@ RayTracing::RayTracing(view_generator_IG *vg):
   getCameraRotationMtxs();
 }
 
-void RayTracing::update()
+Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
+                       double max_d, double min_d):
+  map_res (map_res_)
 {
-  tree_               = view_gen_->manager_->octree_.get();
-  current_pose_       = view_gen_->current_pose_;
+  ros::param::param("~nav_bounds_x_min", nav_bounds_x_min_,-10.0);
+  ros::param::param("~nav_bounds_x_max", nav_bounds_x_max_, 10.0);
+  ros::param::param("~nav_bounds_y_min", nav_bounds_y_min_,-10.0);
+  ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
+  ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
+  ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+
+  setCameraSettings(HFOV_deg, VFOV_deg, max_d, min_d);
+  getCameraRotationMtxs();
+}
+void Raytracing::update()
+{
+  current_pose_       = drone_comm->GetPose();
+  tree_               = drone_comm->manager_->octree_;
 
 // Update evaluation bounds
 //tree_resolution_ = tree_->getResolution();
 
-  octomap::point3d min (
-        view_gen_->obj_bounds_x_min_,
-        view_gen_->obj_bounds_y_min_,
-        view_gen_->obj_bounds_z_min_);
-  octomap::point3d max (
-        view_gen_->obj_bounds_x_max_,
-        view_gen_->obj_bounds_y_max_,
-        view_gen_->obj_bounds_z_max_);
+//  octomap::point3d min (
+//        view_gen_->obj_bounds_x_min_,
+//        view_gen_->obj_bounds_y_min_,
+//        view_gen_->obj_bounds_z_min_);
+//  octomap::point3d max (
+//        view_gen_->obj_bounds_x_max_,
+//        view_gen_->obj_bounds_y_max_,
+//        view_gen_->obj_bounds_z_max_);
 
-  tree_->setBBXMin( min );
-  tree_->setBBXMax( max );
+//  tree_->setBBXMin( min );
+//  tree_->setBBXMax( max );
 
   computeRelativeRays();
 }
 
 
 
-double RayTracing::computeRelativeRays()
+double Raytracing::computeRelativeRays()
 {
   rays_far_plane_.clear();
   double deg2rad = M_PI/180;
@@ -55,8 +68,8 @@ double RayTracing::computeRelativeRays()
   double max_x =  range_max_ * tan(HFOV_deg/2 * deg2rad);
   double max_y =  range_max_ * tan(VFOV_deg/2 * deg2rad);
 
-  double x_step = view_gen_->manager_->getResolution();
-  double y_step = view_gen_->manager_->getResolution();
+  double x_step = drone_comm->manager_->getResolution();
+  double y_step = drone_comm->manager_->getResolution();
 
   for( double x = min_x; x<=max_x; x+=x_step )
   {
@@ -68,7 +81,7 @@ double RayTracing::computeRelativeRays()
   }
 }
 
-void RayTracing::computeRaysAtPose(geometry_msgs::Pose p)
+void Raytracing::computeRaysAtPose(geometry_msgs::Pose p)
 {
   rays_far_plane_at_pose_.clear();
 
@@ -92,7 +105,7 @@ void RayTracing::computeRaysAtPose(geometry_msgs::Pose p)
   }
 }
 
-void RayTracing::getCameraRotationMtxs()
+void Raytracing::getCameraRotationMtxs()
 {
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
@@ -120,7 +133,7 @@ void RayTracing::getCameraRotationMtxs()
 
 
 
-void RayTracing::setCameraSettings(double fov_h, double fov_v, double r_max, double r_min)
+void Raytracing::setCameraSettings(double fov_h, double fov_v, double r_max, double r_min)
 {
   HFOV_deg = fov_h;
   VFOV_deg = fov_v;
@@ -128,45 +141,8 @@ void RayTracing::setCameraSettings(double fov_h, double fov_v, double r_max, dou
   range_min_ = r_min;
 }
 
-bool RayTracing::isNodeInBounds(octomap::OcTreeKey &key)
-{
-  octomap::point3d p = tree_->keyToCoord(key);
-  return isPointInBounds(p);
-}
 
-bool RayTracing::isNodeFree(octomap::OcTreeNode node)
-{
-  if (node.getOccupancy() <= 1-tree_->getOccupancyThres())
-    return true;
-
-  return false;
-}
-
-bool RayTracing::isNodeOccupied(octomap::OcTreeNode node)
-{
-  if (node.getOccupancy() >= tree_->getOccupancyThres())
-    return true;
-
-  return false;
-}
-
-bool RayTracing::isNodeUnknown(octomap::OcTreeNode node)
-{
-  return !isNodeFree(node) && !isNodeOccupied(node);
-}
-
-bool RayTracing::isPointInBounds(octomap::point3d &p)
-{
-  bool result = (p.x() >= view_gen_->obj_bounds_x_min_ && p.x() <= view_gen_->obj_bounds_x_max_ &&
-                 p.y() >= view_gen_->obj_bounds_y_min_ && p.y() <= view_gen_->obj_bounds_y_max_ &&
-                 p.z() >= view_gen_->obj_bounds_z_min_ && p.z() <= view_gen_->obj_bounds_z_max_ );
-
-  return result;
-}
-
-
-
-double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
+double Raytracing::getNodeOccupancy(octomap::OcTreeNode* node)
 {
   double p;
 
@@ -182,13 +158,13 @@ double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_)
+grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_)
 {
   update();
   computeRaysAtPose(p_);
   grid_map::GridMap Pose_map;
   Pose_map.setFrameId("map");
-  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5), 1,Position (p_.position.x,p_.position.y));
+  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
   Pose_map.add({"temp"},0.5);  //0 for free & unknown (for time being check free only), 0.5 for unexplored,
 
 
@@ -249,6 +225,8 @@ grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
       octomap::OcTreeNode* node = tree_->search(*it);
       Position position(p.x(),p.y());
 
+      if (!isInsideRegionofInterest(p.z())) continue;
+
       if (!isInsideBounds(position)) continue;
 
      // std::cout << "possible_location1" << std::endl;
@@ -299,7 +277,7 @@ grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
   return Pose_map;
 }
 
-bool RayTracing::isInsideBounds(Position p)
+bool Raytracing::isInsideBounds(Position p)
 {
   if (p[0] < nav_bounds_x_min_ || p[0] > nav_bounds_x_max_ ||
        p[1] < nav_bounds_y_min_ ||  p[1] > nav_bounds_y_max_)
@@ -310,7 +288,7 @@ bool RayTracing::isInsideBounds(Position p)
   return true;
 }
 
-bool RayTracing::isInsideRegionofInterest(double z , double tolerance)
+bool Raytracing::isInsideRegionofInterest(double z , double tolerance)
 {
   if (z > current_pose_.position.z+tolerance  ||
       z < current_pose_.position.z-tolerance)
@@ -318,4 +296,8 @@ bool RayTracing::isInsideRegionofInterest(double z , double tolerance)
 
 
   return true;
+}
+
+void Raytracing::setDroneCommunicator(drone_communicator *drone_comm_){
+  drone_comm = drone_comm_;
 }

@@ -8,7 +8,7 @@
 class victim_map_combined : public Victim_Map_Base
 {
 public:
-  victim_map_combined();
+  victim_map_combined(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   victim_map_DL *victim_map_dl_;
   victim_map_Thermal *victim_map_Thermal_;
 

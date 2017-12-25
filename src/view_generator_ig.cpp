@@ -78,15 +78,15 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 
 
 
-bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
+bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
   if (!isInsideBounds(p) ){
-    std::cout << "rejectedbyvalidity" << std::endl;
+  //  std::cout << "rejectedbyvalidity" << std::endl;
     return false;
   }
 
   if (!isSafe(p)){
-    std::cout << "rejectedbySafety" << std::endl;
+  //  std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
 
@@ -97,7 +97,7 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p)
 
 if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
-    std::cout << "rejectedbycollision" << std::endl;
+  //  std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
 
@@ -135,6 +135,7 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
 
 void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
 {
+  std::cout << "mistake...................." << std::endl;
   if (pub_view_marker_array_.getNumSubscribers() == 0)
     return;
 
@@ -351,6 +352,17 @@ void view_generator_IG::setHistory(nbv_history* h)
 void view_generator_IG::setOcclusionMap(Volumetric_Map* Occ)
 {
   occlusion_map = Occ;
+}
+
+void view_generator_IG::setvictimmap(grid_map::GridMap map,std::string layer_name)
+{
+  victim_map=map;
+  map_layer=layer_name;
+}
+
+void view_generator_IG::setCostMapROS(costmap_2d::Costmap2DROS *CostMapROS_)
+{
+  costmap_ros_=CostMapROS_;
 }
 
 std::string view_generator_IG::getMethodName()

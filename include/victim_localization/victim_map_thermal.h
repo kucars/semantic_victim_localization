@@ -17,13 +17,14 @@ private:
   double thermal_x_offset;
   double thermal_y_offset;
   double max_thermal_d;
+  double min_thermal_d;
 
   Position ThermalRayStart;
   Position ThermalRayEnd;
   std::vector<Position> ThermalRay;
 
 public:
-  victim_map_Thermal();
+  victim_map_Thermal(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   victim_thermal_detector *detector_;
   void Update();
   void runDetector();
@@ -32,6 +33,7 @@ public:
   bool IsInsideRay(Position P);
 
   tf::TransformListener *tf_listener;
+
 };
 
 #endif // VICTIM_MAP_THERMAL_H

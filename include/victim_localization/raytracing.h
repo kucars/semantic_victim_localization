@@ -1,5 +1,5 @@
-#ifndef RAYTRACING_H
-#define RAYTRACING_H
+#ifndef RAY_TRACING_H
+#define RAY_TRACING_H
 
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
@@ -22,6 +22,7 @@
 #include <tf/transform_listener.h>
 #include <Eigen/Geometry>
 #include <victim_localization/view_generator_ig.h>
+#include <control/drone_communicator.h>
 
 
 
@@ -39,12 +40,12 @@ struct OctomapKeyCompare {
   }
 };
 
-class RayTracing
+class Raytracing
 {
 public:
   geometry_msgs::Pose current_pose_;
-  octomap::OcTree *tree_;
-  view_generator_IG *view_gen_;
+  std::shared_ptr<octomap::OcTree> tree_;
+  drone_communicator *drone_comm;
   std::string Layer_name_;
   double HFOV_deg;
   double VFOV_deg;
@@ -56,6 +57,7 @@ public:
   std::string base_frame;
   double tree_resolution;
   Eigen::Matrix3d camera_rotation_mtx_; // Camera rotation mtx
+  double map_res;
 
 std::vector<Eigen::Vector3d> rays_far_plane_;
 std::vector<octomap::point3d> rays_far_plane_at_pose_;
@@ -66,20 +68,16 @@ double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
 grid_map::GridMap Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p);
 
 
-RayTracing(view_generator_IG *vg);
-~RayTracing();
+Raytracing(double map_res_);
+Raytracing(double map_res_, double HFOV_deg, double VFOV_deg, double max_d, double min_d);
+~Raytracing();
 
 void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
 bool isInsideBounds(Position p);
 
-protected:
+public:
 
   void  update();
-  bool isEntropyLow();
-  bool isNodeInBounds(octomap::OcTreeKey &key);
-  bool isNodeFree(octomap::OcTreeNode node);
-  bool isNodeOccupied(octomap::OcTreeNode node);
-  bool isNodeUnknown(octomap::OcTreeNode node);
   bool isPointInBounds(octomap::point3d &p);
   void   getCameraRotationMtxs();
   double getNodeOccupancy(octomap::OcTreeNode* node);
@@ -88,7 +86,7 @@ protected:
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
   bool  isInsideRegionofInterest(double z , double tolerance=1);
-
+  void  setDroneCommunicator(drone_communicator *drone_comm_);
 };
 
-#endif // RAYTRACING_H
+#endif // RAY_TRACING_H

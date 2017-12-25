@@ -1,8 +1,8 @@
 #include "victim_localization/victim_map_thermal.h"
 
 
-victim_map_Thermal::victim_map_Thermal():
-  Victim_Map_Base()
+victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
+  Victim_Map_Base(nh,nh_private)
 {
   ros::param::param<std::string>("~map_topic_thermal", map_topic , "victim_map/grid_map_thermal");
   ros::param::param<double>("~map_resol_thermal", map_resol , 0.2);
@@ -19,7 +19,7 @@ victim_map_Thermal::victim_map_Thermal():
            map.getSize()(0), map.getSize()(1));
 
   map.add(layer_name,0.5); // initialize map probability to 0.5
-  const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
+  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
@@ -27,6 +27,8 @@ victim_map_Thermal::victim_map_Thermal():
   ros::param::param<double>("~fov_horizontal_thermal_cam", HFOV_deg , 48);
   ros::param::param<double>("~fov_vertical_thermal_cam", VFOV_deg , 45);
   ros::param::param<double>("~thermal_range_max", max_thermal_d , 15);
+  ros::param::param<double>("~thermal_range_max", min_thermal_d , 0.5);
+
   ros::param::param<double>("~thermal_image_x_resolution", thermal_img_x_res , 160.0);
   ros::param::param<double>("~thermal_image_y_resolution", thermal_img_y_res , 120.0);
   ros::param::param<double>("~thermal_image_x_offset", thermal_x_offset , 79.5);
@@ -41,7 +43,10 @@ victim_map_Thermal::victim_map_Thermal():
   // for debugging
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
+  raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+
   victimMapName="victim map thermal";
+  max_depth_d=max_thermal_d;
 }
 
 
@@ -51,7 +56,7 @@ void victim_map_Thermal::Update(){
 
 
   grid_map::GridMap temp_Map;
-  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(raytracing_->current_pose_);
+  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose());
 
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 

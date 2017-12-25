@@ -3,20 +3,24 @@
 using namespace grid_map;
 
 double range_max_=10;
-Victim_Map_Base::Victim_Map_Base()
+Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
+  nh_(nh),
+  nh_private_(nh_private)
 {
   //default values for configs
   ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
   ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
   ros::param::param<double>("~depth_range_max", max_depth_d , 5);
+  ros::param::param<double>("~depth_range_max", min_depth_d , 0.5);
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
 
   ros::param::param<bool>("~detection_enabled", detection_enabled , false); // added for debugging purpose
 
-  const_=max_depth_d/cos(DEG2RAD(HFOV_deg));
+  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
-  sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 100, &Victim_Map_Base::callbackdrawFOV, this);
+  sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 1, &Victim_Map_Base::callbackdrawFOV, this);
+  pub_polygon = nh_.advertise<geometry_msgs::PolygonStamped>("polygon", 1, true);
 
   //initialize_victim_to_false
   map_status.victim_loc=Position(std::numeric_limits<double>::quiet_NaN(),
@@ -47,9 +51,9 @@ grid_map::Polygon Victim_Map_Base::draw_FOV(){
   polygon_FOV.addVertex(Position(current_loc_.position.x, current_loc_.position.y));
 
   return polygon_FOV;
-  geometry_msgs::PolygonStamped message;
-  grid_map::PolygonRosConverter::toMessage(polygon, message);
-  pub_polygon.publish(message);
+  //geometry_msgs::PolygonStamped message;
+  //grid_map::PolygonRosConverter::toMessage(polygon, message);
+  //pub_polygon.publish(message);
 }
 
 grid_map::Polygon Victim_Map_Base::Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_){
@@ -99,9 +103,9 @@ void Victim_Map_Base::callbackdrawFOV(const PoseStamped &ps_stamped){
 
 
   //publish Field of View
-  //geometry_msgs::PolygonStamped message;
- // grid_map::PolygonRosConverter::toMessage(polygon_FOV, message);
- // pub_polygon.publish(message);
+  geometry_msgs::PolygonStamped message;
+ grid_map::PolygonRosConverter::toMessage(polygon_FOV, message);
+ pub_polygon.publish(message);
 }
 
 
@@ -161,10 +165,6 @@ void Victim_Map_Base::setDetectionResult(Status detection_status) {
   is_detect_=detection_status.victim_found;
 }
 
-void Victim_Map_Base::setRaytracing(RayTracing *Ray){
-  raytracing_=Ray;
-}
-
 
 Status Victim_Map_Base::getMapResultStatus(){
  return map_status;
@@ -173,4 +173,9 @@ Status Victim_Map_Base::getMapResultStatus(){
 
 std::string Victim_Map_Base::VictimMapType(){
   return victimMapName;
+}
+
+void Victim_Map_Base::setDroneCommunicator(drone_communicator *drone_comm_){
+  drone_comm = drone_comm_;
+  raytracing_->setDroneCommunicator(drone_comm);
 }

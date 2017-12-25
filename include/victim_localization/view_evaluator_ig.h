@@ -30,6 +30,7 @@ public:
    view_generator_IG *view_gen_;
    Victim_Map_Base *mapping_module_;
 
+
 public:
    ros::NodeHandle nh_;
    std::shared_ptr<octomap::OcTree> tree_;

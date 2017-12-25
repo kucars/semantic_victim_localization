@@ -213,33 +213,37 @@ add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(thermalVictim ${catkin_LIBRARIES})
 
-add_executable (navigation_test
-    src/test_navigation.cpp
 
-    src/control/vehicle_control_base.cpp
-    src/control/vehicle_control_iris.cpp
-    src/control/drone_communicator.cpp
-    src/volumetric_map_manager.cpp
-    src/raytracing.cpp
 
-    src/navigation_base.cpp
-    src/straightline.cpp
-    src/reactive_path_planner.cpp
-    src/reactive_planner_server.cpp
-    )
-add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
+#add_executable (navigation_test
+#    src/test_navigation.cpp
 
-target_link_libraries(navigation_test
-    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    ${catkin_LIBRARIES}
-    ${Eigen_LIBRARIES}
-    ${OCTOMAP_LIBRARIES}
-    ${PCL_LIBRARIES}
-    ${CGAL_LIBRARY}
-    ${CGAL_Core_LIBRARY}
-    ${rviz_visual_tools_LIBRARIES}
-    SSPathPlanner
-)
+#    src/control/vehicle_control_base.cpp
+#    src/control/vehicle_control_iris.cpp
+#    src/control/drone_communicator.cpp
+#    src/volumetric_map_manager.cpp
+#    src/raytracing.cpp
+
+#    src/navigation_base.cpp
+#    src/straightline.cpp
+#    src/reactive_path_planner.cpp
+#    src/reactive_planner_server.cpp
+#    )
+#add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
+
+#target_link_libraries(navigation_test
+#    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+#    ${catkin_LIBRARIES}
+#    ${Eigen_LIBRARIES}
+#    ${OCTOMAP_LIBRARIES}
+#    ${PCL_LIBRARIES}
+#    ${CGAL_LIBRARY}
+#    ${CGAL_Core_LIBRARY}
+#    ${rviz_visual_tools_LIBRARIES}
+#    SSPathPlanner
+#)
+
+
 
 add_executable (iris_commander
     src/control/iris_drone_commander.cpp

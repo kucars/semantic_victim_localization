@@ -3,6 +3,8 @@
 
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
+#include <victim_localization/raytracing.h>
+#include <control/drone_communicator.h>
 #include <grid_map_msgs/GridMap.h>
 #include <cmath>
 #include "math.h"
@@ -16,7 +18,6 @@
 #include <sensor_msgs/PointCloud.h>
 #include "victim_localization/common.h"
 #include <octomap_world/octomap_manager.h>
-#include <victim_localization/raytracing.h>
 
 
 typedef geometry_msgs::Point Point;
@@ -40,12 +41,15 @@ protected://get it from config ..
   double Prob_Dc_Hc; //P(Dc|Hc)
 
 public:
-  Victim_Map_Base();
+  Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   ~Victim_Map_Base();
+
+  drone_communicator *drone_comm;
 
   std::string map_topic;
   std::string layer_name="general";//="victim";
   ros::NodeHandle nh_;
+  ros::NodeHandle nh_private_;
   ros::Publisher pub_map;
   ros::Subscriber sub_loc;
   ros::Publisher pub_polygon;
@@ -61,6 +65,7 @@ public:
   double HFOV_deg;
   double VFOV_deg;
   double max_depth_d;
+  double min_depth_d;
   double x_arena_max;
   double y_arena_max;
 
@@ -68,7 +73,7 @@ public:
   grid_map::GridMap projected_map;
   grid_map::Polygon polygon;
   volumetric_mapping::OctomapManager *manager_;
-  RayTracing *raytracing_;
+  Raytracing *raytracing_;
   std::string victimMapName;
 
 
@@ -99,11 +104,11 @@ public:
   void setCurrentPose(geometry_msgs::Pose ps);
   void setDetectionResult(Status detection_status);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
-  void setRaytracing(RayTracing *Ray);
 
   grid_map::GridMap Project_3d_rayes_to_2D_plane();
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
+  void setDroneCommunicator(drone_communicator *drone_comm_);
 
 };
 

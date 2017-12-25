@@ -5,7 +5,8 @@ drone_communicator::drone_communicator(const ros::NodeHandle& nh, const ros::Nod
   nh_(nh),
   nh_private_(nh_private),
   manager_(mapManager),
-  current_drone_status(false)
+  current_drone_status(false),
+  previous_time(ros::Time::now())
 {
   // Paramteters
   std::string topic_pose;
@@ -90,9 +91,12 @@ bool drone_communicator::Execute_path(nav_msgs::Path path)
 
 bool drone_communicator::GetStatus()
 {
+  if(ros::Time::now() - previous_time < ros::Duration(1)) return false;
+    previous_time= ros::Time::now();
   std::stringstream ss;
   ss << "Check Status";
   status_srv.request.req= ss.str();
-  //if (!ClientCheckStatus.call(status_srv)) std::cout<< "status can not be checked...\n";
+  if (!ClientCheckStatus.call(status_srv)) std::cout<< "status can not be checked...\n";
   return status_srv.response.resp;
 }
+

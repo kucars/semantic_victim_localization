@@ -311,9 +311,10 @@ void Volumetric_Map::Publish2DOccupancyMap(void){
     m_mapPub.publish(m_gridmap);
 }
 
-void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmap_)
+void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmapR_)
 {
-  costmap_ros_=costmap_;
+  costmap_ros_=costmapR_;
+  costmap_=costmap_ros_->getCostmap();
 }
 
 void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
