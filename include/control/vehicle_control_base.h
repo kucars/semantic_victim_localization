@@ -2,6 +2,7 @@
 #define VEHICLE_CONTROL_BASE_H
 
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
@@ -27,7 +28,7 @@ public:
   mavros_msgs::State vehicle_current_state_;
 
   geometry_msgs::Pose setpoint_;
-  nav_msgs::Path setpath_;
+  std::vector<geometry_msgs::Pose> setpath_;
 
   VehicleControlBase();
   virtual void initialize(){};

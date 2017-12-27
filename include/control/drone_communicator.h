@@ -7,6 +7,7 @@
 #include "victim_localization/volumetric_map_manager.h"
 #include "victim_localization/rotate_action.h"
 #include "victim_localization/path_action.h"
+#include "victim_localization/path2_action.h"
 #include "victim_localization/waypoint_action.h"
 #include "victim_localization/status_action.h"
 
@@ -38,11 +39,13 @@ public:
   ros::ServiceClient clientExecuteRotation ;
   ros::ServiceClient clientExecuteWaypoint;
   ros::ServiceClient clientExecutePath;
+  ros::ServiceClient clientExecutePath2;
   ros::ServiceClient ClientCheckStatus;
 
   victim_localization::rotate_action rotate_srv;
   victim_localization::waypoint_action waypoint_srv;
   victim_localization::path_action path_srv;
+  victim_localization::path2_action path2_srv;
   victim_localization::status_action status_srv;
 
   geometry_msgs::Pose Waypoint_;
@@ -62,6 +65,8 @@ public:
 
   bool Execute_waypoint(geometry_msgs::Pose p);
   bool Execute_path(nav_msgs::Path path);
+  bool Execute_path(std::vector<geometry_msgs::Pose> path);
+
 };
 
 #endif // DRONE_COMMUNICATOR_H

@@ -125,15 +125,24 @@ void VehicleControlIris::setSpeed(double speed)
 
 void VehicleControlIris::setPath(nav_msgs::Path path)
 {
+  setpath_.clear();
+  for (int i=0; i<path.poses.size(); i++)
+  {
+    setpath_.push_back(path.poses[i].pose);
+  }
+}
+
+void VehicleControlIris::setPath(std::vector<geometry_msgs::Pose> path)
+{
   setpath_ = path;
 }
 
 void VehicleControlIris::FollowPath(double threshold_sensitivity)
 {
-   for (int i=0;i<setpath_.poses.size();i++)
+   for (int i=0;i<setpath_.size();i++)
    {
-     setWaypoint(setpath_.poses[i].pose);
-     moveVehicle();
+     setWaypoint(setpath_[i]);
+     moveVehicle(threshold_sensitivity);
    }
 }
 

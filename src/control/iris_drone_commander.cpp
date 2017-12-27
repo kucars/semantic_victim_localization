@@ -12,6 +12,7 @@ nh_private_(nhPrivate)
  std::string topic_service_rotate;
  std::string topic_service_waypoint;
  std::string topic_service_path;
+ std::string topic_service_path2;
  std::string topic_command_status;
 
  ros::param::param("~topic_ps", topic_ps, std::string("iris/mavros/setpoint_position/local"));
@@ -20,6 +21,7 @@ nh_private_(nhPrivate)
  ros::param::param("~topic_service_rotate", topic_service_rotate, std::string("iris/rotate"));
  ros::param::param("~topic_service_waypoint", topic_service_waypoint, std::string("iris/waypoint"));
  ros::param::param("~topic_service_path", topic_service_path, std::string("iris/path"));
+ ros::param::param("~topic_service_path2", topic_service_path2, std::string("iris/path2"));
  ros::param::param("~topic_service_command_status", topic_command_status, std::string("iris/command_status"));
 
  localPosePub  = nh_.advertise<geometry_msgs::PoseStamped>(topic_ps, 10);
@@ -27,6 +29,7 @@ nh_private_(nhPrivate)
  service_rotation = nh_private_.advertiseService(topic_service_rotate,&iris_drone_commander::execute_rotation,this);
  service_waypoint = nh_private_.advertiseService(topic_service_waypoint,&iris_drone_commander::execute_waypoint,this);
  service_path = nh_private_.advertiseService(topic_service_path,&iris_drone_commander::execute_path,this);
+ service_path2 = nh_private_.advertiseService(topic_service_path2,&iris_drone_commander::execute_path2,this);
  service_status = nh_private_.advertiseService(topic_command_status,&iris_drone_commander::check_status,this);
 
  ROS_INFO("start the iris drone commander...");
@@ -38,7 +41,7 @@ void iris_drone_commander::start(){
   ROS_INFO("test_NBZ: Starting vehicle. Waiting for current position information.");
 
   state = Command::STARTING_DRONE;
-  ros::Rate rate(30);
+  ros::Rate rate(10);
 
   while(ros::ok())
   {
@@ -135,9 +138,16 @@ bool iris_drone_commander::execute_path(victim_localization::path_action::Reques
   return true;
 }
 
+bool iris_drone_commander::execute_path2(victim_localization::path2_action::Request &request, victim_localization::path2_action::Response &respond)
+{
+  command_status = false;
+  vehicle_->setPath(request.path);
+  state=Command::SEND_PATH;
+  return true;
+}
+
 bool iris_drone_commander::check_status(victim_localization::status_action::Request &request, victim_localization::status_action::Response &respond)
 {
- // std::cout << "the status is called " << command_status << std::endl;
  respond.resp =command_status;
  return true;
 }

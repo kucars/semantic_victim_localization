@@ -13,6 +13,7 @@ drone_communicator::drone_communicator(const ros::NodeHandle& nh, const ros::Nod
   std::string topic_service_rotate;
   std::string topic_service_waypoint;
   std::string topic_service_path;
+  std::string topic_service_path2;
   std::string topic_command_status;
 
 
@@ -23,6 +24,7 @@ drone_communicator::drone_communicator(const ros::NodeHandle& nh, const ros::Nod
   ros::param::param("~topic_service_rotate", topic_service_rotate, std::string("/iris_commander/iris/rotate"));
   ros::param::param("~topic_service_waypoints", topic_service_waypoint, std::string("/iris_commander/iris/waypoint"));
   ros::param::param("~topic_service_path", topic_service_path, std::string("/iris_commander/iris/path"));
+  ros::param::param("~topic_service_path2", topic_service_path2, std::string("/iris_commander/iris/path2"));
   ros::param::param("~topic_service_command_status", topic_command_status, std::string("/iris_commander/iris/command_status"));
 
   sub_pose = nh_.subscribe(topic_pose, 10, &drone_communicator::callbackPose, this);
@@ -30,6 +32,7 @@ drone_communicator::drone_communicator(const ros::NodeHandle& nh, const ros::Nod
   clientExecuteRotation = nh_private_.serviceClient<victim_localization::rotate_action>(topic_service_rotate);
   clientExecuteWaypoint = nh_private_.serviceClient<victim_localization::waypoint_action>(topic_service_waypoint);
   clientExecutePath = nh_private_.serviceClient<victim_localization::path_action>(topic_service_path);
+  clientExecutePath2 = nh_private_.serviceClient<victim_localization::path2_action>(topic_service_path2);
   ClientCheckStatus = nh_private_.serviceClient<victim_localization::status_action>(topic_command_status);
   Check_MapManager_and_Drone_Ready();
 }
@@ -84,6 +87,16 @@ bool drone_communicator::Execute_path(nav_msgs::Path path)
   current_drone_status=false;
   path_srv.request.path = path;
   if (clientExecutePath.call(path_srv))
+    return true;
+
+  return false;
+}
+
+bool drone_communicator::Execute_path(std::vector<geometry_msgs::Pose> path)
+{
+  current_drone_status=false;
+  path2_srv.request.path = path;
+  if (clientExecutePath2.call(path2_srv))
     return true;
 
   return false;

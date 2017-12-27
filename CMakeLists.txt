@@ -90,6 +90,7 @@ add_service_files(
   rotate_action.srv
   waypoint_action.srv
   path_action.srv
+  path2_action.srv
   status_action.srv
 )
 
@@ -215,33 +216,33 @@ target_link_libraries(thermalVictim ${catkin_LIBRARIES})
 
 
 
-#add_executable (navigation_test
-#    src/test_navigation.cpp
+add_executable (navigation_test
+    src/test_navigation.cpp
 
-#    src/control/vehicle_control_base.cpp
-#    src/control/vehicle_control_iris.cpp
-#    src/control/drone_communicator.cpp
-#    src/volumetric_map_manager.cpp
-#    src/raytracing.cpp
+    src/control/vehicle_control_base.cpp
+    src/control/vehicle_control_iris.cpp
+    src/control/drone_communicator.cpp
+    src/volumetric_map_manager.cpp
+    src/raytracing.cpp
 
-#    src/navigation_base.cpp
-#    src/straightline.cpp
-#    src/reactive_path_planner.cpp
-#    src/reactive_planner_server.cpp
-#    )
-#add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
+    src/navigation_base.cpp
+    src/straightline.cpp
+    src/reactive_path_planner.cpp
+    src/reactive_planner_server.cpp
+    )
+add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
 
-#target_link_libraries(navigation_test
-#    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-#    ${catkin_LIBRARIES}
-#    ${Eigen_LIBRARIES}
-#    ${OCTOMAP_LIBRARIES}
-#    ${PCL_LIBRARIES}
-#    ${CGAL_LIBRARY}
-#    ${CGAL_Core_LIBRARY}
-#    ${rviz_visual_tools_LIBRARIES}
-#    SSPathPlanner
-#)
+target_link_libraries(navigation_test
+    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${CGAL_Core_LIBRARY}
+    ${rviz_visual_tools_LIBRARIES}
+    SSPathPlanner
+)
 
 
 

@@ -55,24 +55,24 @@ void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
     //ignore the node that are outside the z-range
     if (z > m_occupancyMinZ && z < m_occupancyMaxZ){
 
-    bool inUpdateBBX = isInUpdateBBX(it);
+      bool inUpdateBBX = isInUpdateBBX(it);
 
-    if (IsnodeOccupied(it)==1){
-    handleOccupiedNode(it);
-    if (inUpdateBBX)
-      handleOccupiedNodeInBBX(it);
-       }
+      if (IsnodeOccupied(it)==1){
+        handleOccupiedNode(it);
+        if (inUpdateBBX)
+          handleOccupiedNodeInBBX(it);
+      }
 
 
-    else if (IsnodeOccupied(it)==2){ // node not occupied => mark as free in 2D map if unknown so far
-      handleFreeNode(it);
-      if (inUpdateBBX)
-        handleFreeNodeInBBX(it);
+      else if (IsnodeOccupied(it)==2){ // node not occupied => mark as free in 2D map if unknown so far
+        handleFreeNode(it);
+        if (inUpdateBBX)
+          handleFreeNodeInBBX(it);
 
+      }
     }
-  }
 
-}
+  }
   Publish2DOccupancyMap();
 }
 
@@ -116,14 +116,14 @@ void Volumetric_Map::PrecheckFor2DMap(const ros::Time &rostime)  /* partially ta
   ROS_DEBUG("MinKey: %d %d %d / MaxKey: %d %d %d", minKey[0], minKey[1], minKey[2], maxKey[0], maxKey[1], maxKey[2]);
 
   // add padding if requested (= new min/maxPts in x&y):
-//  double halfPaddedX = 0.5*m_minSizeX;
-//  double halfPaddedY = 0.5*m_minSizeY;
-//  minX = std::min(minX, -halfPaddedX);
-//  maxX = std::max(maxX, halfPaddedX);
-//  minY = std::min(minY, -halfPaddedY);
-//  maxY = std::max(maxY, halfPaddedY);
-//  minPt = octomap::point3d(minX, minY, minZ);
-//  maxPt = octomap::point3d(maxX, maxY, maxZ);
+  //  double halfPaddedX = 0.5*m_minSizeX;
+  //  double halfPaddedY = 0.5*m_minSizeY;
+  //  minX = std::min(minX, -halfPaddedX);
+  //  maxX = std::max(maxX, halfPaddedX);
+  //  minY = std::min(minY, -halfPaddedY);
+  //  maxY = std::max(maxY, halfPaddedY);
+  //  minPt = octomap::point3d(minX, minY, minZ);
+  //  maxPt = octomap::point3d(maxX, maxY, maxZ);
 
   octomap::OcTreeKey paddedMaxKey;
   if (!m_octree->coordToKeyChecked(minPt, m_maxTreeDepth, m_paddedMinKey)){
@@ -258,22 +258,20 @@ void Volumetric_Map::update2DMap(const OcTreeT::iterator& it, bool occupied)
   }
 }
 
-  int Volumetric_Map::Get2DMapValue(const octomap::OcTreeKey &key_)
-  {
+int Volumetric_Map::Get2DMapValue(const octomap::OcTreeKey &key_)
+{
 
-    if (m_octree->getTreeDepth() == m_maxTreeDepth)
-      return m_gridmap.data[mapIdx(key_)];
+  if (m_octree->getTreeDepth() == m_maxTreeDepth)
+    return m_gridmap.data[mapIdx(key_)];
 
-      std::cout << "--reject--" << std::endl;
+  std::cout << "--reject--" << std::endl;
 
-     return -2; // value not found in case the map depth value changed
-
-  }
-
+  return -2; // value not found in case the map depth value changed
+}
 
 
-
-void Volumetric_Map::adjustMapData(nav_msgs::OccupancyGrid& map, const nav_msgs::MapMetaData& oldMapInfo) const{
+void Volumetric_Map::adjustMapData(nav_msgs::OccupancyGrid& map, const nav_msgs::MapMetaData& oldMapInfo) const
+{
   if (map.info.resolution != oldMapInfo.resolution){
     ROS_ERROR("Resolution of map changed, cannot be adjusted");
     return;
@@ -306,7 +304,8 @@ void Volumetric_Map::adjustMapData(nav_msgs::OccupancyGrid& map, const nav_msgs:
   }
 }
 
-void Volumetric_Map::Publish2DOccupancyMap(void){
+void Volumetric_Map::Publish2DOccupancyMap(void)
+{
   if (m_publish2DMap)
     m_mapPub.publish(m_gridmap);
 }
@@ -319,19 +318,11 @@ void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmapR_)
 
 void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
 {
-   x_size= round(m_gridmap.info.width * m_gridmap.info.resolution);
-   y_size= round(m_gridmap.info.height * m_gridmap.info.resolution);
- /* if (x>y) {
-  x_size=round(m_gridmap.info.width * m_gridmap.info.resolution);
-  y_size= x_size;
-  }
-  else {
-    y_size = round(m_gridmap.info.height * m_gridmap.info.resolution);
-    x_size = y_size;
-  }*/
+  x_size= (m_gridmap.info.width * m_gridmap.info.resolution);
+  y_size= (m_gridmap.info.height * m_gridmap.info.resolution);
 }
 void Volumetric_Map::GetActiveOrigin(double &x_origin, double &y_origin)
 {
- x_origin=round(m_gridmap.info.origin.position.x ) + round(m_gridmap.info.width * m_gridmap.info.resolution);
- y_origin=round (m_gridmap.info.origin.position.y ) + round((m_gridmap.info.height * m_gridmap.info.resolution));
+  x_origin=m_gridmap.info.origin.position.x + (m_gridmap.info.width * m_gridmap.info.resolution);
+  y_origin=m_gridmap.info.origin.position.y + (m_gridmap.info.height * m_gridmap.info.resolution);
 }

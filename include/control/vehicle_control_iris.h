@@ -45,6 +45,7 @@ public:
   void setWaypoint(geometry_msgs::Pose p);
   void setWaypointIncrement(double x, double y, double z, double yaw);
   void setPath(nav_msgs::Path path) ;
+  void setPath(std::vector<geometry_msgs::Pose> path) ;
   void start(double x, double y, double z, double yaw);
   void rotateOnTheSpot();
   void rotateOnTheSpot(double x, double y, double z);

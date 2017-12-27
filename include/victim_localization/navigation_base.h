@@ -40,6 +40,8 @@ public:
   virtual void SetDynamicGridSize(double x, double y,double z){};
   virtual void SetOriginPose(double x, double y,double z){};
 
+  std::vector<geometry_msgs::Pose> Path_discretization(geometry_msgs::Pose start, geometry_msgs::Pose end, double step_size);
+
 };
 
 #endif // NAVIGATION_BASE_H

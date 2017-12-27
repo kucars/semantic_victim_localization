@@ -2,9 +2,9 @@
 ## reactive Planner settings
 ############
 tf_frame: "world"
-resolution: 0.3
+resolution: 1.0
 visualize_max_z: 3.0
-sensor_max_range: 15.0
+sensor_max_range: 5.0
 map_publish_frequency: 1.0
 treat_unknown_as_occupied: false
 visualize_search_space: false
@@ -13,9 +13,9 @@ sample_orientations: false
 orientation_sampling_res: 90.0
 tree_progress_display_freq: -1
 debug_delay: 0.0
-dist_to_goal: 0.5
+dist_to_goal: 1.0
 connection_rad: 1.5
-grid_resolution: 1.0
+grid_resolution: 0.1
 grid_size_x: 20.0
 grid_size_y: 20.0
 grid_size_z: 0.0

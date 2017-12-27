@@ -57,14 +57,15 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   mapManager->getAllOccupiedBoxes(&occupied_box_vector);
   ROS_INFO_THROTTLE(1,"Received a Service Request Planning MAP SIZE:[%f %f %f] occupied cells:%lu",mapManager->getMapSize()[0],mapManager->getMapSize()[1],mapManager->getMapSize()[2],occupied_box_vector.size());
 
-  std::cout << " Executing the Planner Service" << std::endl;
-
   if(occupied_box_vector.size()<=0 || mapManager->getMapSize().norm() <= 0.0)
   {
-    std::cout << "error comeing from here....." << std::endl;
     ROS_INFO_THROTTLE(1, "Planner not set up: Octomap is empty!");
     return false;
   }
+
+  visualTools->deleteAllMarkers(); // clear the markers
+ // delete robot;
+  //delete pathPlanner;
 
   ros::Time timer_start = ros::Time::now();
 
@@ -72,10 +73,10 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   end.p     = end_;
 
   // round the start and end poses
-  start.p.position.x   =  round(start.p.position.x );   start.p.position.y=round(start.p.position.y);   start.p.position.z=round(start.p.position.z);
-  end.p.position.x   =  round(end.p.position.x );   end.p.position.y=round(end.p.position.y);   end.p.position.z=round(end.p.position.z);
+  start.p.position.x   =  (start.p.position.x );   start.p.position.y=(start.p.position.y);   start.p.position.z=(start.p.position.z);
+  end.p.position.x   =  (end.p.position.x );   end.p.position.y=(end.p.position.y);   end.p.position.z=(end.p.position.z);
   //gridStart = start.p;
-  std::cout << "rounded position..." << std::endl;
+  //std::cout << "rounded position..." << std::endl;
 
   std::cout << start.p << std::endl;
   std::cout << end.p << std::endl;
@@ -107,11 +108,13 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   // Generate Grid Samples and visualise it
 
   std::cout << "input map data as follow" << std::endl;
-  std::cout << gridStart << std::endl;
-  std::cout << gridSize << std::endl;
-  std::cout << gridRes << std::endl;
-  std::cout << sampleOrientations << std::endl;
-  std::cout << orientationSamplingRes << std::endl;
+  std::cout << "start" << start.p << std::endl;
+  std::cout << "end" << end.p << std::endl;
+  std::cout << "gridstart" << gridStart << std::endl;
+  std::cout << "size"<< gridSize << std::endl;
+  std::cout << "res" << gridRes << std::endl;
+  std::cout << "sampleOrien" << sampleOrientations << std::endl;
+  std::cout << "sampleOrienReso"<< orientationSamplingRes << std::endl;
 
   pathPlanner->generateRegularGrid(gridStart, gridSize, gridRes, sampleOrientations, orientationSamplingRes,false, true);
   std::vector<geometry_msgs::Point> searchSpaceNodes = pathPlanner->getSearchSpace();
@@ -200,6 +203,16 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
     path_.poses.push_back(ps);
   }
 
+  // transfere the orientation for the end pose to the end pose in the path
+
+  //**********************//
+  geometry_msgs::PoseStamped end_ps;
+  end_ps = path_.poses.back();
+  end_ps.pose.orientation = end_.orientation;
+
+  path_.poses.erase(path_.poses.end());
+  path_.poses.insert(path_.poses.end(),end_ps);
+  //**********************//
 
   std::cout << "\nDistance calculated from the path: " << dist << "m\n";
 
@@ -257,12 +270,6 @@ void ReactivePlannerServer::getConfigsFromRosParams()
   nh_private.param("tree_progress_display_freq",treeProgressDisplayFrequency,treeProgressDisplayFrequency);
 }
 
-/*void ReactivePlannerServer::callback(const sensor_msgs::PointCloud2::ConstPtr& cloudIn)
-{
-  gotCloud = true;
-  mapManager->insertPointcloudWithTf(cloudIn);
-}
-*/
 void ReactivePlannerServer::SetDynamicGridSize(double x, double y, double z)
 {
   gridSize.x=x;

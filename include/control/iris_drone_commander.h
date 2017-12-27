@@ -7,6 +7,7 @@
 #include "victim_localization/rotate_action.h"
 #include "victim_localization/waypoint_action.h"
 #include "victim_localization/path_action.h"
+#include "victim_localization/path2_action.h"
 #include "victim_localization/status_action.h"
 
 namespace Command {
@@ -43,6 +44,7 @@ public:
   ros::ServiceServer service_rotation;
   ros::ServiceServer service_waypoint;
   ros::ServiceServer service_path;
+  ros::ServiceServer service_path2;
   ros::ServiceServer service_status;
   void Takeoff();
   void rotate();
@@ -55,6 +57,9 @@ public:
 
   bool execute_path(victim_localization::path_action::Request &request,
                      victim_localization::path_action::Response &respond);
+
+  bool execute_path2(victim_localization::path2_action::Request &request,
+                     victim_localization::path2_action::Response &respond);
 
   bool check_status(victim_localization::status_action::Request &request,
                      victim_localization::status_action::Response &respond);
