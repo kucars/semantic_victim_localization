@@ -7,10 +7,10 @@ victim_thermal_detector::victim_thermal_detector(ros::NodeHandle &nh_, ros::Node
 
   image_transport::ImageTransport it(nh_);
   image_transport::ImageTransport p_it(pnh_);
-  sub_image = it.subscribe("thermal_camera/image_raw", 1, &victim_thermal_detector::imageCallback,this);
+  sub_image = it.subscribe("/thermal_cam/image_raw", 1, &victim_thermal_detector::imageCallback,this);
   pub_detection_ = it.advertise("image_detection1", 10);
-
 }
+
 victim_thermal_detector::~victim_thermal_detector(){}
 
 void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img){
@@ -25,7 +25,9 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
     return;
   }
   cv::Mat img_proc(cv_ptr->image);
+  cv::Mat threshold_image;
 
+  cv::threshold(img_proc,threshold_image,250,255,cv::THRESH_BINARY);
   //Perform blob detection
   cv::SimpleBlobDetector::Params params;
   params.filterByColor = true;
@@ -33,7 +35,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
   params.minDistBetweenBlobs = minDistBetweenBlobs_;
   params.filterByArea = true;
   params.minArea = minAreaVictim_;
-  params.maxArea = img_proc.rows * img_proc.cols;
+  params.maxArea = threshold_image.rows * threshold_image.cols;
   params.filterByCircularity = false;
   params.filterByColor = false;
   params.filterByConvexity = false;
@@ -41,7 +43,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
 
   cv::Ptr<cv::SimpleBlobDetector> blob_detector = cv::SimpleBlobDetector::create(params);
   std::vector<cv::KeyPoint> keypoints;
-  blob_detector->detect(img_proc,keypoints);
+  blob_detector->detect(threshold_image,keypoints);
   victim_loc.clear();
   for(unsigned int i=0; i<keypoints.size();i++)
   {
@@ -49,7 +51,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
       std::cout << "blob found at (x,y)= " << k.pt.x << "," << k.pt.y << std::endl;
       ROS_DEBUG("Heat blob found at image coord: (%f, %f)", k.pt.x , k.pt.y);
      // ROS_DEBUG("Heat blob numer: %f", keypoints.size());
-      cv::Rect rect_image(0, 0, img_proc.cols, img_proc.rows);
+      cv::Rect rect_image(0, 0, threshold_image.cols, threshold_image.rows);
       cv::Rect rect_roi(k.pt.x - (k.size - 1)/2, k.pt.y - (k.size - 1)/2, k.size - 1, k.size - 1);
 
       //See http://stackoverflow.com/questions/29120231/how-to-verify-if-rect-is-inside-cvmat-in-opencv
@@ -60,7 +62,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
         continue;
       }
 
-      const cv::Mat roi = img_proc(rect_roi);
+      const cv::Mat roi = threshold_image(rect_roi);
       int histSize = 256;
       float range[] = { 0, 256 };
       const float* histRange = { range };

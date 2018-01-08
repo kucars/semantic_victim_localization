@@ -7,15 +7,29 @@ victim_detector_base()
   ros::param::param<double>("~min_Dist_Between_Blobs", minDistBetweenBlobs_ , 40.0);
   ros::param::param<double>("~thermal_min_Area_Victim", minAreaVictim_ , 40.0);
 
+  ros::param::param("~thermal_Image_topic", thermal_image_topic, std::string("/thermal_cam/image_raw"));
+  ros::param::param("~topic_Odometry", topic_Odometry, std::string("iris/mavros/local_position/pose"));
+
   image_transport::ImageTransport it(nh_);
-  sub_image = it.subscribe("thermal_camera/image_raw", 1, &victim_thermal_detector::imageCallback,this);
+
+  //message_filters configurations
+  thermal_image_sub  = new message_filters::Subscriber<sensor_msgs::Image>(nh_, thermal_image_topic, 1);
+  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Odometry, 1);
+  sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *thermal_image_sub ,*loc_sub_);
+
+  // Callbacks
+  sync->registerCallback(boost::bind(&victim_thermal_detector::imageCallback, this, _1, _2));
+
+
+ // sub_image = it.subscribe("/thermal_cam/image_raw", 1, &victim_thermal_detector::imageCallback,this);
   pub_detection_ = it.advertise("image_detection1", 10);
 }
 
 
 victim_thermal_detector::~victim_thermal_detector(){}
 
-void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img)
+void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img,
+                                            const geometry_msgs::PoseStamped::ConstPtr& loc)
 {
   input_image=img;
   cv_bridge::CvImageConstPtr cv_ptr;
@@ -28,29 +42,42 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
   }
-  img_proc(cv_ptr->image);
-}
+  img_proc=cv_ptr->image;
+
+  current_ps= *loc;
+  }
 
 
   void victim_thermal_detector::BlobDetection(void){
   victim_found=false;  //initially set victim_found to false
-
+  std::cout << "blob detecotr is runing...." << std::endl;
   //Perform blob detection
+
+  cv::Mat threshold_image;
+  cv::threshold(img_proc,threshold_image,250,255,cv::THRESH_BINARY);
+  //Perform blob detection
+
+
   cv::SimpleBlobDetector::Params params;
   params.filterByColor = true;
   params.blobColor = 255;
   params.minDistBetweenBlobs = minDistBetweenBlobs_;
   params.filterByArea = true;
   params.minArea = minAreaVictim_;
-  params.maxArea = img_proc.rows * img_proc.cols;
+  params.maxArea = threshold_image.rows * threshold_image.cols;
   params.filterByCircularity = false;
   params.filterByColor = false;
   params.filterByConvexity = false;
   params.filterByInertia = false;
 
+  capture_ps=current_ps;
+
+  std::cout << "this is the expected yaw for the drone pointOfInterest..."  << pose_conversion::getYawFromQuaternion(capture_ps.pose.orientation) << std::endl;
+  std::cout << "this is the expected time..." << capture_ps.header.stamp << std::endl;
+
   cv::Ptr<cv::SimpleBlobDetector> blob_detector = cv::SimpleBlobDetector::create(params);
   std::vector<cv::KeyPoint> keypoints;
-  blob_detector->detect(img_proc,keypoints);
+  blob_detector->detect(threshold_image,keypoints);
 
   for(unsigned int i=0; i<keypoints.size();i++)
   {
@@ -58,7 +85,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
       std::cout << "blob found at (x,y)= " << k.pt.x << "," << k.pt.y << std::endl;
       ROS_DEBUG("Heat blob found at image coord: (%f, %f)", k.pt.x , k.pt.y);
      // ROS_DEBUG("Heat blob numer: %f", keypoints.size());
-      cv::Rect rect_image(0, 0, img_proc.cols, img_proc.rows);
+      cv::Rect rect_image(0, 0, threshold_image.cols, threshold_image.rows);
       cv::Rect rect_roi(k.pt.x - (k.size - 1)/2, k.pt.y - (k.size - 1)/2, k.size - 1, k.size - 1);
 
       //See http://stackoverflow.com/questions/29120231/how-to-verify-if-rect-is-inside-cvmat-in-opencv
@@ -69,7 +96,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
         continue;
       }
 
-      const cv::Mat roi = img_proc(rect_roi);
+      const cv::Mat roi = threshold_image(rect_roi);
       int histSize = 256;
       float range[] = { 0, 256 };
       const float* histRange = { range };
@@ -85,7 +112,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
       std::cout << "No blob detected" << std::endl;
   }
 
-  if(pub_detection_.getNumSubscribers() > 0){
+  if((pub_detection_.getNumSubscribers() > 0) && victim_found){
 
   //Create image with detection frames
       int width = 3;
@@ -125,6 +152,14 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
                       }
                   }
               }
+             // cvCircle(&ipl_img,((int)(keypoints.at(i).pt.x),(int)(keypoints.at(i).pt.y)) , 5, (0,255,0));
+              cv::Point point_;
+              point_.x = keypoints.at(i).pt.x;
+              point_.y = keypoints.at(i).pt.y;
+              cv::Scalar black( 0, 0, 0 );
+              cv::circle(img_proc,point_,2,black);
+
+              std::cout << "again the center in the image is ..." << keypoints.at(i).pt << std::endl;
           }
       }
 
@@ -151,4 +186,9 @@ Status victim_thermal_detector::getDetectorStatus(){
   status.victim_found = victim_found;
   status.victim_loc=victim_loc;
   return status;
+}
+
+ros::Time victim_thermal_detector::getCaptureTime()
+{
+  return capture_ps.header.stamp;
 }

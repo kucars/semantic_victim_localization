@@ -31,25 +31,48 @@ bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &
  }
  else
  {
-   ROS_INFO("Unfortunately, No Path Found or planner not ready!");
+   ROS_INFO("No Path Found or planner not ready!");
   return false;
  }
 
 }
 
+bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end,std::vector<geometry_msgs::Pose> &Path)
+{
+ if (getDistance(current_pose_,end)< d_close) // terminate if the end pose is at the robot current pose
+   return false;
+
+ std::cout << "calling the service" << std::endl;
+
+ if (manager_ == NULL) {
+   ROS_ERROR_THROTTLE(1, "Planner not set up: No octomap available!");
+   return false;
+ }
+
+ ROS_INFO("Executing the Planner Loop...");
+
+ if(reactivePlannerServer->PathGeneration(current_pose_,end,Path))
+ {
+   return true;
+ }
+ else
+ {
+   ROS_INFO("No Path Found or planner not ready!");
+  return false;
+ }
+
+}
 std::string ReactivePathPlanner::methodName(void)
 {
  methodName_="ReactivePathPlanner";
  return methodName_;
 }
+
 void ReactivePathPlanner::start()
 
 {
   //initiate the reactive planner service
-
-  std::cout << "plannner ready to run it" << std::endl;
   reactivePlannerServer= new ReactivePlannerServer(nh_,nh_private_,manager_);
-  std::cout << "plannner runne4d..." << std::endl;
 }
 
 void ReactivePathPlanner::SetDynamicGridSize(double x, double y, double z)

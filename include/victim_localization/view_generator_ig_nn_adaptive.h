@@ -10,14 +10,14 @@ public:
   virtual void generateViews();
   virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
   std::string getMethodName();
+  double scale_factor_;
+
 
 private:
   int minima_iterations_;
   double minima_threshold_;
   bool isStuckInLocalMinima();
 
-protected:
-double scale_factor_;
 };
 
 #endif // VIEW_GENERATOR_IG_NN_ADAPTIVE_H

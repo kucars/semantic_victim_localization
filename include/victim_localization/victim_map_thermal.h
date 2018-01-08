@@ -18,17 +18,21 @@ private:
   double thermal_y_offset;
   double max_thermal_d;
   double min_thermal_d;
+  double octomap_resol;
 
   Position ThermalRayStart;
   Position ThermalRayEnd;
   std::vector<Position> ThermalRay;
+
+  rviz_visual_tools::RvizVisualToolsPtr visualize_thermal_ray;
+
 
 public:
   victim_map_Thermal(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   victim_thermal_detector *detector_;
   void Update();
   void runDetector();
-  void GetCameraCenter2World (geometry_msgs::PoseStamped &CamCentertoWorld);
+  void GetCameraCenter2World (geometry_msgs::PoseStamped &CamCentertoWorld, ros::Time caputre_time);
   void GenerateRayVector(grid_map::GridMap Map,Position start,Position End);
   bool IsInsideRay(Position P);
 

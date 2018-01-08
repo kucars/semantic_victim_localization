@@ -38,7 +38,7 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
 void victim_map_DL::Update(){
   //run deep learning detector
   runDetector();
-
+  std::cout << "updating the map.... " << std::endl;
   grid_map::GridMap temp_Map;
   temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose());
 
@@ -94,7 +94,6 @@ void victim_map_DL::runDetector()
   detector_->SetCurrentSetpoint(current_loc_);
   detector_->performDetection();
 
-    if ((detector_->getDetectorStatus()).victim_found ==true)
     this->setDetectionResult(detector_->getDetectorStatus());
   }
   else {

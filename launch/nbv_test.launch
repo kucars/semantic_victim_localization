@@ -7,7 +7,7 @@
     <arg name="visualize_max_z" default="2.5" />
     <arg name="sensor_max_range" default="5.0" />
     <arg name="param_file" default="$(find victim_localization)/config/exploration.yaml" />
-    <arg name="debug" default="true"/>
+    <arg name="debug" default="false"/>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
        <param name="tf_frame" type="string" value="$(arg tf_frame)" />
@@ -38,7 +38,7 @@
 
 <!-- Launch iris_commander to manager iris drone-->
 
-<node pkg="victim_localization" type="iris_commander" name="iris_commander" output="screen"/>
+<node pkg="victim_localization" type="iris_commander" name="iris_commander"/>
 
 
 <!-- Launch the grid map visualizer -->
@@ -46,6 +46,9 @@
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_DL.yaml" />
 </node>
 
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_1" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_thermal.yaml" />
+</node>
 
 <!-- Launch RViz with the demo configuration -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" />

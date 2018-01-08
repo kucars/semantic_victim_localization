@@ -53,6 +53,52 @@ ReactivePlannerServer::~ReactivePlannerServer()
 
 bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,nav_msgs::Path &path_)
 {
+  geometry_msgs::PoseArray pathPoses;
+
+  if (!PathGeneration(start_,end_,pathPoses))
+    return false;
+
+  // setting the path
+  geometry_msgs::PoseStamped ps;
+  ps.header.frame_id="world";
+  ps.header.stamp= ros::Time::now();
+  for (int i=0; i<pathPoses.poses.size(); i++) {
+    ps.pose = pathPoses.poses[i];
+    path_.poses.push_back(ps);
+  }
+
+  // transfere the orientation for the end pose to the end pose in the path
+  geometry_msgs::PoseStamped end_ps;
+  end_ps = path_.poses.back();
+  end_ps.pose.orientation = end_.orientation;
+  path_.poses.erase(path_.poses.end());
+  path_.poses.insert(path_.poses.end(),end_ps);
+
+  return true;
+}
+
+bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,std::vector<geometry_msgs::Pose> &path_)
+{
+  geometry_msgs::PoseArray pathPoses;
+
+  if (!PathGeneration(start_,end_,pathPoses))
+    return false;
+
+  // setting the path
+  path_=pathPoses.poses;
+
+  // transfere the orientation for the end pose to the end pose in the path
+  geometry_msgs::Pose end_p;
+  end_p = path_.back();
+  end_p.orientation = end_.orientation;
+  path_.erase(path_.end());
+  path_.insert(path_.end(),end_p);
+
+  return true;
+}
+
+bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,geometry_msgs::PoseArray &pathPoses)
+{
 
   mapManager->getAllOccupiedBoxes(&occupied_box_vector);
   ROS_INFO_THROTTLE(1,"Received a Service Request Planning MAP SIZE:[%f %f %f] occupied cells:%lu",mapManager->getMapSize()[0],mapManager->getMapSize()[1],mapManager->getMapSize()[2],occupied_box_vector.size());
@@ -64,8 +110,6 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   }
 
   visualTools->deleteAllMarkers(); // clear the markers
- // delete robot;
-  //delete pathPlanner;
 
   ros::Time timer_start = ros::Time::now();
 
@@ -144,6 +188,8 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
     visualTools->trigger();
   }
 
+   std::cout << "searching for the best link\n";
+
   // Find path and visualise it
   ros::Time timer_restart = ros::Time::now();
   SSPP::Node* path = pathPlanner->startSearch(start);
@@ -160,9 +206,10 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
     return false;
   }
 
+
   geometry_msgs::Point linePoint;
   std::vector<geometry_msgs::Point> pathSegments;
-  geometry_msgs::PoseArray robotPose, sensorPose,pathPoses;
+  geometry_msgs::PoseArray robotPose, sensorPose;
   double dist = 0;
   double yaw;
   while (path != NULL)
@@ -194,27 +241,12 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
     path = path->next;
   }
 
-  // getting the path
-  geometry_msgs::PoseStamped ps;
-  ps.header.frame_id="world";
-  ps.header.stamp= ros::Time::now();
-  for (int i=0; i<pathPoses.poses.size(); i++) {
-    ps.pose = pathPoses.poses[i];
-    path_.poses.push_back(ps);
-  }
-
-  // transfere the orientation for the end pose to the end pose in the path
-
-  //**********************//
-  geometry_msgs::PoseStamped end_ps;
-  end_ps = path_.poses.back();
-  end_ps.pose.orientation = end_.orientation;
-
-  path_.poses.erase(path_.poses.end());
-  path_.poses.insert(path_.poses.end(),end_ps);
-  //**********************//
-
   std::cout << "\nDistance calculated from the path: " << dist << "m\n";
+
+  if (dist==0) {
+  ROS_WARN("The Robot is already in the target pose.... The path generation is set to success... ");
+  return true;
+  }
 
   for(int i =0; i<(pathSegments.size() - 1) ;i++)
   {

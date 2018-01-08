@@ -5,8 +5,9 @@ view_generator_IG()
 {
   ros::param::param<double>("~frontier_reached_with_distance", dist_for_frontier_reached , 10);
   ros::param::param<bool>("~use_inflated_obstacles", use_inflated_obs_ , true);
-  ros::param::param<double>("frontier_yaw", frontier_yaw_res_,M_PI/4.0);
   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 0.5);
+
+  frontier_yaw_res_=M_PI/4.0; // the code is tuned to work with this yaw resolution
 
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Frontier_visualisation"));
   visualTools->loadMarkerPub();
@@ -28,14 +29,16 @@ view_generator_IG()
   // check for all cells in the victim map whether or not they are frontier cells
   for (grid_map::GridMapIterator iterator(victim_map);
        !iterator.isPastEnd(); ++iterator) {
-    Position position;
     Index index=*iterator;
     if(isFrontier(index)){
      allFrontiers.push_back(index);
     }
   }
 
+
   std::vector<geometry_msgs::Pose> FinalFrontier;
+  Frontier_yaw_rejected_poses.clear();
+
   for(unsigned int i = 0; i < allFrontiers.size(); ++i){
      //if(!isFrontierReached(allFrontiers[i])){
       Position P;
@@ -46,9 +49,7 @@ view_generator_IG()
       FrontierPose.position.y=P[1];
       FrontierPose.position.z=uav_fixed_height;
 
-
-
-      FinalFrontier = setYawtoViewpoint(FrontierPose);
+      if (setYawtoViewpoint(FrontierPose,allFrontiers[i],FinalFrontier))
       allFrontierPose.insert(allFrontierPose.end(),FinalFrontier.begin(),FinalFrontier.end());
 
       FinalFrontier.clear();
@@ -73,7 +74,7 @@ bool view_generator_ig_frontier::isFrontierReached(Index point){
   double dy = robotPoseMsg.pose.position.y - p[1];
 
   if ( (dx*dx) + (dy*dy) < (dist_for_frontier_reached*dist_for_frontier_reached)) {
-   // ROS_DEBUG("[View_Generator_IG_Frontier]: frontier is within the squared range of: %f", dist_for_frontier_reached);
+    ROS_DEBUG("[View_Generator_IG_Frontier]: frontier is within the squared range of: %f", dist_for_frontier_reached);
     return true;
   }
   return false;
@@ -186,52 +187,41 @@ bool view_generator_ig_frontier::isValid(Index point){
    return false;
 }
 
-void view_generator_ig_frontier::setupMapData()
+
+bool view_generator_ig_frontier::setYawtoViewpoint(geometry_msgs::Pose Frontier, Index index_,
+                                                   std::vector<geometry_msgs::Pose> &Frontier_with_yaws)
 {
-  costmap_ = costmap_ros_->getCostmap();
-
-//  if ((this->map_width_ != costmap_->getSizeInCellsX()) || (this->map_height_ != costmap_->getSizeInCellsY())){
-//    map_width_ = costmap_->getSizeInCellsX();
-//    map_height_ = costmap_->getSizeInCellsY();
-//    num_map_cells_ = map_width_ * map_height_;
-
-//    // initialize exploration_trans_array_, obstacle_trans_array_, goalMap and frontier_map_array_
-//    exploration_trans_array_.reset(new unsigned int[num_map_cells_]);
-//    obstacle_trans_array_.reset(new unsigned int[num_map_cells_]);
-//    is_goal_array_.reset(new bool[num_map_cells_]);
-//    frontier_map_array_.reset(new int[num_map_cells_]);
-//    clearFrontiers();
-//    resetMaps();
-//  }
-  occupancy_grid_array_ = costmap_->getCharMap();
-}
-
-//void view_generator_ig_frontier::clearFrontiers()
-//{
-//  std::fill_n(frontier_map_array_.get(), num_map_cells_, 0);
-//}
-
-//void view_generator_ig_frontier::resetMaps(){
-//  std::fill_n(exploration_trans_array_.get(), num_map_cells_, UINT_MAX);
-//  std::fill_n(obstacle_trans_array_.get(), num_map_cells_, UINT_MAX);
-//  std::fill_n(is_goal_array_.get(), num_map_cells_, false);
-//}
-
-
-std::vector<geometry_msgs::Pose> view_generator_ig_frontier::setYawtoViewpoint(geometry_msgs::Pose vp)
-{
-  geometry_msgs::Pose temp_Frontier;
-  std::vector<geometry_msgs::Pose> Frontier_with_yaws;
- // double currYaw = pose_conversion::getYawFromQuaternion(current_pose_.orientation);
-
-  for (double i_yaw=0; i_yaw<=2*M_PI; i_yaw+=frontier_yaw_res_)
+  for (double i_yaw=-M_PI; i_yaw<M_PI; i_yaw+=frontier_yaw_res_)
   {
-   temp_Frontier=vp;
-   temp_Frontier.orientation=pose_conversion::getQuaternionFromYaw(i_yaw);
-   Frontier_with_yaws.push_back(temp_Frontier);
+   if (!IsPointingtoUnkown(i_yaw,index_)) {
+     Frontier.orientation=pose_conversion::getQuaternionFromYaw(i_yaw);
+     Frontier_yaw_rejected_poses.push_back(Frontier);
+     continue;
+   }
+   Frontier.orientation=pose_conversion::getQuaternionFromYaw(i_yaw);
+   Frontier_with_yaws.push_back(Frontier);
   }
-   return Frontier_with_yaws;
+   return Frontier_with_yaws.size();
 }
+
+
+bool view_generator_ig_frontier::IsPointingtoUnkown(double yaw, Index index_)
+{
+   if ((-M_PI/8 <= yaw) && (yaw <= M_PI/8))  {if(victim_map.at(map_layer,left(index_)) == 0.5) return true;}
+   else if ((-M_PI/8.0 < yaw) && (yaw <= -3.0*M_PI)/8.0)  {if(victim_map.at(map_layer,upleft(index_)) == 0.5) return true;}
+   else if (((-3*M_PI)/8< yaw) && (yaw <= (-5*M_PI)/8))  {if(victim_map.at(map_layer,up(index_)) == 0.5) return true;}
+   else if (((-5*M_PI)/8< yaw) && (yaw  <= (-7*M_PI)/8))  {if(victim_map.at(map_layer,upright(index_)) == 0.5) return true;}
+
+   else if ((M_PI/8 < yaw) && (yaw  <= (3*M_PI)/8))  {if(victim_map.at(map_layer,downleft(index_)) == 0.5) return true;}
+   else if (((3*M_PI)/8< yaw) && (yaw  <= (5*M_PI)/8))  {if(victim_map.at(map_layer,down(index_)) == 0.5) return true;}
+   else if (((5*M_PI)/8< yaw) && (yaw  <= (7*M_PI)/8))  {if(victim_map.at(map_layer,downright(index_)) == 0.5) return true;}
+
+   else if (((7*M_PI)/8 < yaw) && (yaw  <= M_PI))  {if(victim_map.at(map_layer,right(index_)) == 0.5) return true;}
+   else if (((-7*M_PI)/8 < yaw) && (yaw  <= -M_PI))  {if(victim_map.at(map_layer,right(index_)) == 0.5) return true;}
+
+  return false;
+}
+
 
 void view_generator_ig_frontier::generateViews()
 {
@@ -252,6 +242,10 @@ void view_generator_ig_frontier::generateViews()
       rejected_poses.push_back(initial_poses[i]);
     }
   }
+
+  // add to the rejected poses the rejected frontier that point toward the known.
+  //rejected_poses.insert(rejected_poses.end(),Frontier_yaw_rejected_poses.begin(),Frontier_yaw_rejected_poses.end());
+
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
 
   //ros::Rate(0.01).sleep();
@@ -265,14 +259,14 @@ void view_generator_ig_frontier::visualize(std::vector<geometry_msgs::Pose> vali
 
   for (int i=0; i< valid_poses.size(); i++)
   {
-  visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::LARGE,0.4);
+  visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XLARGE,0.4);
   }
 
   for (int i=0; i< invalid_poses.size(); i++)
   {
-   visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::LARGE,0.4);
+   visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XLARGE,0.4);
   }
-  visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::LARGE,0.7);
+  visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE,0.7);
 
   visualTools->trigger();
 }
@@ -312,6 +306,13 @@ if(IsValid(costmap_index)){
 }
 return false;
 }
+
+void view_generator_ig_frontier::setupMapData()
+{
+  costmap_ = costmap_ros_->getCostmap();
+  occupancy_grid_array_ = costmap_->getCharMap();
+}
+
 
 std::string view_generator_ig_frontier::getMethodName()
 {

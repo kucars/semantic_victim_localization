@@ -17,6 +17,7 @@
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/view_generator_ig_nn_adaptive.h>
 #include <victim_localization/view_generator_ig_frontier.h>
+#include <victim_localization/view_generator_ig_adaptive_frontier.h>
 #include <victim_localization/volumetric_map_manager.h>
 #include <victim_localization/nbv_history.h>
 
@@ -74,7 +75,7 @@ public:
   navigationBase *navigation_;
   double grid_size_x,grid_size_y;
   double grid_origin_x,grid_origin_y;
-  nav_msgs::Path path_to_waypoint;
+  std::vector<geometry_msgs::Pose> path_to_waypoint;
 
 
   view_generator_IG *view_generate_;

@@ -12,7 +12,6 @@ public:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
   volumetric_mapping::OctomapManager *manager_;
-  double uav_fixed_height;
   double extensionRange_;
   double boundingbox_x_;
   double boundingbox_y_;

@@ -35,6 +35,11 @@ drone_communicator::drone_communicator(const ros::NodeHandle& nh, const ros::Nod
   clientExecutePath2 = nh_private_.serviceClient<victim_localization::path2_action>(topic_service_path2);
   ClientCheckStatus = nh_private_.serviceClient<victim_localization::status_action>(topic_command_status);
   Check_MapManager_and_Drone_Ready();
+
+  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Path_points"));
+  visualTools->loadMarkerPub();
+  visualTools->deleteAllMarkers();
+  visualTools->enableBatchPublishing();
 }
 
 void drone_communicator::callbackPose(const geometry_msgs::PoseStamped::ConstPtr& msg)
@@ -97,8 +102,12 @@ bool drone_communicator::Execute_path(std::vector<geometry_msgs::Pose> path)
   current_drone_status=false;
   path2_srv.request.path = path;
   if (clientExecutePath2.call(path2_srv))
-    return true;
-
+    {
+      // visualize the path...
+      visualTools->publishPath(path,rviz_visual_tools::GREY,rviz_visual_tools::XLARGE,"PATH_");
+      visualTools->trigger();
+      return true;
+    }
   return false;
 }
 
@@ -110,6 +119,11 @@ bool drone_communicator::GetStatus()
   ss << "Check Status";
   status_srv.request.req= ss.str();
   if (!ClientCheckStatus.call(status_srv)) std::cout<< "status can not be checked...\n";
-  return status_srv.response.resp;
+  if (status_srv.response.resp == true) {
+    visualTools->deleteAllMarkers();
+    std::cout << "path visualization is resetted..." << std::endl;
+    return true;
+  }
+  return false;
 }
 

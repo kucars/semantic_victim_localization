@@ -72,7 +72,7 @@ void iris_drone_commander::start(){
     break;
 
   case Command::SEND_PATH:
-     vehicle_->FollowPath();
+     vehicle_->FollowPath(0.7);
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true;  // done following the path
     break;

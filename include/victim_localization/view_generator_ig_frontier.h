@@ -8,14 +8,13 @@
 #include <math.h>
 
 
-
-
 class view_generator_ig_frontier: public view_generator_IG
 {
 public:
   double frontier_yaw_res_;
   void setvictimmap(grid_map::GridMap *map,std::string layer_name);
-  std::vector<geometry_msgs::Pose> setYawtoViewpoint(geometry_msgs::Pose vp);
+  bool setYawtoViewpoint(geometry_msgs::Pose Frontier, Index index_, std::vector<geometry_msgs::Pose> &Frontier_with_yaws);
+  bool IsPointingtoUnkown(double yaw, Index index_);
 
   rviz_visual_tools::RvizVisualToolsPtr visualTools;
 
@@ -25,7 +24,6 @@ public:
   bool isFrontier(Index point);
   bool isFreeFrontiers(Index point);
   bool isFrontierReached(Index point);
-  double getYawToUnknown(Index point);
   inline void getAdjacentPoints(Index point, Index points[]);
   inline Index downleft(Index point);
   inline Index downright(Index point);
@@ -54,6 +52,7 @@ public:
 
   bool initialized_;
   int previous_goal_;
+  std::vector<geometry_msgs::Pose> Frontier_yaw_rejected_poses;
 
   std::string name;
   unsigned int map_width_;

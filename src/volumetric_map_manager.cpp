@@ -313,16 +313,22 @@ void Volumetric_Map::Publish2DOccupancyMap(void)
 void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmapR_)
 {
   costmap_ros_=costmapR_;
-  costmap_=costmap_ros_->getCostmap();
 }
 
 void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
 {
-  x_size= (m_gridmap.info.width * m_gridmap.info.resolution);
-  y_size= (m_gridmap.info.height * m_gridmap.info.resolution);
+  costmap_=costmap_ros_->getCostmap();
+
+   x_size= costmap_->getSizeInMetersX();
+   y_size= costmap_->getSizeInMetersY();
+
 }
 void Volumetric_Map::GetActiveOrigin(double &x_origin, double &y_origin)
 {
-  x_origin=m_gridmap.info.origin.position.x + (m_gridmap.info.width * m_gridmap.info.resolution);
-  y_origin=m_gridmap.info.origin.position.y + (m_gridmap.info.height * m_gridmap.info.resolution);
+
+  costmap_=costmap_ros_->getCostmap();
+
+  x_origin = costmap_->getOriginX() + costmap_->getSizeInMetersX()/2;
+  y_origin = costmap_->getOriginY() + costmap_->getSizeInMetersY()/2;
+
 }

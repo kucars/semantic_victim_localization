@@ -7,7 +7,6 @@
   manager_(manager),
   navigationBase()
 {
-  ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
   ros::param::param("~extensionRange", extensionRange_, 1.0);
   ros::param::param("~bounding_box_x", boundingbox_x_, 0.2);
   ros::param::param("~bounding_box_y", boundingbox_y_, 0.2);

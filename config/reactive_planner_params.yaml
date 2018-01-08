@@ -15,7 +15,7 @@ tree_progress_display_freq: -1
 debug_delay: 0.0
 dist_to_goal: 1.0
 connection_rad: 1.5
-grid_resolution: 0.1
+grid_resolution: 1.0
 grid_size_x: 20.0
 grid_size_y: 20.0
 grid_size_z: 0.0

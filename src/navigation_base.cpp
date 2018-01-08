@@ -9,6 +9,10 @@ navigationBase::navigationBase()
   ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
   ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+  ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+  ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
+
+
 }
 
 void navigationBase::setCurrentPose(geometry_msgs::Pose p)
@@ -31,6 +35,12 @@ bool navigationBase::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
   return false;
 }
 
+bool navigationBase::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path)
+{
+  std::cout << "[Warning:] " << cc.red << " Navigation method is the Base\n" << cc.reset;
+  return false;
+}
+
 std::string navigationBase::methodName(void)
 {
   methodName_="Navigation_Base";
@@ -47,7 +57,8 @@ std::vector<geometry_msgs::Pose>
      double x_sign,y_sign;
 
      std::vector<geometry_msgs::Pose> Formed_Path;
-     double path_angle = atan2(end.position.y - start.position.y,end.position.x - start.position.x);
+     //double path_angle = atan2(end.position.y - start.position.y,end.position.x - start.position.x);
+     double path_angle = pose_conversion::getYawFromQuaternion(end.orientation);
 
      Diff_x= end.position.x - start.position.x;
      Diff_y= end.position.y - start.position.y;
@@ -92,8 +103,9 @@ std::vector<geometry_msgs::Pose>
       Formed_Path.push_back(temp_pose);
      }
 
-     // pass the end pose to the path
-     Formed_Path.push_back(end);
+     // pass the end pose orientation to the path
+     temp_pose.orientation= end.orientation;
+     Formed_Path.push_back(temp_pose);
 
    return Formed_Path;
 

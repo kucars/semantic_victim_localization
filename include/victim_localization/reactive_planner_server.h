@@ -65,7 +65,12 @@ private:
   ~ReactivePlannerServer();
   //bool plannerCallback(sspp::sspp_srv::Request &req, sspp::sspp_srv::Response &res);
   //void callback(const sensor_msgs::PointCloud2::ConstPtr &cloudIn);
+
+  // overloading functions
   bool PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,nav_msgs::Path &path_);
+  bool PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,std::vector<geometry_msgs::Pose> &path_);
+  bool PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,geometry_msgs::PoseArray &path_);
+
   void getConfigsFromRosParams();
   void SetDynamicGridSize(double x, double y, double z);
   void SetOriginPose(double x, double y, double z);

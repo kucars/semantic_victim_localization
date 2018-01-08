@@ -172,6 +172,8 @@ add_executable (test_NBV
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
     src/view_generator_ig_frontier.cpp
+    src/view_generator_ig_adaptive_frontier.cpp
+
     src/volumetric_map_manager.cpp
     src/raytracing.cpp
     src/nbv_history.cpp

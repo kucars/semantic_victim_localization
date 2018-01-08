@@ -44,12 +44,12 @@ def main():
         for key in iterations:
           ax_plot[0][0].plot(iterations[key], selected_utility[key], label=key)
           ax_plot[0][1].plot(iterations[key], entropy_total[key], label=key)
-          ax_plot[1][0].plot(iterations[key], distance_inc[key], label=key)
+          ax_plot[1][0].plot(iterations[key], distance[key], label=key)
           ax_plot[1][1].plot(iterations[key], time_iteration[key], label=key)
 
         ax_plot[0][0].set_ylabel('Utility (Total)')
         ax_plot[0][1].set_ylabel('Global Entropy')
-        ax_plot[1][0].set_ylabel('Distance Increment (m)')
+        ax_plot[1][0].set_ylabel('Distance Travelled (m)')
         ax_plot[1][1].set_ylabel('Iteration Time (ms)')
         ax_plot[-1][0].set_xlabel('Iterations')
         ax_plot[-1][1].set_xlabel('Iterations')

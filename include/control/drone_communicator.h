@@ -10,6 +10,8 @@
 #include "victim_localization/path2_action.h"
 #include "victim_localization/waypoint_action.h"
 #include "victim_localization/status_action.h"
+#include "rviz_visual_tools/rviz_visual_tools.h"
+
 
 
 namespace Command {
@@ -54,6 +56,9 @@ public:
   geometry_msgs::Pose current_pose;
 
   bool current_drone_status;
+
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
+
 
   geometry_msgs::Pose GetPose();
   void Check_MapManager_and_Drone_Ready();

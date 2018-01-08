@@ -9,6 +9,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <sensor_msgs/image_encodings.h>
@@ -20,7 +21,7 @@
 #include <message_filters/sync_policies/approximate_time.h>
 
 #include <victim_localization/victim_detector_base.h>
-
+#include <string.h>
 
 class victim_thermal_detector : public victim_detector_base
 {
@@ -40,8 +41,11 @@ public:
   cv::Mat img_proc;
   Position victim_loc;
   bool victim_found;
+  geometry_msgs::PoseStamped capture_ps;
+  geometry_msgs::PoseStamped current_ps;
 
-  void imageCallback(const sensor_msgs::ImageConstPtr& img);
+  void imageCallback(const sensor_msgs::ImageConstPtr& img,
+                                              const geometry_msgs::PoseStamped::ConstPtr& loc);
   void performDetection();
 
   void BlobDetection();
@@ -50,6 +54,15 @@ public:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private;
 
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image,geometry_msgs::PoseStamped> MySyncPolicy;
+  message_filters::Subscriber<sensor_msgs::Image> *thermal_image_sub;
+  message_filters::Subscriber<geometry_msgs::PoseStamped> *loc_sub_;
+  message_filters::Synchronizer<MySyncPolicy> *sync;
+  std::string thermal_image_topic;
+  std::string topic_Odometry;
+
+
+  ros::Time getCaptureTime();
 };
 
 #endif // VICTIM_THERMAL_DETECTOR_H

@@ -4,7 +4,7 @@
 nav_bounds_x_max: 10.0
 nav_bounds_x_min: -10.0
 nav_bounds_y_max: 10.0
-nav_bounds_y_min: -5
+nav_bounds_y_min: -10.0
 nav_bounds_z_max: 5
 nav_bounds_z_min: 0.5 ## Do not allow the UAV to go below this height, as it may collide with the floor
 
@@ -27,9 +27,9 @@ RGB_image_y_offset: 240.5
 RGB_focal_length: 524.2422531097977
 
 ## thermal_camera
-fov_horizontal_thermal_cam: 48
-fov_vertical_thermal_cam: 45
-thermal_range_max: 15
+fov_horizontal_thermal_cam: 52.98
+fov_vertical_thermal_cam: 39.74
+thermal_range_max: 10
 thermal_image_x_resolution: 160.0
 thermal_image_y_resolution: 120.0
 thermal_image_x_offset: 79.5
@@ -55,7 +55,7 @@ uav_pose_yaw: 0.0
 # 0: deep learning victim map
 # 1: thermal victim map
 # 2: fused victim map
-map_type: 0
+map_type: 1
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -69,10 +69,10 @@ Prob_Dc_H_for_DL: 0.1
 Prob_Dc_Hc_for_DL: 0.95
 
 #thermal map probabilities
-Prob_D_H_for_thermal: 0.6
-Prob_D_Hc_for_thermal: 0.3
-Prob_Dc_H_for_thermal: 0.4
-Prob_Dc_Hc_for_thermal: 0.7
+Prob_D_H_for_thermal: 0.7
+Prob_D_Hc_for_thermal: 0.4
+Prob_Dc_H_for_thermal: 0.3
+Prob_Dc_Hc_for_thermal: 0.6
 
 ############
 ## Cost Map Obtained for octomap
@@ -111,10 +111,12 @@ thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 ## View Generation settings
 ############
 # 0: Nearest Neighbor (NN)
-# 1: Adaptive NN
+# 1: NN Adaptive
 # 2: Frontier
+# 3: NN Adaptive Frontier
 
-view_generator_type: 2
+
+view_generator_type: 0
 view_generator_nn_pos_res_x: 1.0
 view_generator_nn_pos_res_y: 1.0
 view_generator_nn_pos_res_z: 1.0
@@ -145,4 +147,6 @@ topic_segmented_PointCloud: "ssd/segmented_PointCloud"
 map_topic_DL: "victim_map/grid_map_DL"
 map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
+
+detection_enabled: true
 

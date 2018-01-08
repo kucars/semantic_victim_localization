@@ -18,6 +18,11 @@ Raytracing::Raytracing(double map_res_):
 
   setCameraSettings(fov_h, fov_v, r_max, r_min);
   getCameraRotationMtxs();
+
+  pub_temp_map=nh_.advertise<grid_map_msgs::GridMap>("temp_map", 1, true);
+
+  base_frame="base_link";
+  camera_frame="front_cam_depth_optical_frame";
 }
 
 Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
@@ -33,7 +38,10 @@ Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
 
   setCameraSettings(HFOV_deg, VFOV_deg, max_d, min_d);
   getCameraRotationMtxs();
+
+  pub_temp_map=nh_.advertise<grid_map_msgs::GridMap>("temp_map", 1, true);
 }
+
 void Raytracing::update()
 {
   current_pose_       = drone_comm->GetPose();
@@ -162,7 +170,7 @@ grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
 {
   update();
   computeRaysAtPose(p_);
-  grid_map::GridMap Pose_map;
+  grid_map::GridMap Pose_map ;
   Pose_map.setFrameId("map");
   Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
   Pose_map.add({"temp"},0.5);  //0 for free & unknown (for time being check free only), 0.5 for unexplored,
@@ -277,6 +285,135 @@ grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
   return Pose_map;
 }
 
+
+
+
+
+
+grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_ ,bool publish_)
+{
+  update();
+  computeRaysAtPose(p_);
+  grid_map::GridMap Pose_map;
+  Pose_map.setFrameId("map");
+  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
+  Pose_map.add({"temp"},0.5);  //0 for free & unknown (for time being check free only), 0.5 for unexplored,
+
+
+  octomap::point3d origin (p_.position.x, p_.position.y, p_.position.z);
+
+  std::set<octomap::OcTreeKey, OctomapKeyCompare> nodes; //all nodes in a set are UNIQUE
+
+  for (int i=0; i<rays_far_plane_at_pose_.size(); i++)
+  {
+    octomap::point3d endpoint;
+
+    // Get length of beam to the far plane of sensor
+    double range = rays_far_plane_at_pose_[i].norm();
+    // Get the direction of the ray
+    octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
+
+    //std::cout << "dir "  << dir << std::endl;
+
+    // Cast through unknown cells as well as free cells
+    bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
+    if (!found_endpoint)
+    {
+      endpoint = origin + dir * range;
+    }
+
+    if( found_endpoint ) {
+   // octomap::point3d start_pt, end_pt;
+   // bool entered_valid_range = false;
+   // bool exited_valid_range = false;
+
+    //std::cout << "endpointis : " << std::endl;
+    //if (found_endpoint==1) std::cout << "found; Endpoint: " << endpoint <<  std::endl;
+
+    /* Check ray
+   *
+   * We first draw a ray from the UAV to the endpoint
+   *
+   * For generality, we assume the UAV is outside the object bounds. We only consider nodes
+   * 	that are inside the object bounds, and past the near-plane of the camera.
+   *
+   * The ray continues until the end point.
+   * If the ray exits the bounds, we stop adding nodes to IG and discard the endpoint.
+   *
+   */
+
+   // std::cout << "NEWRAY" << origin << std::endl;
+
+    octomap::KeyRay ray;
+    tree_->computeRayKeys( origin, endpoint, ray );
+
+    for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
+    {
+      octomap::point3d p = tree_->keyToCoord(*it);
+
+      //std::cout << "this is the point from the ray: " << p << std::endl;
+
+      // project the point to the Map
+      octomap::OcTreeNode* node = tree_->search(*it);
+      Position position(p.x(),p.y());
+
+      if (!isInsideRegionofInterest(p.z())) continue;
+
+      if (!isInsideBounds(position)) continue;
+
+     // std::cout << "possible_location1" << std::endl;
+
+     // here you need to add the check box ( 1m up and 1m down the drone pose)
+      double prob = getNodeOccupancy(node);
+      if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
+
+      if (prob < 0.2)
+        if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+    }
+    }
+
+
+      octomap::OcTreeKey end_key;
+     if (tree_->coordToKeyChecked(endpoint,end_key))
+     {
+         octomap::OcTreeNode* node = tree_->search(end_key);
+         octomap::point3d p = tree_->keyToCoord(end_key);
+         Position position(p.x(),p.y());
+
+        if (!isInsideRegionofInterest(p.z())) continue;
+
+        if (!isInsideBounds(position)) continue;
+
+        // std::cout << "possible_location2" << std::endl;
+
+         double prob = getNodeOccupancy(node);
+         if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
+
+         if (prob < 0.2)
+           if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+    }
+  }
+
+
+    // Evaluate endpoint     // this is checked as the end is not checked in the for loop
+
+
+//   std::cout << "This is the map for pose : " << p_ << std::endl;
+//  for (grid_map::GridMapIterator iterator(Pose_map); !iterator.isPastEnd(); ++iterator) {
+//    Position position;
+//     Pose_map.getPosition(*iterator,position);
+//     std::cout << "position: " << position << " value: " << Pose_map.atPosition("temp",position)
+//               << std::endl;
+//  }
+
+  if (publish_)
+  publish_Map(Pose_map);
+
+  std::cout << "map size is: " << Pose_map.getLength()(0) << " " << Pose_map.getLength()(1) << std::endl;
+  return Pose_map;
+}
+
+
 bool Raytracing::isInsideBounds(Position p)
 {
   if (p[0] < nav_bounds_x_min_ || p[0] > nav_bounds_x_max_ ||
@@ -300,4 +437,13 @@ bool Raytracing::isInsideRegionofInterest(double z , double tolerance)
 
 void Raytracing::setDroneCommunicator(drone_communicator *drone_comm_){
   drone_comm = drone_comm_;
+}
+
+void Raytracing::publish_Map(grid_map::GridMap Map){
+  ros::Time time = ros::Time::now();
+  Map.setTimestamp(time.toNSec());
+  grid_map_msgs::GridMap message;
+  GridMapRosConverter::toMessage(Map, message);
+  pub_temp_map.publish(message);
+  ROS_INFO_THROTTLE(1.0, "Grid map (timestamp %f) published.", message.info.header.stamp.toSec());
 }

@@ -29,6 +29,7 @@ public:
 
   geometry_msgs::PoseStamped setpoint_;
   void SetCurrentSetpoint(geometry_msgs::Pose setpoint);
+  virtual ros::Time getCaptureTime(){};
 
 };
 

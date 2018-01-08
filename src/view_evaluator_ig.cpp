@@ -68,7 +68,6 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
   temp_Map=mapping_module_->raytracing_->Project_3d_rayes_to_2D_plane(p);
 
   polygon_view=mapping_module_->Update_region(temp_Map,p);  //std::cout << p1 << " " << p2 << std::endl;
-  int count=0;
   double IG_view=0;
   for (grid_map::GridMapIterator iterator(temp_Map); !iterator.isPastEnd(); ++iterator) {
     Position position;
@@ -77,9 +76,6 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
     if(temp_Map.atPosition("temp", position)==0){
       IG_view+=getCellEntropy(position);
     }
-   // std::cout << "loc: " << position << "  value: "<< temp_Map.atPosition("temp", position) << " count: " << count << std::endl;
-     //std::cout << "loc: " << position << " count: " << count << std::endl;
-    count++;
   }
   return IG_view;
 }

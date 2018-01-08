@@ -11,7 +11,7 @@
 TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
   nh(nh_),
   nh_private(nh_private_),
-  NBV_loop_rate(30)
+  NBV_loop_rate(20)
 {
     pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
     // >>>>>>>>>>>>>>>>>
@@ -32,6 +32,9 @@ void TestNBZ::initMap(){
       break;
     case 1:
       Map_ = new victim_map_Thermal(nh,nh_private);
+      break;
+    case 2:
+      Map_ = new victim_map_combined(nh,nh_private);
       break;
     }
 }
@@ -164,19 +167,31 @@ void TestNBZ::navigate()
   }
 
   std::cout << "[test_NBZ] " << cc.green << "Navigating to viewpoint\n" << cc.reset;
+
+  path_to_waypoint.clear();
   navigation_->setCurrentPose(drone_communicator_->GetPose());
 
-  switch(nav_type)
+
+  switch(2)
   {
   default:
-  case 0: // move to waypoint if strigntline navigation is used
-    std::cout << "now exectuing waypoint...." << std::endl;
-    drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose());
+  case 0: // move to waypoint if discrete strigntline is used
+    path_to_waypoint = navigation_->Path_discretization(View_evaluate_->getTargetPose(),
+                                                  drone_communicator_->GetPose(),0.1);
+
+    std::cout << "generated path is of size ....." << path_to_waypoint.size() << std::endl;
+    for (int i=0; i<path_to_waypoint.size() ; i++)
+      std::cout << path_to_waypoint[i]  << std::endl;
+
+    if (!drone_communicator_->Execute_path(path_to_waypoint))
+    {
+        ROS_WARN("Drone Communicator is unable to set path to waypoint, terminating....");
+    }
     break;
 
 
   case 1:  // move through path if reactive planner is used
-    path_to_waypoint.poses.clear();
+
     Occlusion_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     navigation_->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
@@ -188,7 +203,15 @@ void TestNBZ::navigate()
       drone_communicator_->Execute_path(path_to_waypoint);
     }
     else {
-      printf("path Not Found...\n");
+      ROS_WARN("Unable to generate path, terminating....");
+    }
+  break;
+
+  case 2:  // move through fixed setpoint
+
+    if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
+    {
+        ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
     }
   break;
   }
@@ -203,6 +226,7 @@ void TestNBZ::navigate()
    NBV_loop_rate.sleep();
    }
    }
+
    std::cout << "[test_NBZ] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
    state = NBVState::NAVIGATION_COMPLETE;
 }

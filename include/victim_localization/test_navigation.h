@@ -6,6 +6,8 @@
 #include "victim_localization/volumetric_map_manager.h"
 #include "mutex"
 #include "thread"
+#include "rviz_visual_tools/rviz_visual_tools.h"
+
 
 namespace NavigationState {
 enum State {
@@ -24,6 +26,9 @@ public:
   drone_communicator *drone_communicator_;
   volumetric_mapping::OctomapManager *manager_;
 
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
+
+
   Volumetric_Map *Volumetric_Map_;
   costmap_2d::Costmap2DROS *CostMapROS_;
   nav_msgs::Path path_;
@@ -39,19 +44,27 @@ public:
   double grid_origin_x, grid_origin_y;
 
 
- NavigationState::State state;
+   std::vector<geometry_msgs::Pose> collection_of_poses;
+   std::vector<std::vector<geometry_msgs::Pose> > Final_paths;
+   NavigationState::State state;
 
   void Configuration();
   void Takeoff();
   void executeplanner();
   void GetTestPath();
+  void GetTestPath2();
+  void GetTestPath3();
+  std::vector<geometry_msgs::Pose> Path_discretization(geometry_msgs::Pose p_1 , geometry_msgs::Pose p_2 , double step_size);
+
+
   void PublishCurrentPose(geometry_msgs::Pose p);
   void plannerthread();
   void PublishSPCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
   void state_machine();
 
   bool Selectpath_;
-  int Num_points;
+  int last_point;
+  double number_of_path, Path_size;
 };
 
 #endif // TEST_NAVIGATION_H
