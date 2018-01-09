@@ -250,7 +250,7 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
 
   for(int i =0; i<(pathSegments.size() - 1) ;i++)
   {
-    visualTools->publishLine(pathSegments[i], pathSegments[i+1], rviz_visual_tools::RED);
+    visualTools->publishLine(pathSegments[i], pathSegments[i+1],rviz_visual_tools::RED,rviz_visual_tools::XLARGE);
   }
   visualTools->trigger();
 

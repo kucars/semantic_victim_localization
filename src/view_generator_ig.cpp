@@ -39,6 +39,7 @@ view_generator_IG::view_generator_IG():
   }
   ros::NodeHandle nh_;
 
+
   pub_view_marker_array_ = nh_.advertise<visualization_msgs::MarkerArray>("generated_pose_marker_array", 10);
   pub_view_drone_marker_ = nh_.advertise<visualization_msgs::Marker>("drone_marker", 10);
 }
@@ -75,7 +76,6 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
   }
   return true;
 }   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
-
 
 
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
@@ -135,7 +135,6 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
 
 void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
 {
-  std::cout << "mistake...................." << std::endl;
   if (pub_view_marker_array_.getNumSubscribers() == 0)
     return;
 
@@ -340,7 +339,7 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
 
 void view_generator_IG::generateViews()
 {
-  generateViews(false);
+  generateViews(true);
 }
 
 

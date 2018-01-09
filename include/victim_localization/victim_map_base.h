@@ -68,6 +68,9 @@ public:
   double min_depth_d;
   double x_arena_max;
   double y_arena_max;
+  double octomap_resol;
+  double victim_found_prob;
+
 
   grid_map::GridMap map;
   grid_map::GridMap projected_map;
@@ -108,7 +111,7 @@ public:
   grid_map::GridMap Project_3d_rayes_to_2D_plane();
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
-  void setDroneCommunicator(drone_communicator *drone_comm_);
+  virtual void setDroneCommunicator(drone_communicator *drone_comm_);
 
 };
 

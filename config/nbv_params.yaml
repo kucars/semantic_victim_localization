@@ -55,7 +55,7 @@ uav_pose_yaw: 0.0
 # 0: deep learning victim map
 # 1: thermal victim map
 # 2: fused victim map
-map_type: 1
+map_type: 2
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -136,6 +136,11 @@ view_selecter_type: 0
 
 
 ############
+## Termination
+############
+victim_found_prob: 0.9
+
+############
 ## Topics Name
 ############
 topic_ssd_keras: "ssd_detction/box"
@@ -148,5 +153,5 @@ map_topic_DL: "victim_map/grid_map_DL"
 map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
 
-detection_enabled: true
+detection_enabled: false
 

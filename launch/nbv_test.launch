@@ -42,12 +42,20 @@
 
 
 <!-- Launch the grid map visualizer -->
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization" output="screen">
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_DL" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_DL.yaml" />
 </node>
 
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_1" output="screen">
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_thermal" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_thermal.yaml" />
+</node>
+
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_Combined" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_combined.yaml" />
+</node>
+
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_T" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map.yaml" />
 </node>
 
 <!-- Launch RViz with the demo configuration -->

@@ -70,7 +70,7 @@ void test_navigation::state_machine()
       planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
       Volumetric_Map_->GetActiveOrigin(grid_origin_x,grid_origin_y);      
-      planner_->reactivePlannerServer->SetOriginPose(round(grid_origin_x),round(grid_origin_y),round(drone_communicator_->GetPose().position.z));
+      planner_->reactivePlannerServer->SetOriginPose((grid_origin_x),(grid_origin_y),round(drone_communicator_->GetPose().position.z));
 
       path_to_waypoint.poses.clear();  // Initially clear the path
 
@@ -86,7 +86,7 @@ void test_navigation::state_machine()
     case(NavigationState::WAITING_FOR_WAYPOINT):
       if (!drone_communicator_->GetStatus()) break;
        ROS_INFO("WAYPOINT.... REACHED");
-       if (index_==5)
+       if (index_==0)
        {
        state= NavigationState::IDEL;
       break;
@@ -181,8 +181,8 @@ void test_navigation::GetTestPath()
   //thread_1 = std::thread(&test_navigation::PublishCurrentPose,this,vehicle_->getPose()); // keep publishing the drone current
 
   geometry_msgs::PoseStamped Setpoint_1;
-  Setpoint_1.pose.position.x= -2.1;
-  Setpoint_1.pose.position.y = 1.6;
+  Setpoint_1.pose.position.x= -4.7;
+  Setpoint_1.pose.position.y = 1.3;
   Setpoint_1.pose.position.z = 1;
   Setpoint_1.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);
 
@@ -247,8 +247,8 @@ void test_navigation::GetTestPath3()
   std::vector<geometry_msgs::Pose> selected_poses;
 
   geometry_msgs::Pose selected_pose;
-  selected_pose.position.x=-1.5;
-  selected_pose.position.y=0;
+  selected_pose.position.x=-4.7;
+  selected_pose.position.y=1.3;
   selected_pose.position.z=1;
   selected_pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);
 

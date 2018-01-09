@@ -28,7 +28,6 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
   ros::param::param<double>("~fov_vertical_thermal_cam", VFOV_deg , 45);
   ros::param::param<double>("~thermal_range_max", max_thermal_d , 15);
   ros::param::param<double>("~thermal_range_max", min_thermal_d , 0.5);
-  ros::param::param<double>("~octomap_resol", octomap_resol , 0.3);
 
 
   ros::param::param<double>("~thermal_image_x_resolution", thermal_img_x_res , 160.0);
@@ -44,11 +43,13 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
 
   // for debugging
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
-  if (map_resol> octomap_resol)
+  if (map_resol> octomap_resol){
     raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+  }
   else
+  {
     raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
-
+  }
   victimMapName="victim map thermal";
   max_depth_d=max_thermal_d;
 
@@ -136,6 +137,7 @@ void victim_map_Thermal::Update(){
 //    }
 //  }
  // else{
+
     for (grid_map::GridMapIterator iterator(map);
          !iterator.isPastEnd(); ++iterator) {
       Position position;
@@ -163,7 +165,7 @@ void victim_map_Thermal::Update(){
         }
         if (is_detect_== false )  map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior)));
 
-        if (Detec_prob>0.9) {
+        if (Detec_prob>victim_found_prob) {
           //std::cout << "Detec_prob" << std::endl;
           map_status.victim_found=true;
           map_status.victim_loc=position;

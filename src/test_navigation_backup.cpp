@@ -65,7 +65,7 @@ void test_navigation::Takeoff()
 
 void test_navigation::executeplanner()
 {
-   setpoints();
+   GetTestPath();
 
   for(int i=0;i<Setpoints_.size();i++)
   {
@@ -102,7 +102,7 @@ void test_navigation::executeplanner()
 
 
 
-void test_navigation::setpoints()
+void test_navigation::GetTestPath()
 {
   geometry_msgs::Pose Setpoint_1;
   Setpoint_1.position.x= -4;

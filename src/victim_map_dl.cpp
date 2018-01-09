@@ -67,8 +67,7 @@ void victim_map_DL::Update(){
           map.atPosition(layer_name, position)= Detec_prob;
           std::cout << cc.blue << "current_detection_probablitiy:" << Detec_prob << std::endl;
 
-          if (Detec_prob>0.9) {
-            //std::cout << "Detec_prob" << std::endl;
+          if (Detec_prob>victim_found_prob) {
             map_status.victim_found=true;
             map_status.victim_loc=position;
           }

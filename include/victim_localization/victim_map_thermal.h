@@ -18,7 +18,6 @@ private:
   double thermal_y_offset;
   double max_thermal_d;
   double min_thermal_d;
-  double octomap_resol;
 
   Position ThermalRayStart;
   Position ThermalRayEnd;
