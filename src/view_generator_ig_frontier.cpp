@@ -8,12 +8,6 @@ view_generator_IG()
   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 0.5);
 
   frontier_yaw_res_=M_PI/4.0; // the code is tuned to work with this yaw resolution
-
-  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Frontier_visualisation"));
-  visualTools->loadMarkerPub();
-
-  visualTools->deleteAllMarkers();
-  visualTools->enableBatchPublishing();
 }
 
 
@@ -251,28 +245,7 @@ void view_generator_ig_frontier::generateViews()
   //ros::Rate(0.01).sleep();
 }
 
-void view_generator_ig_frontier::visualize(std::vector<geometry_msgs::Pose> valid_poses,
-                                           std::vector<geometry_msgs::Pose> invalid_poses,
-                                           geometry_msgs::Pose selected_pose)
-{
-  visualTools->deleteAllMarkers(); //reset the markers
-
-  for (int i=0; i< valid_poses.size(); i++)
-  {
-  visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XLARGE,0.4);
-  }
-
-  for (int i=0; i< invalid_poses.size(); i++)
-  {
-   visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XLARGE,0.4);
-  }
-  visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE,0.7);
-
-  visualTools->trigger();
-}
-
-
-void view_generator_ig_frontier::visualize()
+void view_generator_ig_frontier::Visualize()
 {
   visualTools->deleteAllMarkers(); //reset the markers
 

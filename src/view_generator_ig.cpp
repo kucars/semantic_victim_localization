@@ -40,8 +40,11 @@ view_generator_IG::view_generator_IG():
   ros::NodeHandle nh_;
 
 
-  pub_view_marker_array_ = nh_.advertise<visualization_msgs::MarkerArray>("generated_pose_marker_array", 10);
-  pub_view_drone_marker_ = nh_.advertise<visualization_msgs::Marker>("drone_marker", 10);
+  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/ViewPoints_visualisation"));
+  visualTools->loadMarkerPub();
+
+  visualTools->deleteAllMarkers();
+  visualTools->enableBatchPublishing();
 }
 
 bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
@@ -135,103 +138,24 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
 
 void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
 {
-  if (pub_view_marker_array_.getNumSubscribers() == 0)
-    return;
 
-  visualization_msgs::MarkerArray pose_array;
-
-  // Valid markers
-  for (int i=0; i<valid_poses.size(); i++)
   {
-    visualization_msgs::Marker pose_marker = visualizeCreateArrowMarker(i, valid_poses[i], true);
-    pose_array.markers.push_back(pose_marker);
-  }
+    visualTools->deleteAllMarkers(); //reset the markers
 
-  // Invalid markers
-  int offset = valid_poses.size();
-  for (int i=0; i<invalid_poses.size(); i++)
-  {
-    visualization_msgs::Marker pose_marker = visualizeCreateArrowMarker(i+offset, invalid_poses[i], false);
-    pose_array.markers.push_back(pose_marker);
-  }
-
-  // Delete old markers
-  for (int i=valid_poses.size() + invalid_poses.size(); i<vis_marker_array_prev_size_; i++)
-  {
-    visualization_msgs::Marker pose_marker = visualizeDeleteArrowMarker(i);
-    pose_array.markers.push_back(pose_marker);
-  }
-
-  vis_marker_array_prev_size_ = valid_poses.size() + invalid_poses.size();
-
-  //Change the color for the selected Marker in the Valid Marker
-
-  visualizeSelectedArrowMarker(selected_pose,pose_array);
-
-  // Publish markers
-  pub_view_marker_array_.publish(pose_array);
-
-}
-
-visualization_msgs::Marker view_generator_IG::visualizeDeleteArrowMarker(int id)
-{
-  visualization_msgs::Marker pose_marker;
-
-  pose_marker.header.frame_id = "world";
-  pose_marker.header.stamp = ros::Time::now();
-  pose_marker.id = id;
-
-  //pose_marker.action = visualization_msgs::Marker::DELETE;
-  pose_marker.type = visualization_msgs::Marker::ARROW;
-  pose_marker.pose = geometry_msgs::Pose();
-  return pose_marker;
-}
-
-visualization_msgs::Marker view_generator_IG::visualizeCreateArrowMarker(int id, geometry_msgs::Pose pose, bool valid, double max_z, double min_z)
-{
-  visualization_msgs::Marker pose_marker;
-
-  pose_marker.header.frame_id = "world";
-  pose_marker.header.stamp = ros::Time::now();
-  pose_marker.id = id;
-  pose_marker.type = visualization_msgs::Marker::ARROW;
-  pose_marker.pose = pose;
-
-  // Style
-  pose_marker.scale.x = 0.5;
-  pose_marker.scale.y = 0.1;
-  pose_marker.scale.z = 0.1;
-
-  if( valid )
-  {
-    pose_marker.color.r = 0;
-    pose_marker.color.g = 1;
-    pose_marker.color.b = 0;
-    pose_marker.color.a = 1.0;
-  }
-  else
-  {
-    pose_marker.color.r = 1.0;
-    pose_marker.color.g = 0;
-    pose_marker.color.b = 0;
-    pose_marker.color.a = 1.0;
-  }
-
-  return pose_marker;
-}
-
-
-void view_generator_IG::visualizeSelectedArrowMarker(geometry_msgs::Pose selected_pose, visualization_msgs::MarkerArray &All_poses)
-{
-
-  for (int i=0; i<All_poses.markers.size();i++)
-    if (ComparePoses(All_poses.markers[i].pose,selected_pose))
+    for (int i=0; i< valid_poses.size(); i++)
     {
-      All_poses.markers[i].color.r=0;
-      All_poses.markers[i].color.g=0;
-      All_poses.markers[i].color.b=1.0;
-      All_poses.markers[i].color.a=1.0;
+    visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.4);
     }
+
+    for (int i=0; i< invalid_poses.size(); i++)
+    {
+     visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XXLARGE,0.4);
+    }
+    visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XXXLARGE,0.4);
+
+    visualTools->trigger();
+  }
+
 }
 
 
@@ -244,32 +168,6 @@ bool view_generator_IG::ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::P
         (pose_conversion::getYawFromQuaternion(Pose1.orientation) -pose_conversion::getYawFromQuaternion (Pose2.orientation))
         )==0.0) return true;
   return false;
-}
-
-
-
-void view_generator_IG::visualizeDrawSphere(geometry_msgs::Pose p, double r)
-{
-  if (pub_view_drone_marker_.getNumSubscribers() == 0)
-    return;
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = "world";
-  marker.header.stamp = ros::Time();
-  marker.id = vis_sphere_counter_;
-  marker.type = visualization_msgs::Marker::SPHERE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose = p;
-  marker.scale.x = r;
-  marker.scale.y = r;
-  marker.scale.z = r;
-  marker.color.a = 0.3;
-  marker.color.r = 1.0;
-  marker.color.g = 0.0;
-  marker.color.b = 1.0;
-  pub_view_drone_marker_.publish( marker );
-
-  vis_sphere_counter_++;
 }
 
 void view_generator_IG::setCurrentPose(geometry_msgs::Pose p)

@@ -70,8 +70,3 @@ std::string view_generator_ig_nn_adaptive::getMethodName()
 {
   return "NN Adaptive";
 }
-
-void view_generator_ig_nn_adaptive::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
-{
-  view_generator_IG::visualize(valid_poses, invalid_poses, selected_pose);
-}

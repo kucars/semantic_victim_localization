@@ -8,7 +8,6 @@ class view_generator_ig_nn_adaptive : public view_generator_IG
 public:
   view_generator_ig_nn_adaptive();
   virtual void generateViews();
-  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
   std::string getMethodName();
   double scale_factor_;
 

@@ -4,7 +4,6 @@
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/victim_map_base.h>
 #include <costmap_2d/costmap_2d.h>
-#include "rviz_visual_tools/rviz_visual_tools.h"
 #include <math.h>
 
 
@@ -15,8 +14,6 @@ public:
   void setvictimmap(grid_map::GridMap *map,std::string layer_name);
   bool setYawtoViewpoint(geometry_msgs::Pose Frontier, Index index_, std::vector<geometry_msgs::Pose> &Frontier_with_yaws);
   bool IsPointingtoUnkown(double yaw, Index index_);
-
-  rviz_visual_tools::RvizVisualToolsPtr visualTools;
 
   view_generator_ig_frontier();
   std::vector<geometry_msgs::Pose> FindFrontiers();
@@ -64,11 +61,8 @@ public:
 
 
   virtual void generateViews();
-  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses,
-                         std::vector<geometry_msgs::Pose> invalid_poses,
-                         geometry_msgs::Pose selected_pose);
 
-  void visualize();
+  void Visualize();
   bool checkValidity(int costmap_index);
 
 };

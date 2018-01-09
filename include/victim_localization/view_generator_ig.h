@@ -9,6 +9,7 @@
 #include <tf_conversions/tf_eigen.h>
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "rviz_visual_tools/rviz_visual_tools.h"
 
 #include <victim_localization/common.h>
 #include <octomap_world/octomap_manager.h>
@@ -56,8 +57,7 @@ public:
   // Visualizer
   int vis_marker_array_prev_size_;
   int vis_sphere_counter_;
-  ros::Publisher pub_view_marker_array_;
-  ros::Publisher pub_view_drone_marker_;
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
 
   //...methods...
   view_generator_IG();
@@ -82,10 +82,7 @@ public:
   virtual std::string getMethodName();
 
  //visualize
-  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
-  visualization_msgs::Marker visualizeDeleteArrowMarker(int id);
-  visualization_msgs::Marker visualizeCreateArrowMarker(int id, geometry_msgs::Pose pose, bool valid, double max_z = 0, double min_z = 0);
-  void visualizeSelectedArrowMarker(geometry_msgs::Pose selected_pose, visualization_msgs::MarkerArray &All_poses);
+ virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
 
   bool ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2);
   void visualizeDrawSphere(geometry_msgs::Pose p, double r);
