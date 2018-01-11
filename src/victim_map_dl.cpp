@@ -40,7 +40,8 @@ void victim_map_DL::Update()
   //run deep learning detector
   runDetector();
   grid_map::GridMap temp_Map;
-  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose(),true);
+ // temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose(),true);
+ temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(current_loc_,true);
 
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
@@ -54,8 +55,11 @@ void victim_map_DL::Update()
     Index index=*iterator;
     map.getPosition(index, position);
 
-    if (!temp_Map.isInside(position)) continue;
+    //check current max probabilty
+    if (map.atPosition(layer_name, position)> curr_max_prob)
+      curr_max_prob=map.atPosition(layer_name, position);
 
+    if (!temp_Map.isInside(position)) continue;
     if (!raytracing_->isInsideBounds(position)) continue;
 
     float P_prior=map.atPosition(layer_name, position);
@@ -78,9 +82,9 @@ void victim_map_DL::Update()
         }
         else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
 
-        //check max victim probablitiy
-          if (map.atPosition(layer_name, position)> curr_max_prob)
-            curr_max_prob=map.atPosition(layer_name, position);
+//        //check max victim probablitiy
+//          if (map.atPosition(layer_name, position)> curr_max_prob)
+//            curr_max_prob=map.atPosition(layer_name, position);
       }
     }
 
@@ -108,9 +112,9 @@ void victim_map_DL::Update()
       else  {map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior))); }
 
 
-    //check max victim probablitiy
-      if (map.atPosition(layer_name, position)> curr_max_prob)
-        curr_max_prob=map.atPosition(layer_name, position);
+//    //check max victim probablitiy
+//      if (map.atPosition(layer_name, position)> curr_max_prob)
+//        curr_max_prob=map.atPosition(layer_name, position);
 
     }
 }
@@ -130,10 +134,10 @@ void victim_map_DL::runDetector()
   // added if statement for debugging
   if (detection_enabled){
    // run thermal detector
-  detector_->SetCurrentSetpoint(current_loc_);
   detector_->performDetection();
 
     this->setDetectionResult(detector_->getDetectorStatus());
+    this->setCurrentPose(detector_->capture_ps.pose);
   }
   else {
   Status status_temp;

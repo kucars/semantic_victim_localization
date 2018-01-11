@@ -72,7 +72,6 @@ public:
   SSD_Detection_with_clustering();
   cv_bridge::CvImagePtr current_depth_image;
   victim_localization::DL_msgs_box current_ssd_detection;
-  geometry_msgs::Pose current_pose;
   geometry_msgs::Point detected_point;
   bool detection_Cluster_succeed; //
   ros::Publisher pub_segemented_human_pointcloud;

@@ -61,8 +61,8 @@ void SSD_Detection_with_clustering::CallBackData(const sensor_msgs::ImageConstPt
     return;
   }
 
-  current_pose= loc->pose;
-}
+  current_ps= *loc;
+  }
 
 void SSD_Detection_with_clustering::DetectionService(){
 
@@ -78,7 +78,8 @@ void SSD_Detection_with_clustering::DetectionService(){
     if (client.call(srv)) {
       Detection_success=true;
     }
-    pub_setpoint.publish(setpoint_);
+    std::cout << cc.red << "SSD detecotr is not running, Retrying to connect\n" << cc.reset;
+
     ros::spinOnce();
     loop_rate.sleep();
   }
@@ -91,6 +92,7 @@ void SSD_Detection_with_clustering::DetectionService(){
   std::cout << "box_coordinate" << box_ << std::endl;
 
   current_ssd_detection= box_;
+  capture_ps= current_ps;
 }
 
 

@@ -41,8 +41,8 @@ public:
   cv::Mat img_proc;
   Position victim_loc;
   bool victim_found;
-  geometry_msgs::PoseStamped capture_ps;
-  geometry_msgs::PoseStamped current_ps;
+  bool plot_;
+
 
   void imageCallback(const sensor_msgs::ImageConstPtr& img,
                                               const geometry_msgs::PoseStamped::ConstPtr& loc);

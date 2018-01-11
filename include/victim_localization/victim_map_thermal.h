@@ -33,6 +33,8 @@ public:
   void runDetector();
   void GetCameraCenter2World (geometry_msgs::PoseStamped &CamCentertoWorld, ros::Time caputre_time);
   void GenerateRayVector(grid_map::GridMap Map,Position start,Position End);
+  virtual void setDetectionResult(Status detection_status);
+
   bool IsInsideRay(Position P);
 
   tf::TransformListener *tf_listener;

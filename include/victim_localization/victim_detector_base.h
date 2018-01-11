@@ -27,7 +27,8 @@ public:
   virtual Status getDetectorStatus(){};
   virtual void performDetection(){};
 
-  geometry_msgs::PoseStamped setpoint_;
+  geometry_msgs::PoseStamped capture_ps;
+  geometry_msgs::PoseStamped current_ps;
   void SetCurrentSetpoint(geometry_msgs::Pose setpoint);
   virtual ros::Time getCaptureTime(){};
 

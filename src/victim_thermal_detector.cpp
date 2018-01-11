@@ -81,6 +81,8 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
 
   for(unsigned int i=0; i<keypoints.size();i++)
   {
+      plot_=true; // draw box on the image as long as the detected object is within region of interest
+
       cv::KeyPoint k = keypoints.at(i);
       std::cout << "blob found at (x,y)= " << k.pt.x << "," << k.pt.y << std::endl;
       ROS_DEBUG("Heat blob found at image coord: (%f, %f)", k.pt.x , k.pt.y);
@@ -92,16 +94,10 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
       bool is_inside = (rect_roi & rect_image) == rect_roi;
 
       if (!is_inside){
-        ROS_ERROR("ROI image would be partly outside image border, aborting further processing!");
-        continue;
+        ROS_ERROR("ROI image would be partly outside image border, aborting plotting!");
+        plot_=false;
+       // continue;
       }
-
-      const cv::Mat roi = threshold_image(rect_roi);
-      int histSize = 256;
-      float range[] = { 0, 256 };
-      const float* histRange = { range };
-      cv::Mat hist;
-      cv::calcHist(&roi, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, true, false);
 
    victim_found=true;
    victim_loc[0]=k.pt.x;
@@ -112,7 +108,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
       std::cout << "No blob detected" << std::endl;
   }
 
-  if((pub_detection_.getNumSubscribers() > 0) && victim_found){
+  if((pub_detection_.getNumSubscribers() > 0) && victim_found ){
 
   //Create image with detection frames
       int width = 3;
@@ -123,6 +119,16 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
      //Display Keypoints
       for(unsigned int i = 0; i < keypoints.size(); i++){
           if (keypoints.at(i).size > 1){
+
+            cv::Point point_;
+            point_.x = keypoints.at(i).pt.x;
+            point_.y = keypoints.at(i).pt.y;
+            cv::Scalar black( 0, 0, 0 );
+            cv::circle(img_proc,point_,2,black);
+            std::cout << "Image center  is ..." << keypoints.at(i).pt << std::endl;
+
+            if (!plot_) continue;
+
 
               //Write rectangle into image
               width = (int)(keypoints.at(i).size );
@@ -152,14 +158,7 @@ void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& im
                       }
                   }
               }
-             // cvCircle(&ipl_img,((int)(keypoints.at(i).pt.x),(int)(keypoints.at(i).pt.y)) , 5, (0,255,0));
-              cv::Point point_;
-              point_.x = keypoints.at(i).pt.x;
-              point_.y = keypoints.at(i).pt.y;
-              cv::Scalar black( 0, 0, 0 );
-              cv::circle(img_proc,point_,2,black);
 
-              std::cout << "again the center in the image is ..." << keypoints.at(i).pt << std::endl;
           }
       }
 

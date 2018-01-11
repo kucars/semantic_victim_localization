@@ -318,7 +318,7 @@ void TestNBZ::runStateMachine()
        case NBVState::START_MAP_UPDATE:
        timer.start("[NBVLoop]Iteration");  // detect and update map
        UpdateMap();
-       if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
+       //if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
        break;
 
        case NBVState::UPDATE_MAP_COMPLETE:

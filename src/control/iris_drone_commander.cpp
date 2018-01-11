@@ -66,7 +66,7 @@ void iris_drone_commander::start(){
     break;
 
   case Command::SEND_WAYPOINT:
-     vehicle_->moveVehicle(1);
+     vehicle_->moveVehicle(0.7);
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status= true; // done executing the waypoint
     break;
