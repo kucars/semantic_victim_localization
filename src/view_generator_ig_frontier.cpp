@@ -242,6 +242,8 @@ void view_generator_ig_frontier::generateViews()
 
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
 
+  nav_type = 1; // set navigation type as reactive planner for frontier_view_generator
+
   //ros::Rate(0.01).sleep();
 }
 

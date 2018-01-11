@@ -30,6 +30,8 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
                              std::numeric_limits<double>::quiet_NaN());
 
   map_status.victim_found=false;
+  curr_max_prob=0;
+
   victimMapName="victim Map base";
 }
 
@@ -165,6 +167,7 @@ void Victim_Map_Base::setCurrentPose(geometry_msgs::Pose ps) {
 
 void Victim_Map_Base::setDetectionResult(Status detection_status) {
   detect_victim_loc_=detection_status.victim_loc;
+  map.getIndex(detect_victim_loc_,detect_victim_index);
   is_detect_=detection_status.victim_found;
 }
 

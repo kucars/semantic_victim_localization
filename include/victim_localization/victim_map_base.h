@@ -70,7 +70,7 @@ public:
   double y_arena_max;
   double octomap_resol;
   double victim_found_prob;
-
+  double curr_max_prob;
 
   grid_map::GridMap map;
   grid_map::GridMap projected_map;
@@ -83,6 +83,7 @@ public:
 
   //Detection_info//
   Position detect_victim_loc_;
+  Index detect_victim_index;
   bool is_detect_;
   Point p1; // rectangle corners for projected map update
   Point p2;

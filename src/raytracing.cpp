@@ -407,7 +407,8 @@ grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
 //  }
 
   if (publish_)
-  publish_Map(Pose_map);
+    if (pub_temp_map.getNumSubscribers()>0)
+      publish_Map(Pose_map);
 
   std::cout << "map size is: " << Pose_map.getLength()(0) << " " << Pose_map.getLength()(1) << std::endl;
   return Pose_map;

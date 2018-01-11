@@ -7,5 +7,7 @@ string method_selection
 geometry_msgs/Pose selected_pose
 float32 selected_utility
 
+float32 curr_max_prob
+
 float32 time_iteration
 float32[] utilities

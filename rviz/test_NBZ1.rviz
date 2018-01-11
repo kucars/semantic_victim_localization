@@ -34,7 +34,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Image
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -90,7 +90,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /generated_pose_marker_array
+      Marker Topic: /ViewPoints_visualisation
       Name: MarkerArray
       Namespaces:
         {}
@@ -230,13 +230,13 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /test_NBV/octomap_occupied
       Name: MarkerArray
       Namespaces:
-        {}
+        map: true
       Queue Size: 100
-      Value: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -261,7 +261,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 17.708255767822266
+      Distance: 12.2108736038208
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -275,10 +275,10 @@ Visualization Manager:
       Focal Shape Size: 0.05000000074505806
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7247971892356873
+      Pitch: 0.6447973251342773
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.586711406707764
+      Yaw: 4.581708908081055
     Saved: ~
 Window Geometry:
   Displays:

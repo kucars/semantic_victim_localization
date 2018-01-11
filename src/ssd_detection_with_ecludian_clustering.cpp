@@ -62,7 +62,6 @@ void SSD_Detection_with_clustering::CallBackData(const sensor_msgs::ImageConstPt
   }
 
   current_pose= loc->pose;
-
 }
 
 void SSD_Detection_with_clustering::DetectionService(){
@@ -270,7 +269,6 @@ void SSD_Detection_with_clustering::PublishSegmentedPointCloud(const pcl::PointC
    output_msg.header.frame_id = "front_cam_depth_optical_frame";
    output_msg.header.stamp = ros::Time::now();
    pub_segemented_human_pointcloud.publish(output_msg);
-
 }
 
 
@@ -284,6 +282,8 @@ Status SSD_Detection_with_clustering::getDetectorStatus()
   status.victim_found = detection_Cluster_succeed;
   status.victim_loc[0]=detected_point.x;
   status.victim_loc[1]=detected_point.y;
+  std::cout << "location is\n";
+  std::cout << status.victim_loc[0]<< " " << status.victim_loc[1];
   return status;
 }
 

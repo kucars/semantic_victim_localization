@@ -67,7 +67,10 @@ void TestNBZ::initViewGenerator(){
       view_generate_ = new view_generator_ig_nn_adaptive();
       break;
     case 2:
-      view_generate_ = new view_generator_ig_frontier();
+      view_generate_ = new view_generator_ig_nn_adaptive();
+      break;
+    case 3:
+      view_generate_ = new view_generator_ig_adaptive_frontier();
     break;
     }
 }
@@ -121,11 +124,13 @@ void TestNBZ::updateHistory()
         iteration_msg.method_selection = View_evaluate_->getMethodName();
         iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
         iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
+        iteration_msg.curr_max_prob  =Map_->curr_max_prob;
+
         //iteration_msg.utilities        = View_evaluate_->info_utilities_;
 
-        iteration_msg.time_iteration   = timer.getLatestTime("[NBVLoop]Iteration");
+        iteration_msg.time_iteration   = timer.getLatestTime("[NBVLoop]Iteration")/1000; // time in sec
 
-         pub_iteration_info.publish(iteration_msg);
+        pub_iteration_info.publish(iteration_msg);
 }
 }
 
@@ -160,22 +165,29 @@ void TestNBZ::evaluateViewpoints()
 
 void TestNBZ::navigate()
 {
+  std::string navigation_method;
+  if (view_generate_->nav_type==0)
+    navigation_method="Straight Line";
+
+  else
+    navigation_method="Reactive Planner";
+
+
   if (state != NBVState::NAVIGATION)
   {
     std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to navigate to viewpoint out of order\n" << cc.reset;
     return;
   }
 
-  std::cout << "[test_NBZ] " << cc.green << "Navigating to viewpoint\n" << cc.reset;
+  std::cout << "[test_NBZ] " << cc.green << "Navigating to viewpoint using" << "[" << navigation_method << "]" << cc.reset;
 
   path_to_waypoint.clear();
   navigation_->setCurrentPose(drone_communicator_->GetPose());
 
-
-  switch(2)
+  switch(view_generate_->nav_type)
   {
   default:
-  case 0: // move to waypoint if discrete strigntline is used
+  case 2: // move to waypoint if discrete strigntline is used
     path_to_waypoint = navigation_->Path_discretization(View_evaluate_->getTargetPose(),
                                                   drone_communicator_->GetPose(),0.1);
 
@@ -205,14 +217,17 @@ void TestNBZ::navigate()
     else {
       ROS_WARN("Unable to generate path, terminating....");
     }
+
+
   break;
 
-  case 2:  // move through fixed setpoint
+  case 0:  // move through fixed setpoint
 
     if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
     {
         ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
     }
+
   break;
   }
 
@@ -250,7 +265,7 @@ void TestNBZ::generateViewpoints()
   if (view_generate_->generated_poses.size() == 0)
   {
     std::cout << "[test_NBZ] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
-    state = NBVState::UPDATE_MAP_COMPLETE;
+    state = NBVState::START_MAP_UPDATE;
   }
   else
   {

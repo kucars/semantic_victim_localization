@@ -4,7 +4,7 @@ view_generator_ig_nn_adaptive::view_generator_ig_nn_adaptive():
 view_generator_IG(),
   scale_factor_(1)
 {
-  ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 3);
+  ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 5);
   ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 3.0);
 }
 
@@ -54,16 +54,23 @@ void view_generator_ig_nn_adaptive::generateViews()
   res_z_ *= scale_factor_;
 
   // Call base function
-  if (scale_factor_ > 1)
+  if (scale_factor_ > 1){
     // Do not generate any viewpoints in current location to escape local minima
     view_generator_IG::generateViews(false);
+    nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
+  }
   else
+  {
     view_generator_IG::generateViews(true);
+    nav_type = 0; // set navigation type as straight line for adaptive_nn_view_generator
+  }
 
   // Return scale to normal
   res_x_ = backup_res_x_;
   res_y_ = backup_res_y_;
   res_z_ = backup_res_z_;
+
+
 }
 
 std::string view_generator_ig_nn_adaptive::getMethodName()

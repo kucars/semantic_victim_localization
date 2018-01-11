@@ -164,7 +164,7 @@ class ssdKeras():
             top_ymax = det_ymax[top_indices]
 
 
-            #print (top_conf.shape[0])
+            print(conf)
             for i in range(top_conf.shape[0]):
                     self.detection_index.boxes[:]=[]
                     xmin = int(round(top_xmin[i] * self.to_draw.shape[1]))

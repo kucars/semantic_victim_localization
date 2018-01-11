@@ -138,6 +138,8 @@ void victim_map_Thermal::Update(){
 //  }
  // else{
 
+  curr_max_prob=0; //initiate current max probabitity to zero
+
     for (grid_map::GridMapIterator iterator(map);
          !iterator.isPastEnd(); ++iterator) {
       Position position;
@@ -165,11 +167,15 @@ void victim_map_Thermal::Update(){
         }
         if (is_detect_== false )  map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior)));
 
-        if (Detec_prob>victim_found_prob) {
+
+        if (map.atPosition(layer_name, position)>victim_found_prob) {
           //std::cout << "Detec_prob" << std::endl;
           map_status.victim_found=true;
           map_status.victim_loc=position;
         }
+
+        if (map.atPosition(layer_name, position)> curr_max_prob)
+          curr_max_prob=map.atPosition(layer_name, position);
       }
 
       // if the cell is occupied not by obstacle but by the human
@@ -184,8 +190,13 @@ void victim_map_Thermal::Update(){
               map.atPosition(layer_name, position)= Detec_prob;
             }
             else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
+
+            //check current max probabilty
+            if (map.atPosition(layer_name, position)> curr_max_prob)
+              curr_max_prob=map.atPosition(layer_name, position);
           }
         }
+
       }
 
 

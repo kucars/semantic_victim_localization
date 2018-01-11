@@ -32,7 +32,6 @@ view_generator_IG::view_generator_IG():
   ros::param::param("~bounding_box_z", boundingbox_z_, 0.2);
   ros::param::param("~overshoot", dOvershoot_, 0.25);
 
-  nav_type = 1; // 1 is straight line , 2 is reactive planner
   if (!ros::param::get(ros::this_node::getName() + "/nav_type", nav_type)) {
     ROS_WARN( "navigation type is unknown for the view generator, default value is set to",
               std::string(ros::this_node::getName() + "/nav_type"));
@@ -144,14 +143,14 @@ void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, 
 
     for (int i=0; i< valid_poses.size(); i++)
     {
-    visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.4);
+    visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
     }
 
     for (int i=0; i< invalid_poses.size(); i++)
     {
-     visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XXLARGE,0.4);
+     visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XXLARGE,0.5);
     }
-    visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XXXLARGE,0.4);
+    visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XXXLARGE,0.5);
 
     visualTools->trigger();
   }
@@ -232,6 +231,8 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
   }
 
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
+
+  nav_type = 0; // set navigation type as straight line for NN_view_generator
 
 }
 

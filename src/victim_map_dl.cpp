@@ -35,38 +35,66 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
   //pub_polygon=nh_.advertise<geometry_msgs::PolygonStamped>(DL_polygon_topic, 1, true);
 }
 
-void victim_map_DL::Update(){
+void victim_map_DL::Update()
+{
   //run deep learning detector
   runDetector();
-  std::cout << "updating the map.... " << std::endl;
   grid_map::GridMap temp_Map;
-  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose());
+  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose(),true);
 
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
-  Position D_loc;
-  D_loc[0]=detect_victim_loc_[0];
-  D_loc[1]=detect_victim_loc_[0];
-  //D_loc=approximate_detect(D_loc);
-
   map_status.victim_found=false; //initialize detection to false
 
-  for (grid_map::GridMapIterator iterator(temp_Map);
+  curr_max_prob=0; //initiate current max probabitity to zero
+
+    for (grid_map::GridMapIterator iterator(map);
        !iterator.isPastEnd(); ++iterator) {
     Position position;
     Index index=*iterator;
-    temp_Map.getPosition(index, position);
-   if (!raytracing_->isInsideBounds(position)) continue;
+    map.getPosition(index, position);
+
+    if (!temp_Map.isInside(position)) continue;
+
+    if (!raytracing_->isInsideBounds(position)) continue;
 
     float P_prior=map.atPosition(layer_name, position);
-    if(temp_Map.atPosition("temp", position)==0){ // if the cell is free ( contains no obsticales)
-      if (position[0]== D_loc[0] && position[1]== D_loc[1])  {
+
+    // Update victim location is case it is recoganized obstacle from raytracing
+    if (is_detect_==true && temp_Map.atPosition("temp", position)==1)
+    {
+      if ((index[0]== detect_victim_index[0]) && (index[1]== detect_victim_index[1]))
+      {
+        if (P_prior>0.01)
+        {
+          double Detec_prob=(Prob_D_H* P_prior)/((Prob_D_H* P_prior)+(Prob_D_Hc* (1-P_prior)));
+          map.atPosition(layer_name, position)= Detec_prob;
+
+          //check if the victim is found
+          if (Detec_prob>victim_found_prob) {
+            map_status.victim_found=true;
+            map_status.victim_loc=position;
+          }
+        }
+        else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
+
+        //check max victim probablitiy
+          if (map.atPosition(layer_name, position)> curr_max_prob)
+            curr_max_prob=map.atPosition(layer_name, position);
+      }
+    }
+
+    // if the cell is free ( contains no obstacle)
+    if(temp_Map.atPosition("temp", position)==0)
+    {
+      if ((index[0]== detect_victim_index[0]) && (index[1]== detect_victim_index[1]))  {
 
         if (is_detect_== true && P_prior>0.01 ) {
           double Detec_prob=(Prob_D_H* P_prior)/((Prob_D_H* P_prior)+(Prob_D_Hc* (1-P_prior)));
           map.atPosition(layer_name, position)= Detec_prob;
           std::cout << cc.blue << "current_detection_probablitiy:" << Detec_prob << std::endl;
 
+          //check if the victim is found
           if (Detec_prob>victim_found_prob) {
             map_status.victim_found=true;
             map_status.victim_loc=position;
@@ -78,15 +106,27 @@ void victim_map_DL::Update(){
         if (is_detect_== false )  map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior)));
       }
       else  {map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior))); }
+
+
+    //check max victim probablitiy
+      if (map.atPosition(layer_name, position)> curr_max_prob)
+        curr_max_prob=map.atPosition(layer_name, position);
+
     }
-  }
+}
+
+//    std::cout << "current max prob..." << curr_max_prob << std::endl;
+//    if (is_detect_){
+//      std::cout << "max_prob" << curr_max_prob << std::endl;
+//    }
+
+  if (pub_map.getNumSubscribers()>0)
   publish_Map();
 }
 
 
 void victim_map_DL::runDetector()
 {
-
   // added if statement for debugging
   if (detection_enabled){
    // run thermal detector
@@ -98,7 +138,7 @@ void victim_map_DL::runDetector()
   else {
   Status status_temp;
   status_temp.victim_found= false;
-   Position g(0,0);
+  Position g(0,0);
   status_temp.victim_loc=g;
    this->setDetectionResult(status_temp);
 }

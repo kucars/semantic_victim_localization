@@ -46,6 +46,8 @@ void victim_map_combined::Update()
   victim_map_Thermal_->Update();
 
   map_status.victim_found=false; //initialize detection to false
+  curr_max_prob=0; //initiate current max probabitity to zero
+
 
   // update map
   Position position;
@@ -66,8 +68,9 @@ void victim_map_combined::Update()
             map_status.victim_found=true;
             map.getPosition(index,map_status.victim_loc);
             break;
-          }
+          }       
 }
+      curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob;
 
   //ros::Duration elapsed_time= ros::Time::now()-time_1;
   //ROS_INFO("Time taken to update is the combined map is: %f", elapsed_time.toSec());

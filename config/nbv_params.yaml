@@ -55,7 +55,7 @@ uav_pose_yaw: 0.0
 # 0: deep learning victim map
 # 1: thermal victim map
 # 2: fused victim map
-map_type: 2
+map_type: 0
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -63,10 +63,10 @@ map_resol_combined : 0.2
 
 
 #deep learning map probabilities
-Prob_D_H_for_DL: 0.9
-Prob_D_Hc_for_DL: 0.05
-Prob_Dc_H_for_DL: 0.1
-Prob_Dc_Hc_for_DL: 0.95
+Prob_D_H_for_DL: 0.8
+Prob_D_Hc_for_DL: 0.1
+Prob_Dc_H_for_DL: 0.2
+Prob_Dc_Hc_for_DL: 0.9
 
 #thermal map probabilities
 Prob_D_H_for_thermal: 0.7
@@ -116,13 +116,13 @@ thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 # 3: NN Adaptive Frontier
 
 
-view_generator_type: 0
+view_generator_type: 3
 view_generator_nn_pos_res_x: 1.0
 view_generator_nn_pos_res_y: 1.0
 view_generator_nn_pos_res_z: 1.0
 view_generator_nn_pos_res_yaw: rad(pi/3)
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 3
+view_generator_nn_adaptive_utility_threshold: 6
 view_generator_nn_adaptive_utility_threshold: 0.3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: true
@@ -153,5 +153,5 @@ map_topic_DL: "victim_map/grid_map_DL"
 map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
 
-detection_enabled: false
+detection_enabled: true
 
