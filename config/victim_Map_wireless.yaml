@@ -1,12 +1,12 @@
-grid_map_topic: /victim_map/grid_map_thermal
+grid_map_topic: /victim_map/grid_map_wireless
 grid_map_visualizations:
   - name: map_points
     type: point_cloud
     params:
-     layer: victim_thermal
+     layer: victim_wireless
   - name: map_
     type: occupancy_grid
     params:
-     layer: victim_thermal
+     layer: victim_wireless
      data_min: 0
      data_max: 1

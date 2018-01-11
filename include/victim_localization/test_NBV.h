@@ -7,6 +7,7 @@
 #include <victim_localization/victim_map_dl.h>
 #include <victim_localization/victim_map_thermal.h>
 #include <victim_localization/victim_map_combined.h>
+#include <victim_localization/victim_map_wireless.h>
 #include <control/vehicle_control_base.h>
 #include <control/vehicle_control_iris.h>
 #include <control/drone_communicator.h>

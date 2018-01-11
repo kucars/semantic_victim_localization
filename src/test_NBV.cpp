@@ -23,7 +23,7 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
 
 void TestNBZ::initMap(){
     ros::param::param("~map_type", map_type, 0);
-
+std::cout << "1..." << std::endl;
     switch(map_type)
     {
     default:
@@ -34,12 +34,17 @@ void TestNBZ::initMap(){
       Map_ = new victim_map_Thermal(nh,nh_private);
       break;
     case 2:
+      Map_ = new victim_map_wireless(nh,nh_private);
+      break;
+    case 3:
       Map_ = new victim_map_combined(nh,nh_private);
       break;
     }
 }
 
 void TestNBZ::initNavigation(){
+  std::cout << "2..." << std::endl;
+
     ros::param::param("~nav_type", nav_type, 1);
     switch(nav_type)
     {
@@ -55,6 +60,8 @@ void TestNBZ::initNavigation(){
 }
 
 void TestNBZ::initViewGenerator(){
+  std::cout << "3..." << std::endl;
+
     ros::param::param("~view_generator_type", view_generator_type, 0);
 
     switch(view_generator_type)
@@ -76,6 +83,8 @@ void TestNBZ::initViewGenerator(){
 }
 
 void TestNBZ::initOctomap(){
+  std::cout << "4..." << std::endl;
+
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
   Occlusion_Map_ = new Volumetric_Map(manager_);
 
@@ -86,6 +95,7 @@ void TestNBZ::initOctomap(){
 
 
 void TestNBZ::initParameters(){
+  std::cout << "5..." << std::endl;
 
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
@@ -103,6 +113,8 @@ void TestNBZ::initParameters(){
   // initialize vehicle communicator
   drone_communicator_ = new drone_communicator(nh,nh_private,manager_);
   Map_->setDroneCommunicator(drone_communicator_);
+  std::cout << "6..." << std::endl;
+
 }
 
 void TestNBZ::updateHistory()

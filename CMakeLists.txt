@@ -181,6 +181,7 @@ add_executable (test_NBV
     src/victim_map_base.cpp
     src/victim_map_dl.cpp
     src/victim_map_thermal.cpp
+    src/victim_map_wireless.cpp
     src/victim_map_combined.cpp
 
     src/navigation_base.cpp

@@ -19,7 +19,6 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
            map.getSize()(0), map.getSize()(1));
 
   map.add(layer_name,0.5); // initialize map probability to 0.5
-  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
@@ -49,8 +48,8 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
   {
     raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
   }
-  victimMapName="victim map thermal";
-  max_depth_d=max_thermal_d;
+
+  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
   // visualize the thermal detection vector
   visualize_thermal_ray.reset(new rviz_visual_tools::RvizVisualTools("world", "/thermal_vector"));
@@ -214,6 +213,8 @@ void victim_map_Thermal::GenerateRayVector
   //    }
   //}
 
+  std::cout << "ray " << ThermalRay.size() << std::endl;
+
   if (ThermalRay.size()>2) {   //added for visualizing the ray...
     std::vector<geometry_msgs::Pose> vector_;
     geometry_msgs::Pose p_;
@@ -223,6 +224,8 @@ void victim_map_Thermal::GenerateRayVector
       p_.position.x = ThermalRay[i][0];
       p_.position.y = ThermalRay[i][1];
       p_.position.z = 1;
+      vector_.push_back((p_));
+    }
 
     visualize_thermal_ray->publishPath(vector_,rviz_visual_tools::RED, rviz_visual_tools::XLARGE,"theraml_");
 
@@ -241,7 +244,6 @@ void victim_map_Thermal::GenerateRayVector
     visualize_thermal_ray->publishLine(p_s.position,p_e.position,rviz_visual_tools::BLACK,rviz_visual_tools::XLARGE);
     visualize_thermal_ray->trigger();
   }
-}
 }
 void victim_map_Thermal::GetCameraCenter2World
 (geometry_msgs::PoseStamped &CamCentertoWorld, ros::Time caputre_time){

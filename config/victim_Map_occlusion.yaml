@@ -1,12 +1,14 @@
-grid_map_topic: /victim_map/grid_map_thermal
+grid_map_topic: /temp_map
 grid_map_visualizations:
-  - name: map_points
+  - name: map_point
     type: point_cloud
     params:
-     layer: victim_thermal
+     layer: temp
   - name: map_
     type: occupancy_grid
     params:
-     layer: victim_thermal
+     layer: temp
      data_min: 0
      data_max: 1
+
+

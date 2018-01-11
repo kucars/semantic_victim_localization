@@ -42,20 +42,28 @@
 
 
 <!-- Launch the grid map visualizer -->
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_DL" output="screen">
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="DL" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_DL.yaml" />
 </node>
 
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_thermal" output="screen">
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="thermal" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_thermal.yaml" />
 </node>
 
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_Combined" output="screen">
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="Combined" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_combined.yaml" />
 </node>
 
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="grid_map_visualization_T" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map.yaml" />
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="occlusion" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_occlusion.yaml" />
+</node>
+
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="wireless" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_wireless.yaml" />
+</node>
+
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="offline" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_wireless_offline.yaml" />
 </node>
 
 <!-- Launch RViz with the demo configuration -->

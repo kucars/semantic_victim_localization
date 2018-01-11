@@ -33,6 +33,7 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   curr_max_prob=0;
 
   victimMapName="victim Map base";
+  std::cout <<"done with the base\n";
 }
 
 Victim_Map_Base::~Victim_Map_Base(){}
@@ -60,6 +61,7 @@ grid_map::Polygon Victim_Map_Base::draw_FOV(){
   //grid_map::PolygonRosConverter::toMessage(polygon, message);
   //pub_polygon.publish(message);
 }
+
 
 grid_map::Polygon Victim_Map_Base::Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_){
 
@@ -108,9 +110,13 @@ void Victim_Map_Base::callbackdrawFOV(const PoseStamped &ps_stamped){
 
 
   //publish Field of View
+  if (pub_polygon.getNumSubscribers()>0)
+  {
   geometry_msgs::PolygonStamped message;
  grid_map::PolygonRosConverter::toMessage(polygon_FOV, message);
  pub_polygon.publish(message);
+  }
+
 }
 
 

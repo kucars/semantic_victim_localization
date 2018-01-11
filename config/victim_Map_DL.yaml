@@ -1,10 +1,10 @@
 grid_map_topic: /victim_map/grid_map_DL
 grid_map_visualizations:
-  - name: elevation_map_points
+  - name: map_points
     type: point_cloud
     params:
      layer: victim_DL
-  - name: elevation_grid
+  - name: map_
     type: occupancy_grid
     params:
      layer: victim_DL
