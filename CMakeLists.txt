@@ -176,6 +176,8 @@ add_executable (test_NBV
 
     src/volumetric_map_manager.cpp
     src/raytracing.cpp
+    src/raytracing_2d.cpp
+
     src/nbv_history.cpp
 
     src/victim_map_base.cpp
@@ -227,6 +229,8 @@ add_executable (navigation_test
     src/control/drone_communicator.cpp
     src/volumetric_map_manager.cpp
     src/raytracing.cpp
+    src/raytracing_2d.cpp
+
 
     src/navigation_base.cpp
     src/straightline.cpp

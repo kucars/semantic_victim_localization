@@ -1,0 +1,14 @@
+grid_map_topic: /temp_map1
+grid_map_visualizations:
+  - name: map_point
+    type: point_cloud
+    params:
+     layer: occlusion
+  - name: map_
+    type: occupancy_grid
+    params:
+     layer: occlusion
+     data_min: 0
+     data_max: 1
+
+

@@ -34,7 +34,7 @@ std::cout << "1..." << std::endl;
       Map_ = new victim_map_Thermal(nh,nh_private);
       break;
     case 2:
-      Map_ = new victim_map_wireless(nh,nh_private);
+      Map_ = new Victim_Map_Wireless(nh,nh_private);
       break;
     case 3:
       Map_ = new victim_map_combined(nh,nh_private);
@@ -113,6 +113,7 @@ void TestNBZ::initParameters(){
   // initialize vehicle communicator
   drone_communicator_ = new drone_communicator(nh,nh_private,manager_);
   Map_->setDroneCommunicator(drone_communicator_);
+  Map_->SetNavMap(Occlusion_Map_->m_gridmap);
   std::cout << "6..." << std::endl;
 
 }
@@ -277,7 +278,7 @@ void TestNBZ::generateViewpoints()
   if (view_generate_->generated_poses.size() == 0)
   {
     std::cout << "[test_NBZ] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
-    state = NBVState::START_MAP_UPDATE;
+    state = NBVState::UPDATE_MAP_COMPLETE;
   }
   else
   {

@@ -65,7 +65,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 2
+map_type: 0
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -81,15 +81,23 @@ Prob_Dc_Hc_for_DL: 0.9
 
 #thermal map probabilities
 Prob_D_H_for_thermal: 0.7
-Prob_D_Hc_for_thermal: 0.4
+Prob_D_Hc_for_thermal: 0.3
 Prob_Dc_H_for_thermal: 0.3
-Prob_Dc_Hc_for_thermal: 0.6
+Prob_Dc_Hc_for_thermal: 0.7
 
 #thermal map probabilities wireless
 Prob_D_H_for_wireless: 0.6
 Prob_D_Hc_for_wireless: 0.3
 Prob_Dc_H_for_wireless: 0.2
 Prob_Dc_Hc_for_wireless: 0.7
+
+############
+## Raytracing type
+############
+# 0: 3D-Raytracing
+# 1: 2D-Raytracing
+
+raytracing_type: 1
 
 ############
 ## Cost Map Obtained for octomap
@@ -139,7 +147,7 @@ view_generator_nn_pos_res_y: 1.0
 view_generator_nn_pos_res_z: 1.0
 view_generator_nn_pos_res_yaw: rad(pi/3)
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 6
+view_generator_nn_adaptive_utility_threshold: 3
 view_generator_nn_adaptive_utility_threshold: 0.3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: true

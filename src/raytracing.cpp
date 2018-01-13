@@ -1,4 +1,4 @@
-#include "victim_localization/raytracing.h"
+﻿#include "victim_localization/raytracing.h"
 
 Raytracing::Raytracing(double map_res_):
   map_res (map_res_)
@@ -41,6 +41,8 @@ Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
 
   pub_temp_map=nh_.advertise<grid_map_msgs::GridMap>("temp_map", 1, true);
 }
+
+Raytracing::~Raytracing(){}
 
 void Raytracing::update()
 {
@@ -108,8 +110,8 @@ void Raytracing::computeRaysAtPose(geometry_msgs::Pose p)
     // Create an octomap point to later cast a ray
     octomap::point3d p_ (temp[0], temp[1], temp[2]);
     //std::cout << "for pose: "<< p << " finalpoints: "<< p_ <<std::endl;
-    if (temp[2]>(current_pose_.position.z -0.5) && temp[2]<(current_pose_.position.z +0.5))
-      rays_far_plane_at_pose_.push_back(p_);
+    //if (temp[2]>(current_pose_.position.z -0.5) && temp[2]<(current_pose_.position.z +0.5))
+     rays_far_plane_at_pose_.push_back(p_);
   }
 }
 
@@ -166,7 +168,7 @@ double Raytracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_)
+grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
 {
   update();
   computeRaysAtPose(p_);
@@ -290,8 +292,9 @@ grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p
 
 
 
-grid_map::GridMap Raytracing::Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p_ ,bool publish_)
+grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,bool publish_)
 {
+  std::cout << "MIstake............" << std::endl;
   update();
   computeRaysAtPose(p_);
   grid_map::GridMap Pose_map;
@@ -432,7 +435,6 @@ bool Raytracing::isInsideRegionofInterest(double z , double tolerance)
       z < current_pose_.position.z-tolerance)
     return false;
 
-
   return true;
 }
 
@@ -447,4 +449,9 @@ void Raytracing::publish_Map(grid_map::GridMap Map){
   GridMapRosConverter::toMessage(Map, message);
   pub_temp_map.publish(message);
   ROS_INFO_THROTTLE(1.0, "Grid map (timestamp %f) published.", message.info.header.stamp.toSec());
+}
+
+void Raytracing::SetNavMap(nav_msgs::OccupancyGridPtr Nav_map)
+{
+  grid_=Nav_map;
 }

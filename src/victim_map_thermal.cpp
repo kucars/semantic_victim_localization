@@ -41,12 +41,26 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
 
   // for debugging
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
-  if (map_resol> octomap_resol){
-    raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
-  }
-  else
-  {
-    raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+
+  switch(raytracing_type) {
+  case 0:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+    }
+    break;
+  case 1:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing2D(map_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing2D(octomap_resol,HFOV_deg,VFOV_deg,max_thermal_d,min_thermal_d);
+    }
+    break;
   }
 
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
@@ -63,10 +77,12 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
 void victim_map_Thermal::Update(){
 
   runDetector();
-
   grid_map::GridMap temp_Map;
-  //temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose(),true);
-  temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(current_loc_,true);
+
+  bool rebuild=true;
+  bool publish=true;
+  raytracing_->Initiate(rebuild,publish);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true);
 
   //polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 

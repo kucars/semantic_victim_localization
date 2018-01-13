@@ -25,7 +25,6 @@
 #include <control/drone_communicator.h>
 
 
-
 typedef geometry_msgs::Point Point;
 typedef geometry_msgs::PoseStamped PoseStamped;
 
@@ -46,6 +45,8 @@ public:
   geometry_msgs::Pose current_pose_;
   std::shared_ptr<octomap::OcTree> tree_;
   drone_communicator *drone_comm;
+  nav_msgs::OccupancyGridPtr grid_;
+
   std::string Layer_name_;
   double HFOV_deg;
   double VFOV_deg;
@@ -68,8 +69,8 @@ std::vector<octomap::point3d> rays_far_plane_at_pose_;
 double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
 double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
 
-grid_map::GridMap Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p);
-grid_map::GridMap Project_3d_rayes_to_2D_plane(geometry_msgs::Pose p, bool publish_);
+virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p);
+virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_);
 
 
 Raytracing(double map_res_);
@@ -81,7 +82,6 @@ bool isInsideBounds(Position p);
 
 public:
 
-  void  update();
   bool isPointInBounds(octomap::point3d &p);
   void   getCameraRotationMtxs();
   double getNodeOccupancy(octomap::OcTreeNode* node);
@@ -89,9 +89,14 @@ public:
   int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
-  bool  isInsideRegionofInterest(double z , double tolerance=1);
+  bool  isInsideRegionofInterest(double z , double tolerance=0.5);
   void  setDroneCommunicator(drone_communicator *drone_comm_);
   void  publish_Map(grid_map::GridMap Map);
+  void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
+  virtual void  update();
+  virtual void Initiate(bool rebuild_once, bool publish){};
+  virtual void Done(){};
+
 
 };
 

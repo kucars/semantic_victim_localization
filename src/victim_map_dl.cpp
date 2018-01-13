@@ -28,7 +28,26 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
   ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.1);
   ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.95);
 
-  raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+  switch(raytracing_type) {
+  case 0:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  case 1:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing2D(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing2D(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  }
 
   victimMapName="victim map DL";
 
@@ -40,8 +59,11 @@ void victim_map_DL::Update()
   //run deep learning detector
   runDetector();
   grid_map::GridMap temp_Map;
- // temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(drone_comm->GetPose(),true);
- temp_Map=raytracing_->Project_3d_rayes_to_2D_plane(current_loc_,true);
+
+  bool rebuild=true;
+  bool publish=true;
+  raytracing_->Initiate(rebuild,publish);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true);
 
   polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
@@ -126,6 +148,7 @@ void victim_map_DL::Update()
 
   if (pub_map.getNumSubscribers()>0)
   publish_Map();
+
 }
 
 

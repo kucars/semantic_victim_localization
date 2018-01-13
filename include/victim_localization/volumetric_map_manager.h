@@ -95,7 +95,7 @@ protected:
      void update2DMap(const OcTreeT::iterator& it, bool occupied);
 
     inline unsigned mapIdx(int i, int j) const {
-      return m_gridmap.info.width * j + i;
+      return m_gridmap->info.width * j + i;
     }
 
     inline bool isInUpdateBBX(const OcTreeT::iterator& it) const {
@@ -108,7 +108,7 @@ protected:
               && key[1] <= m_updateBBXMax[1]);
   }
 
-    void adjustMapData(nav_msgs::OccupancyGrid& map,
+    void adjustMapData( nav_msgs::OccupancyGridPtr map,
                        const nav_msgs::MapMetaData& oldMapInfo) const;
 
     void Convert2DMaptoOccupancyGrid(const ros::Time &rostime);
@@ -181,7 +181,8 @@ protected:
       bool m_useColoredMap;
 
 public:
-      nav_msgs::OccupancyGrid m_gridmap;
+      nav_msgs::OccupancyGrid gridMap;
+      nav_msgs::OccupancyGridPtr m_gridmap;
       std::shared_ptr<OcTreeT> m_octree;
       void GetActiveOctomapSize(double &x_size, double &y_size);
       void GetActiveOrigin(double &x_origin, double &y_origin);

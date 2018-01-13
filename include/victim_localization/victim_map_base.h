@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <victim_localization/raytracing.h>
+#include <victim_localization/raytracing_2d.h>
 #include <control/drone_communicator.h>
 #include <grid_map_msgs/GridMap.h>
 #include <cmath>
@@ -46,6 +47,7 @@ public:
 
   drone_communicator *drone_comm;
 
+
   std::string map_topic;
   std::string layer_name="general";//="victim";
   ros::NodeHandle nh_;
@@ -71,6 +73,7 @@ public:
   double octomap_resol;
   double victim_found_prob;
   double curr_max_prob;
+  int raytracing_type;
 
   grid_map::GridMap map;
   grid_map::GridMap projected_map;
@@ -113,6 +116,7 @@ public:
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
   virtual void setDroneCommunicator(drone_communicator *drone_comm_);
+  void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
 
 };
 

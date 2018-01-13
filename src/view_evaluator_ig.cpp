@@ -65,8 +65,12 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
  // std::cout << "tested Pose: " << p <<std::endl;
   grid_map::GridMap temp_Map;
   grid_map::Polygon polygon_view;
-  temp_Map=mapping_module_->raytracing_->Project_3d_rayes_to_2D_plane(p);
 
+  bool rebuild=false;
+  bool publish=false;
+  mapping_module_->raytracing_->Initiate(rebuild,publish);
+
+  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p);
   polygon_view=mapping_module_->Update_region(temp_Map,p);  //std::cout << p1 << " " << p2 << std::endl;
   double IG_view=0;
   for (grid_map::GridMapIterator iterator(temp_Map); !iterator.isPastEnd(); ++iterator) {
@@ -112,6 +116,8 @@ void view_evaluator_IG::evaluate(){
       view_gen_->visualize(view_gen_->generated_poses, view_gen_->rejected_poses,selected_pose_);
 
  info_distance_total_ += calculateDistance(selected_pose_);
+ mapping_module_->raytracing_->Done();
+
 }
 
 geometry_msgs::Pose view_evaluator_IG::getTargetPose()

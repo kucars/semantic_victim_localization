@@ -5,6 +5,7 @@ victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::No
 { 
   victim_map_dl_=new victim_map_DL(nh_,nh_private_);
   victim_map_Thermal_= new victim_map_Thermal(nh_,nh_private_);
+  victim_map_wireless_= new Victim_Map_Wireless(nh_,nh_private_);
 
   double max_d,min_d;
 
@@ -28,22 +29,40 @@ victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::No
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
 
   //Values for probability
-  ros::param::param<double>("~alpha", alpha , 0.7);
-  ros::param::param<double>("~beta", beta , 0.3);
-  //ros::param::param<double>("~gamma", gamma , 0.4);
+  ros::param::param<double>("~alpha", alpha , 0.6);
+  ros::param::param<double>("~beta", beta , 0.25);
+  ros::param::param<double>("~gama", gama , 0.15);
+
+  switch(raytracing_type) {
+  case 0:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  case 1:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing2D(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing2D(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  }
 
   victimMapName="victim fused map";
-
-  if (map_resol> octomap_resol)
-    raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_d,min_d);
-  else
-    raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_d,min_d);
 }
 
 void victim_map_combined::Update()
 {
   victim_map_dl_->Update();
   victim_map_Thermal_->Update();
+  victim_map_wireless_->Update();
+
 
   map_status.victim_found=false; //initialize detection to false
   curr_max_prob=0; //initiate current max probabitity to zero
@@ -62,25 +81,29 @@ void victim_map_combined::Update()
     map.getPosition(index, position);
 
     map.atPosition(layer_name,position)= alpha*victim_map_dl_->map.atPosition(victim_map_dl_->getlayer_name(),position)
-        + beta*victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position);
+        + beta*victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position)
+        + gama*victim_map_wireless_->map.atPosition(victim_map_wireless_->getlayer_name(),position);
 
-          if (map.atPosition(layer_name,position) >= victim_found_prob ) {
-            map_status.victim_found=true;
-            map.getPosition(index,map_status.victim_loc);
-            break;
-          }       
-}
-      curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob;
+    if (map.atPosition(layer_name,position) >= victim_found_prob ) {
+      std::cout << "yes victim found...." << std::endl;
+      map_status.victim_found=true;
+      map.getPosition(index,map_status.victim_loc);
+    }
+  }
+  curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob
+      + gama*victim_map_wireless_->curr_max_prob;
+
+  std::cout<< "current max prob is..." << curr_max_prob << std::endl;
 
   //ros::Duration elapsed_time= ros::Time::now()-time_1;
   //ROS_INFO("Time taken to update is the combined map is: %f", elapsed_time.toSec());
 
 
-    //      if (data(index(0), index(1)) > 0.9 ) {
-    //        map_status.victim_found=true;
-    //        map.getPosition(index,map_status.victim_loc);
-    //        break;
-    //      }
+  //      if (data(index(0), index(1)) > 0.9 ) {
+  //        map_status.victim_found=true;
+  //        map.getPosition(index,map_status.victim_loc);
+  //        break;
+  //      }
 
   //  grid_map::Matrix& data = map[this->getlayer_name()];
   //  for (GridMapIterator iterator(map); !iterator.isPastEnd(); ++iterator) {

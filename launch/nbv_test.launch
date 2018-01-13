@@ -66,6 +66,10 @@
 <rosparam command="load" file="$(find victim_localization)/config/victim_Map_wireless_offline.yaml" />
 </node>
 
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="test" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/victim_Map_test.yaml" />
+</node>
+
 <!-- Launch RViz with the demo configuration -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" />
 

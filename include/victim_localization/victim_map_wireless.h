@@ -4,7 +4,7 @@
 #include "victim_localization/victim_map_base.h"
 
 
-class victim_map_wireless: public Victim_Map_Base
+class Victim_Map_Wireless: public Victim_Map_Base
 {
 
 private:
@@ -21,12 +21,11 @@ private:
   ros::Publisher pub_map_offline;
 
 public:
-  victim_map_wireless(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
+  Victim_Map_Wireless(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   void Update();
   void runDetector(){};
   void Generate_offline_wireless_map(double error);
   void Publish_Offline_Map();
-
 };
 
 #endif // VICTIM_MAP_WIRELESS_H

@@ -1,6 +1,6 @@
 #include "victim_localization/victim_map_wireless.h"
 
-victim_map_wireless::victim_map_wireless(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
+Victim_Map_Wireless::Victim_Map_Wireless(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
   Victim_Map_Base(nh,nh_private)
 {
   setlayer_name(wireless_layer_name);
@@ -32,6 +32,7 @@ victim_map_wireless::victim_map_wireless(const ros::NodeHandle &nh,const ros::No
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);
   pub_map_offline=nh_.advertise<grid_map_msgs::GridMap>("offline_", 1, true);
+  pub_polygon=nh_.advertise<geometry_msgs::PolygonStamped>(wireless_polygon_topic, 1, true);
 
 
   //Values for probability
@@ -40,22 +41,32 @@ victim_map_wireless::victim_map_wireless(const ros::NodeHandle &nh,const ros::No
   ros::param::param<double>("~Prob_Dc_H_for_wireless", Prob_Dc_H , 0.2);
   ros::param::param<double>("~Prob_Dc_Hc_for_wireless", Prob_Dc_Hc , 0.85);
 
+  switch(raytracing_type) {
+  case 0:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  case 1:
+    if (map_resol> octomap_resol){
+      raytracing_ = new Raytracing2D(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    else
+    {
+      raytracing_ = new Raytracing2D(octomap_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
+    }
+    break;
+  }
+
   victimMapName="victim map Wireless";
-
-  std::cout <<"ray tracing can casue probleim with offlinemap\n";
-
-  raytracing_ = new Raytracing(map_resol,HFOV_deg,VFOV_deg,max_depth_d,min_depth_d);
-
-  std::cout <<"yes ray tracing can casue probleim with offlinemap\n";
-
-  pub_polygon=nh_.advertise<geometry_msgs::PolygonStamped>(wireless_polygon_topic, 1, true);
-
-  std::cout <<"done with wireless except publish\n";
-
   Publish_Offline_Map();
 }
 
-void victim_map_wireless::Generate_offline_wireless_map(double error)
+void Victim_Map_Wireless::Generate_offline_wireless_map(double error)
 {
   // Create grid map
   offline_map.setFrameId("map");
@@ -79,7 +90,7 @@ void victim_map_wireless::Generate_offline_wireless_map(double error)
   }
 }
 
-void victim_map_wireless::Publish_Offline_Map()
+void Victim_Map_Wireless::Publish_Offline_Map()
 {
   double curr_max_prob_=0;
   grid_map::Matrix& data = offline_map["offline"];
@@ -107,7 +118,7 @@ void victim_map_wireless::Publish_Offline_Map()
   //ros::Rate(0.00001).sleep();
 }
 
-void victim_map_wireless::Update()
+void Victim_Map_Wireless::Update()
 {
   map_status.victim_found=false; //initialize detection to false
   curr_max_prob=0; //initiate current max probabitity to zero
