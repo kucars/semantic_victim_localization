@@ -83,6 +83,9 @@ public:
 
  //visualize
  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);
+ void visualizeSelectedpose(geometry_msgs::Pose selected_pose);
+ void visualizeAllpose(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses);
+
 
   bool ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2);
   void visualizeDrawSphere(geometry_msgs::Pose p, double r);

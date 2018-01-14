@@ -15,6 +15,9 @@ Raytracing::Raytracing(double map_res_):
   ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
   ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+  ros::param::param("~uav_fixed_height", uav_fixed_height_, 1.0);
+
+  ros::param::param("~publish_ray", publish_ray_, true);
 
   setCameraSettings(fov_h, fov_v, r_max, r_min);
   getCameraRotationMtxs();
@@ -23,6 +26,13 @@ Raytracing::Raytracing(double map_res_):
 
   base_frame="base_link";
   camera_frame="front_cam_depth_optical_frame";
+
+
+  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Rays"));
+  visualTools->loadMarkerPub();
+  visualTools->deleteAllMarkers();
+  visualTools->enableBatchPublishing();
+
 }
 
 Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
@@ -35,19 +45,28 @@ Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,
   ros::param::param("~nav_bounds_y_max", nav_bounds_y_max_, 10.0);
   ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
+  ros::param::param("~uav_fixed_height", uav_fixed_height_, 1.0);
+
+  ros::param::param("~publish_ray", publish_ray_, true);
+
 
   setCameraSettings(HFOV_deg, VFOV_deg, max_d, min_d);
   getCameraRotationMtxs();
 
   pub_temp_map=nh_.advertise<grid_map_msgs::GridMap>("temp_map", 1, true);
+
+  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Rays"));
+  visualTools->loadMarkerPub();
+  visualTools->deleteAllMarkers();
+  visualTools->enableBatchPublishing();
 }
 
 Raytracing::~Raytracing(){}
 
 void Raytracing::update()
 {
-  current_pose_       = drone_comm->GetPose();
   tree_               = drone_comm->manager_->octree_;
+//  current_pose_       = drone_comm->GetPose();
 
 // Update evaluation bounds
 //tree_resolution_ = tree_->getResolution();
@@ -112,8 +131,9 @@ void Raytracing::computeRaysAtPose(geometry_msgs::Pose p)
     //std::cout << "for pose: "<< p << " finalpoints: "<< p_ <<std::endl;
     //if (temp[2]>(current_pose_.position.z -0.5) && temp[2]<(current_pose_.position.z +0.5))
      rays_far_plane_at_pose_.push_back(p_);
-  }
-}
+ }
+ }
+
 
 void Raytracing::getCameraRotationMtxs()
 {
@@ -168,133 +188,13 @@ double Raytracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
-{
-  update();
-  computeRaysAtPose(p_);
-  grid_map::GridMap Pose_map ;
-  Pose_map.setFrameId("map");
-  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
-  Pose_map.add({"temp"},0.5);  //0 for free & unknown (for time being check free only), 0.5 for unexplored,
-
-
-  octomap::point3d origin (p_.position.x, p_.position.y, p_.position.z);
-
-  std::set<octomap::OcTreeKey, OctomapKeyCompare> nodes; //all nodes in a set are UNIQUE
-
-  for (int i=0; i<rays_far_plane_at_pose_.size(); i++)
-  {
-    octomap::point3d endpoint;
-
-    // Get length of beam to the far plane of sensor
-    double range = rays_far_plane_at_pose_[i].norm();
-    // Get the direction of the ray
-    octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
-
-    //std::cout << "dir "  << dir << std::endl;
-
-    // Cast through unknown cells as well as free cells
-    bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
-    if (!found_endpoint)
-    {
-      endpoint = origin + dir * range;
-    }
-
-    if( found_endpoint ) {
-   // octomap::point3d start_pt, end_pt;
-   // bool entered_valid_range = false;
-   // bool exited_valid_range = false;
-
-    //std::cout << "endpointis : " << std::endl;
-    //if (found_endpoint==1) std::cout << "found; Endpoint: " << endpoint <<  std::endl;
-
-    /* Check ray
-   *
-   * We first draw a ray from the UAV to the endpoint
-   *
-   * For generality, we assume the UAV is outside the object bounds. We only consider nodes
-   * 	that are inside the object bounds, and past the near-plane of the camera.
-   *
-   * The ray continues until the end point.
-   * If the ray exits the bounds, we stop adding nodes to IG and discard the endpoint.
-   *
-   */
-
-   // std::cout << "NEWRAY" << origin << std::endl;
-
-    octomap::KeyRay ray;
-    tree_->computeRayKeys( origin, endpoint, ray );
-
-    for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
-    {
-      octomap::point3d p = tree_->keyToCoord(*it);
-
-      //std::cout << "this is the point from the ray: " << p << std::endl;
-
-      // project the point to the Map
-      octomap::OcTreeNode* node = tree_->search(*it);
-      Position position(p.x(),p.y());
-
-      if (!isInsideRegionofInterest(p.z())) continue;
-
-      if (!isInsideBounds(position)) continue;
-
-     // std::cout << "possible_location1" << std::endl;
-
-     // here you need to add the check box ( 1m up and 1m down the drone pose)
-      double prob = getNodeOccupancy(node);
-      if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
-
-      if (prob < 0.2)
-        if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
-    }
-    }
-
-
-      octomap::OcTreeKey end_key;
-     if (tree_->coordToKeyChecked(endpoint,end_key))
-     {
-         octomap::OcTreeNode* node = tree_->search(end_key);
-         octomap::point3d p = tree_->keyToCoord(end_key);
-         Position position(p.x(),p.y());
-
-        if (!isInsideRegionofInterest(p.z())) continue;
-
-        if (!isInsideBounds(position)) continue;
-
-        // std::cout << "possible_location2" << std::endl;
-
-         double prob = getNodeOccupancy(node);
-         if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
-
-         if (prob < 0.2)
-           if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
-    }
-  }
-
-
-    // Evaluate endpoint     // this is checked as the end is not checked in the for loop
-
-
-//   std::cout << "This is the map for pose : " << p_ << std::endl;
-//  for (grid_map::GridMapIterator iterator(Pose_map); !iterator.isPastEnd(); ++iterator) {
-//    Position position;
-//     Pose_map.getPosition(*iterator,position);
-//     std::cout << "position: " << position << " value: " << Pose_map.atPosition("temp",position)
-//               << std::endl;
-//  }
-
-  return Pose_map;
-}
-
-
-
-
-
-
 grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,bool publish_)
 {
-  std::cout << "MIstake............" << std::endl;
+  if (publish_ray_)
+  {
+    visualTools->deleteAllMarkers(); // clear the previous rays
+  }
+
   update();
   computeRaysAtPose(p_);
   grid_map::GridMap Pose_map;
@@ -316,23 +216,15 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
     // Get the direction of the ray
     octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
 
-    //std::cout << "dir "  << dir << std::endl;
-
     // Cast through unknown cells as well as free cells
     bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
+
     if (!found_endpoint)
     {
       endpoint = origin + dir * range;
     }
 
     if( found_endpoint ) {
-   // octomap::point3d start_pt, end_pt;
-   // bool entered_valid_range = false;
-   // bool exited_valid_range = false;
-
-    //std::cout << "endpointis : " << std::endl;
-    //if (found_endpoint==1) std::cout << "found; Endpoint: " << endpoint <<  std::endl;
-
     /* Check ray
    *
    * We first draw a ray from the UAV to the endpoint
@@ -345,16 +237,12 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
    *
    */
 
-   // std::cout << "NEWRAY" << origin << std::endl;
-
     octomap::KeyRay ray;
     tree_->computeRayKeys( origin, endpoint, ray );
 
     for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
     {
       octomap::point3d p = tree_->keyToCoord(*it);
-
-      //std::cout << "this is the point from the ray: " << p << std::endl;
 
       // project the point to the Map
       octomap::OcTreeNode* node = tree_->search(*it);
@@ -364,9 +252,6 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
 
       if (!isInsideBounds(position)) continue;
 
-     // std::cout << "possible_location1" << std::endl;
-
-     // here you need to add the check box ( 1m up and 1m down the drone pose)
       double prob = getNodeOccupancy(node);
       if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
@@ -387,33 +272,31 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
 
         if (!isInsideBounds(position)) continue;
 
-        // std::cout << "possible_location2" << std::endl;
-
          double prob = getNodeOccupancy(node);
          if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
          if (prob < 0.2)
            if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
     }
-  }
 
+     // visualize the ray
+     if (publish_ray_){
+     geometry_msgs::Pose  end_;
+     end_.position.x=endpoint.x();
+     end_.position.y=endpoint.y();
+     end_.position.z=endpoint.z();
+     visualTools->publishLine(p_.position,end_.position,rviz_visual_tools::PINK,rviz_visual_tools::LARGE);
+     }
+   }
 
-    // Evaluate endpoint     // this is checked as the end is not checked in the for loop
+if (publish_ray_) {visualTools->trigger();}
 
-
-//   std::cout << "This is the map for pose : " << p_ << std::endl;
-//  for (grid_map::GridMapIterator iterator(Pose_map); !iterator.isPastEnd(); ++iterator) {
-//    Position position;
-//     Pose_map.getPosition(*iterator,position);
-//     std::cout << "position: " << position << " value: " << Pose_map.atPosition("temp",position)
-//               << std::endl;
-//  }
 
   if (publish_)
     if (pub_temp_map.getNumSubscribers()>0)
       publish_Map(Pose_map);
 
-  std::cout << "map size is: " << Pose_map.getLength()(0) << " " << Pose_map.getLength()(1) << std::endl;
+  //std::cout << "map size is: " << Pose_map.getLength()(0) << " " << Pose_map.getLength()(1) << std::endl;
   return Pose_map;
 }
 
@@ -431,8 +314,8 @@ bool Raytracing::isInsideBounds(Position p)
 
 bool Raytracing::isInsideRegionofInterest(double z , double tolerance)
 {
-  if (z > current_pose_.position.z+tolerance  ||
-      z < current_pose_.position.z-tolerance)
+  if (z > drone_comm->GetPose().position.z+tolerance  ||
+      z < drone_comm->GetPose().position.z-tolerance)
     return false;
 
   return true;

@@ -158,6 +158,30 @@ void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, 
 }
 
 
+void view_generator_IG::visualizeAllpose(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses)
+{
+
+    visualTools->deleteAllMarkers(); //reset the markers
+
+    for (int i=0; i< valid_poses.size(); i++)
+    {
+    visualTools->publishArrow(valid_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
+    }
+
+    for (int i=0; i< invalid_poses.size(); i++)
+    {
+     visualTools->publishArrow(invalid_poses[i],rviz_visual_tools::RED,rviz_visual_tools::XXLARGE,0.5);
+    }
+
+    visualTools->trigger();
+}
+
+void view_generator_IG::visualizeSelectedpose(geometry_msgs::Pose selected_pose)
+{
+    visualTools->publishArrow(selected_pose,rviz_visual_tools::BLUE,rviz_visual_tools::XXXLARGE,0.5);
+    visualTools->trigger();
+}
+
 bool view_generator_IG::ComparePoses(geometry_msgs::Pose Pose1, geometry_msgs::Pose Pose2)
 {
   if (float(

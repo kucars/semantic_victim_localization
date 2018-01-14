@@ -38,8 +38,7 @@ public:
                               octomap::KeySet* occupied_cells);
   void ResetOctomapRebuild();
 
-  grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p_);
-  grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_);
+  grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false);
 
   void publish_Map2(GridMap Map);
 
@@ -52,6 +51,7 @@ public:
   std::shared_ptr<octomap::OcTree> octree_2d;
   bool rebuild_octomap_once;
   double octomap_height;
+  bool rebuild_octomap_;
 
   double sensor_max_range,visualize_max_z,visualize_min_z,map_publish_frequency;
   bool treat_unknown_as_occupied;
@@ -61,7 +61,7 @@ public:
   void  update();
   double compute2DRelativeRays();
   void compute2DRaysAtPose(geometry_msgs::Pose p);
-  void Initiate(bool rebuild_once, bool publish);
+  virtual void Initiate(bool publish, bool rebuild_once=false);
   void Done();
 
 

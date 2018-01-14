@@ -43,7 +43,6 @@ std::cout << "1..." << std::endl;
 }
 
 void TestNBZ::initNavigation(){
-  std::cout << "2..." << std::endl;
 
     ros::param::param("~nav_type", nav_type, 1);
     switch(nav_type)
@@ -60,7 +59,6 @@ void TestNBZ::initNavigation(){
 }
 
 void TestNBZ::initViewGenerator(){
-  std::cout << "3..." << std::endl;
 
     ros::param::param("~view_generator_type", view_generator_type, 0);
 
@@ -83,7 +81,6 @@ void TestNBZ::initViewGenerator(){
 }
 
 void TestNBZ::initOctomap(){
-  std::cout << "4..." << std::endl;
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
   Occlusion_Map_ = new Volumetric_Map(manager_);
@@ -95,7 +92,6 @@ void TestNBZ::initOctomap(){
 
 
 void TestNBZ::initParameters(){
-  std::cout << "5..." << std::endl;
 
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
@@ -114,8 +110,6 @@ void TestNBZ::initParameters(){
   drone_communicator_ = new drone_communicator(nh,nh_private,manager_);
   Map_->setDroneCommunicator(drone_communicator_);
   Map_->SetNavMap(Occlusion_Map_->m_gridmap);
-  std::cout << "6..." << std::endl;
-
 }
 
 void TestNBZ::updateHistory()

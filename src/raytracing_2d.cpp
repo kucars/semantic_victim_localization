@@ -1,4 +1,5 @@
 #include "victim_localization/raytracing_2d.h"
+#include <stdio.h>
 
 Raytracing2D::Raytracing2D(double map_res_):
   rebuild_octomap_once(false),
@@ -47,14 +48,14 @@ void Raytracing2D::GenerateOctomap(bool rebuild_once, bool publish){
   ros::param::param("~treat_unknown_as_occupied", treat_unknown_as_occupied,true);
   ros::param::param("~map_publish_frequency", map_publish_frequency,1.0);
 
+
+
   octree_2d.reset(new octomap::OcTree(grid_->info.resolution));
 
-  std::cout << "Min clap.." << octree_2d->getClampingThresMinLog() << std::endl;
-  std::cout << "Max clap.." << octree_2d->getClampingThresMaxLog() << std::endl;
-  if (octree_2d->getResolution() != drone_comm->manager_->getResolution())
-    ROS_WARN("octree_2d has different resolution: ",octree_2d->getResolution());
 
-  std::cout << "grid_map resolution is .." << grid_->info.resolution << std::endl;
+  if (octree_2d->getResolution() != drone_comm->manager_->getResolution())
+    std::cout << "octree_2d has different resolution: " << octree_2d->getResolution()
+             << " ," << drone_comm->manager_->getResolution() << std::endl;
 
   // convert occupancy grid to Grid Map type for easy data maniputation
   if(!GridMapRosConverter::fromOccupancyGrid(*grid_,"occlusion",map_))
@@ -111,6 +112,9 @@ void Raytracing2D::updateOctomapOccupancy(octomap::KeySet* free_cells,
        it != end; it++) {
     octree_2d->setNodeValue(*it, log_odds_value_max, lazy_eval);
 
+    //octomap::OcTreeNode* node = octree_2d->search(*it) ;
+    //std::cout << "the occupied nodes has loc: " << octree_2d->keyToCoord(*it)  << " Occup: " << node->getOccupancy() << " Value: " << node->getValue();
+
     // Remove any occupied cells from free cells
     if (free_cells->find(*it) != free_cells->end()) {
       free_cells->erase(*it);
@@ -122,6 +126,9 @@ void Raytracing2D::updateOctomapOccupancy(octomap::KeySet* free_cells,
        end = free_cells->end();
        it != end; ++it) {
     octree_2d->setNodeValue(*it, log_odds_value_min, lazy_eval);
+
+    //octomap::OcTreeNode* node = octree_2d->search(*it) ;
+    //std::cout << "the free nodes has loc: " << octree_2d->keyToCoord(*it)  << " Occup: " << node->getOccupancy() << " Value: " << node->getValue();
   }
   octree_2d->updateInnerOccupancy();
 }
@@ -145,7 +152,7 @@ double Raytracing2D::compute2DRelativeRays()
 
   for( double x = min_x; x<=max_x; x+=x_step )
   {
-    Eigen::Vector3d p_far(range_max_, x, octomap_height);
+    Eigen::Vector3d p_far(range_max_, x, 0);
     rays_far_plane_.push_back(p_far);
   }
 }
@@ -155,9 +162,10 @@ void Raytracing2D::compute2DRaysAtPose(geometry_msgs::Pose p)
   rays_far_plane_at_pose_.clear();
 
   Eigen::Matrix3d r_pose, rotation_mtx_;
-  r_pose = pose_conversion::getRotationMatrix( p );
 
-  // compute the rays
+  // in 2D Raytracing, both the roll and pitch are set to 0, only yaw is considered.
+
+  r_pose = pose_conversion::getRotationMatrixfromYaw(p);
 
   rotation_mtx_ = r_pose;
 
@@ -167,13 +175,22 @@ void Raytracing2D::compute2DRaysAtPose(geometry_msgs::Pose p)
     Eigen::Vector3d temp = rotation_mtx_*rays_far_plane_[r];
 
     // Create an octomap point to later cast a ray
-    octomap::point3d p_ (temp[0], temp[1], octomap_height);
-    rays_far_plane_at_pose_.push_back(p_);
-  }
-}
+    octomap::point3d p_ (temp[0], temp[1], temp[2]);
 
-grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
+    //std::cout << 'roll, pitch and yaw are...' << p_.roll()*(180/M_PI) << " " << p_.pitch()*(180/M_PI) << " " << p_.yaw()*(180/M_PI) << "\n";
+
+    //std::cout << "for pose: "<< p << " finalpoints: "<< p_ <<std::endl;
+    //if (temp[2]>(current_pose_.position.z -0.5) && temp[2]<(current_pose_.position.z +0.5))
+     rays_far_plane_at_pose_.push_back(p_);
+ }
+ }
+
+grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_)
 {
+  std::cout << " this is 2d ray tracing\n";
+
+  if (publish_ray_) visualTools->deleteAllMarkers(); // clear the previous rays
+
   update();
   compute2DRaysAtPose(p_);
   grid_map::GridMap Pose_map ;
@@ -181,7 +198,9 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
   Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
   Pose_map.add({"temp"},0.5);  //0 for free, 0.5 for unexplored,
 
-  octomap::point3d origin (p_.position.x, p_.position.y, p_.position.z);
+  // set the height to the same height of the 2d octomap
+  octomap::point3d origin (p_.position.x, p_.position.y, octomap_height);
+
 
   std::set<octomap::OcTreeKey, OctomapKeyCompare> nodes; //all nodes in a set are UNIQUE
 
@@ -194,8 +213,6 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
     // Get the direction of the ray
     octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
 
-    //std::cout << "dir "  << dir << std::endl;
-
     // Cast through unknown cells as well as free cells
     bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
     if (!found_endpoint)
@@ -204,13 +221,6 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
     }
 
     if( found_endpoint ) {
-      // octomap::point3d start_pt, end_pt;
-      // bool entered_valid_range = false;
-      // bool exited_valid_range = false;
-
-      //std::cout << "endpointis : " << std::endl;
-      //if (found_endpoint==1) std::cout << "found; Endpoint: " << endpoint <<  std::endl;
-
       /* Check ray
    *
    * We first draw a ray from the UAV to the endpoint
@@ -238,13 +248,10 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
         octomap::OcTreeNode* node = tree_->search(*it);
         Position position(p.x(),p.y());
 
-        if (!isInsideRegionofInterest(p.z())) continue;
+     //   if (!isInsideRegionofInterest(p.z())) continue;
 
         if (!isInsideBounds(position)) continue;
 
-        // std::cout << "possible_location1" << std::endl;
-
-        // here you need to add the check box ( 1m up and 1m down the drone pose)
         double prob = getNodeOccupancy(node);
         if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
@@ -253,7 +260,6 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
       }
     }
 
-
     octomap::OcTreeKey end_key;
     if (tree_->coordToKeyChecked(endpoint,end_key))
     {
@@ -261,11 +267,9 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
       octomap::point3d p = tree_->keyToCoord(end_key);
       Position position(p.x(),p.y());
 
-      if (!isInsideRegionofInterest(p.z())) continue;
+     // if (!isInsideRegionofInterest(p.z())) continue;
 
       if (!isInsideBounds(position)) continue;
-
-      // std::cout << "possible_location2" << std::endl;
 
       double prob = getNodeOccupancy(node);
       if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
@@ -273,119 +277,27 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_)
       if (prob < 0.2)
         if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
     }
-  }
 
-  return Pose_map;
-}
-
-grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_)
-{
-  update();
-  computeRaysAtPose(p_);
-  grid_map::GridMap Pose_map ;
-  Pose_map.setFrameId("map");
-  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
-  Pose_map.add({"temp"},0.5);  //0 for free, 0.5 for unexplored,
-
-  octomap::point3d origin (p_.position.x, p_.position.y, p_.position.z);
-
-  std::set<octomap::OcTreeKey, OctomapKeyCompare> nodes; //all nodes in a set are UNIQUE
-
-  for (int i=0; i<rays_far_plane_at_pose_.size(); i++)
-  {
-    octomap::point3d endpoint;
-
-    // Get length of beam to the far plane of sensor
-    double range = rays_far_plane_at_pose_[i].norm();
-    // Get the direction of the ray
-    octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
-
-    //std::cout << "dir "  << dir << std::endl;
-
-    // Cast through unknown cells as well as free cells
-    bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
-    if (!found_endpoint)
-    {
-      endpoint = origin + dir * range;
-    }
-
-    if( found_endpoint ) {
-      // octomap::point3d start_pt, end_pt;
-      // bool entered_valid_range = false;
-      // bool exited_valid_range = false;
-
-      //std::cout << "endpointis : " << std::endl;
-      //if (found_endpoint==1) std::cout << "found; Endpoint: " << endpoint <<  std::endl;
-
-      /* Check ray
-   *
-   * We first draw a ray from the UAV to the endpoint
-   *
-   * For generality, we assume the UAV is outside the object bounds. We only consider nodes
-   * 	that are inside the object bounds, and past the near-plane of the camera.
-   *
-   * The ray continues until the end point.
-   * If the ray exits the bounds, we stop adding nodes to IG and discard the endpoint.
-   *
-   */
-
-      // std::cout << "NEWRAY" << origin << std::endl;
-
-      octomap::KeyRay ray;
-      tree_->computeRayKeys( origin, endpoint, ray );
-
-      for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
-      {
-        octomap::point3d p = tree_->keyToCoord(*it);
-
-        //std::cout << "this is the point from the ray: " << p << std::endl;
-
-        // project the point to the Map
-        octomap::OcTreeNode* node = tree_->search(*it);
-        Position position(p.x(),p.y());
-
-        if (!isInsideRegionofInterest(p.z())) continue;
-
-        if (!isInsideBounds(position)) continue;
-
-        // std::cout << "possible_location1" << std::endl;
-
-        // here you need to add the check box ( 1m up and 1m down the drone pose)
-        double prob = getNodeOccupancy(node);
-        if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
-
-        if (prob < 0.2)
-          if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
-      }
-    }
-
-
-    octomap::OcTreeKey end_key;
-    if (tree_->coordToKeyChecked(endpoint,end_key))
-    {
-      octomap::OcTreeNode* node = tree_->search(end_key);
-      octomap::point3d p = tree_->keyToCoord(end_key);
-      Position position(p.x(),p.y());
-
-      if (!isInsideRegionofInterest(p.z())) continue;
-
-      if (!isInsideBounds(position)) continue;
-
-      // std::cout << "possible_location2" << std::endl;
-
-      double prob = getNodeOccupancy(node);
-      if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
-
-      if (prob < 0.2)
-        if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+    // visualize the ray
+    if (publish_ray_){
+    geometry_msgs::Pose  end_;
+    end_.position.x=endpoint.x();
+    end_.position.y=endpoint.y();
+    end_.position.z=endpoint.z();
+    visualTools->publishLine(p_.position,end_.position,rviz_visual_tools::PINK,rviz_visual_tools::LARGE);
     }
   }
+
+if (publish_ray_) visualTools->trigger();
+
 
   if (publish_)
     publish_Map(Pose_map);
   publish_Map2(map_);
+
   return Pose_map;
 }
+
 
 void Raytracing2D::publish_Map2(GridMap Map)
 {
@@ -414,7 +326,19 @@ void Raytracing2D::ResetOctomapRebuild()
 
 void Raytracing2D::Initiate(bool rebuild_once, bool publish)
 {
-  GenerateOctomap(rebuild_once,publish);
+   // rebuild_once is by default set to false...
+
+  // if rebuild_once is explicitly set to true then reset 2d_octomap
+  // if rebuild_once is false, check it is value from config file.
+
+  if (rebuild_once)
+    GenerateOctomap(rebuild_once,publish);
+
+  else{
+    ros::param::param<bool>("~rebuild_octomap_for_2D_Raytracing", rebuild_octomap_, false);
+    GenerateOctomap(rebuild_octomap_,publish);
+  }
+
 }
 
 void Raytracing2D::Done()

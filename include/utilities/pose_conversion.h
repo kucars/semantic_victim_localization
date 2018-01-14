@@ -149,6 +149,7 @@ static inline Eigen::Matrix3d getRotationMatrix(geometry_msgs::Pose p)
   return R;
 }
 
+
 static inline Eigen::Matrix4d convertStampedTransform2Matrix4d(tf::StampedTransform t)
 {
   Eigen::Matrix4d tf_eigen;
@@ -245,6 +246,15 @@ static inline octomap::point3d getOctomapDirectionVectorFromTransform(tf::Stampe
   octomap::point3d p(T1.x(), T1.y(), T1.z());
   return p;
 }
+
+static inline Eigen::Matrix3d getRotationMatrixfromYaw(geometry_msgs::Pose p)
+{
+  double yaw=getYawFromQuaternion(p.orientation);
+  geometry_msgs::Quaternion qt=getQuaternionFromYaw(yaw);
+  Eigen::Matrix3d R = getRotationMatrix(qt);
+  return R;
+}
+
 }
 
 #endif // POSE_CONVERSION_H

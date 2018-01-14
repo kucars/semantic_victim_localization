@@ -42,6 +42,9 @@ struct OctomapKeyCompare {
 class Raytracing
 {
 public:
+
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
+
   geometry_msgs::Pose current_pose_;
   std::shared_ptr<octomap::OcTree> tree_;
   drone_communicator *drone_comm;
@@ -59,6 +62,7 @@ public:
   double tree_resolution;
   Eigen::Matrix3d camera_rotation_mtx_; // Camera rotation mtx
   double map_res;
+  bool publish_ray_;
   ros::Publisher pub_temp_map;
   ros::NodeHandle nh_;
 
@@ -68,9 +72,9 @@ std::vector<octomap::point3d> rays_far_plane_at_pose_;
 
 double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
 double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
+double uav_fixed_height_;
 
-virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p);
-virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_);
+virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false);
 
 
 Raytracing(double map_res_);
@@ -89,14 +93,13 @@ public:
   int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
-  bool  isInsideRegionofInterest(double z , double tolerance=0.5);
+  bool  isInsideRegionofInterest(double z , double tolerance=0.3);
   void  setDroneCommunicator(drone_communicator *drone_comm_);
   void  publish_Map(grid_map::GridMap Map);
   void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   virtual void  update();
-  virtual void Initiate(bool rebuild_once, bool publish){};
+  virtual void Initiate(bool publish, bool rebuild_once=false){};
   virtual void Done(){};
-
 
 };
 

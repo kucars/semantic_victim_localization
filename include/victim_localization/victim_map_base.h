@@ -112,11 +112,10 @@ public:
   void setDetectionResult(Status detection_status);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
-  grid_map::GridMap Project_3d_rayes_to_2D_plane();
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
   virtual void setDroneCommunicator(drone_communicator *drone_comm_);
-  void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
+  virtual void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
 
 };
 

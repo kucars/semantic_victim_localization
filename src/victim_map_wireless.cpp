@@ -100,15 +100,8 @@ void Victim_Map_Wireless::Publish_Offline_Map()
       curr_max_prob_=data(index(0), index(1));
   }
 
-  offline_map["offline"]=offline_map["offline"]/curr_max_prob_;
+  offline_map["offline"]=offline_map["offline"]/curr_max_prob_; // normalized over the maximum value
 
-//  std::cout << "maxprobis " << curr_max_prob_ << std::endl;
-//  int count=0;
-//  for (GridMapIterator iterator(offline_map); !iterator.isPastEnd(); ++iterator) {
-//    const Index index(*iterator);
-//  if(0.7 <= data(index(0), index(1))) count++;
-//  }
-//  std::cout << "count... " << count << std::endl;
   ros::Time time = ros::Time::now();
   offline_map.setTimestamp(time.toNSec());
   grid_map_msgs::GridMap message;
@@ -150,10 +143,6 @@ void Victim_Map_Wireless::Update()
 
     if (offline_map.atPosition("offline",position)<= 0.7)  // update map with believe that victim is not detected
       map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior)));
-
-    //        //check max victim probablitiy
-    //          if (map.atPosition(layer_name, position)> curr_max_prob)
-    //            curr_max_prob=map.atPosition(layer_name, position);
   }
 
 

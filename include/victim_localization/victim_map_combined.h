@@ -22,6 +22,8 @@ public:
 
   void Update();
   void setDroneCommunicator(drone_communicator *drone_comm_);
+  void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
+
 
 
 };

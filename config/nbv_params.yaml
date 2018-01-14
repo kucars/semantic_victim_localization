@@ -65,7 +65,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 0
+map_type: 3
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -85,11 +85,16 @@ Prob_D_Hc_for_thermal: 0.3
 Prob_Dc_H_for_thermal: 0.3
 Prob_Dc_Hc_for_thermal: 0.7
 
-#thermal map probabilities wireless
+#wireless map probabilities wireless
 Prob_D_H_for_wireless: 0.6
 Prob_D_Hc_for_wireless: 0.3
 Prob_Dc_H_for_wireless: 0.2
 Prob_Dc_Hc_for_wireless: 0.7
+
+#combined map confidence values
+alpha: 0.6
+beta: 0.25
+gama: 0.15
 
 ############
 ## Raytracing type
@@ -97,7 +102,9 @@ Prob_Dc_Hc_for_wireless: 0.7
 # 0: 3D-Raytracing
 # 1: 2D-Raytracing
 
-raytracing_type: 1
+raytracing_type: 0
+publish_ray: true
+rebuild_octomap_for_2D_Raytracing: false
 
 ############
 ## Cost Map Obtained for octomap

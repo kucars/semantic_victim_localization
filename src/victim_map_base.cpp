@@ -11,7 +11,7 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
   ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
   ros::param::param<double>("~depth_range_max", max_depth_d , 5);
-  ros::param::param<double>("~depth_range_max", min_depth_d , 0.5);
+  ros::param::param<double>("~depth_range_min", min_depth_d , 0.5);
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
   ros::param::param<double>("~octomap_resol", octomap_resol , 0.3);
@@ -42,6 +42,8 @@ Victim_Map_Base::~Victim_Map_Base(){}
 grid_map::Polygon Victim_Map_Base::draw_FOV(){
 
   grid_map::Polygon polygon_FOV;
+
+  setCurrentPose(drone_comm->GetPose());
 
   //determine the triangle corner of the FOV
   p1.x= current_loc_.position.x+ max_depth_d*cos(current_yaw_) + const_* cos(current_yaw_ + 4.712);

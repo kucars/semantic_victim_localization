@@ -62,16 +62,13 @@ void view_evaluator_IG::update_parameters()
 }
 
 double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
- // std::cout << "tested Pose: " << p <<std::endl;
-  grid_map::GridMap temp_Map;
-  grid_map::Polygon polygon_view;
 
-  bool rebuild=false;
-  bool publish=false;
-  mapping_module_->raytracing_->Initiate(rebuild,publish);
+  grid_map::GridMap temp_Map;
+
+  mapping_module_->raytracing_->Initiate(false);
 
   temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p);
-  polygon_view=mapping_module_->Update_region(temp_Map,p);  //std::cout << p1 << " " << p2 << std::endl;
+
   double IG_view=0;
   for (grid_map::GridMapIterator iterator(temp_Map); !iterator.isPastEnd(); ++iterator) {
     Position position;
@@ -86,8 +83,11 @@ double view_evaluator_IG::calculateIG(geometry_msgs::Pose p){
 
 void view_evaluator_IG::evaluate(){
 
+  view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
+
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
   info_utilities_.clear();
+
 
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
@@ -113,7 +113,8 @@ void view_evaluator_IG::evaluate(){
          return;
        }
 
-      view_gen_->visualize(view_gen_->generated_poses, view_gen_->rejected_poses,selected_pose_);
+       view_gen_->visualizeSelectedpose(selected_pose_);
+      //view_gen_->visualize(view_gen_->generated_poses, view_gen_->rejected_poses,selected_pose_);
 
  info_distance_total_ += calculateDistance(selected_pose_);
  mapping_module_->raytracing_->Done();

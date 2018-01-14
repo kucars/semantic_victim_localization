@@ -14,7 +14,6 @@ Panels:
         - /Map2
         - /Image1
         - /MarkerArray3
-        - /PointCloud21
         - /Image2
       Splitter Ratio: 0.5
     Tree Height: 723
@@ -36,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -62,12 +61,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /grid_map_visualization/elevation_grid
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -85,11 +84,11 @@ Visualization Manager:
     - Alpha: 1
       Class: rviz/Polygon
       Color: 0; 0; 255
-      Enabled: true
+      Enabled: false
       Name: Polygon
-      Topic: /polygon_DL
+      Topic: /test_NBV/costmap/footprint
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/MarkerArray
       Enabled: true
       Marker Topic: /ViewPoints_visualisation
@@ -103,91 +102,11 @@ Visualization Manager:
       Collision Enabled: false
       Enabled: true
       Links:
-        /ground_truth/odometry_sensorgt_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        /imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        /imugt_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        base_link_inertia:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_cam_depth_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_cam_depth_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_cam_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        front_cam_rgb_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        front_cam_rgb_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        rotor_0:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rotor_1:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rotor_2:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rotor_3:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        thermal_cam_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        thermal_cam_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        thermal_cam_thermal_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        thermal_cam_thermal_optical_frame:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
@@ -203,7 +122,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /thermal_vector
+      Marker Topic: /Rays
       Name: MarkerArray
       Namespaces:
         {}
@@ -215,7 +134,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /offline/map_
+      Topic: /occlusion/map_
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -239,36 +158,6 @@ Visualization Manager:
         {}
       Queue Size: 100
       Value: false
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: RGB8
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Squares
-      Topic: /offline/map_points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
     - Class: rviz/Image
       Enabled: false
       Image Topic: /image_detection1
@@ -305,24 +194,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 21.07865333557129
+      Distance: 11.587179183959961
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -7.4842729568481445
-        Y: 0.6381786465644836
-        Z: 1.5901360511779785
+        X: -1.1931475400924683
+        Y: -0.8075205087661743
+        Z: 1.722482681274414
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.564797043800354
+      Pitch: 0.8047972917556763
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.3248450756072998
+      Yaw: 0.12984849512577057
     Saved: ~
 Window Geometry:
   Displays:

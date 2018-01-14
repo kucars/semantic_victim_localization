@@ -81,7 +81,8 @@ void victim_map_Thermal::Update(){
 
   bool rebuild=true;
   bool publish=true;
-  raytracing_->Initiate(rebuild,publish);
+  raytracing_->Initiate(publish,rebuild);
+
   temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true);
 
   //polygon=Update_region(temp_Map,(raytracing_->current_pose_));
