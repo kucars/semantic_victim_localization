@@ -34,3 +34,4 @@
 #ignore specific folder
 script/plots/*
 
+*~
