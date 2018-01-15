@@ -17,6 +17,8 @@ public:
 private:
   int minima_iterations_;
   double minima_threshold_;
+  int adaptive_ig_max_iteration_;
+  int adaptive_iteration_;
   bool isStuckInLocalMinima();
 
 };

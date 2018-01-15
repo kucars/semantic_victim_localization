@@ -38,7 +38,9 @@
 
 <!-- Launch iris_commander to manager iris drone-->
 
-<node pkg="victim_localization" type="iris_commander" name="iris_commander"/>
+<node pkg="victim_localization" type="iris_commander" name="iris_commander">
+<rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
+</node>
 
 
 <!-- Launch the grid map visualizer -->

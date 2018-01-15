@@ -42,14 +42,12 @@ bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end,std::vector<geome
  if (getDistance(current_pose_,end)< d_close) // terminate if the end pose is at the robot current pose
    return false;
 
- std::cout << "calling the service" << std::endl;
-
  if (manager_ == NULL) {
    ROS_ERROR_THROTTLE(1, "Planner not set up: No octomap available!");
    return false;
  }
 
- ROS_INFO("Executing the Planner Loop...");
+ ROS_INFO("Executing the Reactive Planner");
 
  if(reactivePlannerServer->PathGeneration(current_pose_,end,Path))
  {
@@ -57,10 +55,9 @@ bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end,std::vector<geome
  }
  else
  {
-   ROS_INFO("No Path Found or planner not ready!");
+  std::cout << cc.red << "Planner Failed to generate planne... Skipping Navigation \n" << cc.reset;
   return false;
  }
-
 }
 std::string ReactivePathPlanner::methodName(void)
 {

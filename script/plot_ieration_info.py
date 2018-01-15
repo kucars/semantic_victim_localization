@@ -11,7 +11,7 @@ import os
 
 from matplotlib import pyplot
 
-f, ax_plot = pyplot.subplots(2,3)
+f, ax_plot = pyplot.subplots(3,3)
 
 # Define as dict so we can support values from multiple methods
 file_prefix = time.strftime("%Y-%m-%d_%H-%M-%S_", time.localtime())
@@ -27,6 +27,7 @@ entropy_total = {}
 time_iteration = {}
 time_iteration_total= {}
 curr_max_prob = {}
+generator_type = {}
 selected_utility = {}
 
 def main():
@@ -47,21 +48,24 @@ def main():
         ax_plot[1][1].clear()
         ax_plot[1][2].clear()
 
+        ax_plot[2][0].clear()
 
         for key in iterations:
           ax_plot[0][0].plot(iterations[key], selected_utility[key], label=key)
           ax_plot[0][1].plot(iterations[key], entropy_total[key], label=key)
-          ax_plot[0][2].plot(iterations[key], distance[key], label=key)
+          ax_plot[0][2].plot(iterations[key], generator_type[key], label=key)
           ax_plot[1][0].plot(iterations[key], time_iteration[key], label=key)
           ax_plot[1][1].plot(iterations[key], time_iteration_total[key], label=key)
           ax_plot[1][2].plot(iterations[key], curr_max_prob[key], label=key)
+          ax_plot[2][0].plot(iterations[key], distance[key], label=key)
 
         ax_plot[0][0].set_ylabel('Utility (Total)')
         ax_plot[0][1].set_ylabel('Global Entropy')
-        ax_plot[0][2].set_ylabel('Distance Travelled (m)')
+        ax_plot[0][2].set_ylabel('Generator Type')
         ax_plot[1][0].set_ylabel('Iteration Time (s)')
         ax_plot[1][1].set_ylabel('Total Time (s)')
         ax_plot[1][2].set_ylabel('Current Max Victim prob')
+        ax_plot[1][2].set_ylabel('Distance Travelled (m)')
 
         ax_plot[-1][0].set_xlabel('Iterations')
         ax_plot[-1][1].set_xlabel('Iterations')
@@ -98,6 +102,7 @@ def callback(data):
     time_iteration[method] = []
     time_iteration_total[method] = []
     curr_max_prob[method] = []
+    generator_type[method] = []
     selected_utility[method] = []
 
 
@@ -113,6 +118,7 @@ def callback(data):
       'Time Iteration (s)',
       'Total Time (s)',
       'Current Max Victim Prob',
+      'Generator Type,
       ])
 
   # Iterations went back in time. Indicates start of new NBV loop. Exit program
@@ -125,7 +131,7 @@ def callback(data):
   distance[method].append(data.distance_total)
   time_iteration[method].append(data.time_iteration)
   curr_max_prob[method].append(data.curr_max_prob)
-  print (curr_max_prob[method][-1])
+  generator_type[method].append(data.generator_type)
 
   selected_utility[method].append(data.selected_utility)
 
@@ -155,6 +161,7 @@ def callback(data):
     data.time_iteration,
     time_iteration_total[method][-1],
     data.curr_max_prob,
+    data.generator_type,
     ]
     )
 

@@ -69,7 +69,7 @@ void test_navigation::state_machine()
       Volumetric_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
       planner_->reactivePlannerServer->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
-      Volumetric_Map_->GetActiveOrigin(grid_origin_x,grid_origin_y);      
+      Volumetric_Map_->GetActiveOrigin(grid_origin_x,grid_origin_y);
       planner_->reactivePlannerServer->SetOriginPose((grid_origin_x),(grid_origin_y),round(drone_communicator_->GetPose().position.z));
 
       path_to_waypoint.poses.clear();  // Initially clear the path
@@ -435,4 +435,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-

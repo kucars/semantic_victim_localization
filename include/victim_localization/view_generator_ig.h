@@ -24,8 +24,19 @@
 
 using namespace grid_map;
 
+namespace Generator{
+enum GeneratorType{
+  NONE,
+  NN_Generator,
+  NN_Adaptive_Generator,
+  Frontier_Generator,
+};
+}
+
 class view_generator_IG
 {
+public:
+
 
 protected:
    double res_x_, res_y_, res_z_, res_yaw_;
@@ -53,6 +64,7 @@ public:
   std::vector<geometry_msgs::Pose> generated_poses;
   std::vector<geometry_msgs::Pose> rejected_poses;
   int nav_type;
+  Generator::GeneratorType generator_type;
 
   // Visualizer
   int vis_marker_array_prev_size_;

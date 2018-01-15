@@ -108,7 +108,6 @@ public:
   void callbackdrawFOV(const PoseStamped &ps_stamped);
   std::string getlayer_name();
   void setlayer_name(std::string layer_);
-  void setCurrentPose(geometry_msgs::Pose ps);
   void setDetectionResult(Status detection_status);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
@@ -116,6 +115,8 @@ public:
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
   virtual void setDroneCommunicator(drone_communicator *drone_comm_);
   virtual void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
+  virtual void setCurrentPose(geometry_msgs::Pose ps);
+
 
 };
 

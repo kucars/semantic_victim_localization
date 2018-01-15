@@ -567,7 +567,7 @@
   </gazebo>
   <!-- forward facing camera -->
   <joint name="front_cam_joint" type="fixed">
-    <origin rpy="0 0.26179 0" xyz="0 0 -0.05"/>
+    <origin rpy="0 0 0" xyz="0 0 -0.048"/>
     <parent link="base_link"/>
     <child link="front_cam_link"/>
   </joint>
@@ -656,18 +656,73 @@
       </plugin>
     </sensor>
   </gazebo>
-  <!-- Thermal Facing RGB camera -->
+  <!-- forward facing thermal camera -->
   <!-- 
-   <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="thermal_cam" parent="base_link" ros_topic="RGB/image_raw" cam_info_topic="RGB/camera_info" update_rate="77" res_x="1228" res_y="1027" image_format="R8G8B8" hfov="52.9855">
-    <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>  
-  </xacro:generic_camera>
+    <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/flir_a35_camera.urdf.xacro"/>
+ <xacro:flir_a35_camera name="front_cam" parent="base_link">
+    <origin xyz="0.15 0 -0.048" rpy="0 0.093 0"/>
+  </xacro:flir_a35_camera>
 
- <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_thermal_camera.urdf.xacro" />
-  <xacro:generic_thermal_camera name="thermal_cam" parent="base_link" ros_topic="thermal/image_raw" cam_info_topic="RGB/camera_info" update_rate="10" res_x="160" res_y="120" image_format="R8G8B8" hfov="52.9855">
-  <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>  
-</xacro:generic_thermal_camera>
+
 -->
+  <joint name="downward_cam_joint" type="fixed">
+    <origin rpy="0 1.57079632679 0" xyz="0.0 0.0 -0.045"/>
+    <parent link="base_link"/>
+    <child link="downward_cam_link"/>
+  </joint>
+  <link name="downward_cam_link">
+    <inertial>
+      <mass value="0.001"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+      <material name="Blue">
+        <color rgba="0.0 0.0 0.8 1"/>
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <box size="0.01 0.01 0.01"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="downward_cam_optical_joint" type="fixed">
+    <origin rpy="-1.57079632679 0.0 -1.57079632679" xyz="0 0 0"/>
+    <parent link="downward_cam_link"/>
+    <child link="downward_cam_optical_frame"/>
+  </joint>
+  <link name="downward_cam_optical_frame"/>
+  <gazebo reference="downward_cam_link">
+    <sensor name="downward_cam_camera_sensor" type="camera">
+      <update_rate>77</update_rate>
+      <camera>
+        <horizontal_fov>0.924771430815</horizontal_fov>
+        <image>
+          <format>R8G8B8</format>
+          <width>1228</width>
+          <height>1027</height>
+        </image>
+        <clip>
+          <near>0.01</near>
+          <far>100</far>
+        </clip>
+      </camera>
+      <plugin filename="libgazebo_ros_camera.so" name="downward_cam_camera_controller">
+        <cameraName>downward_cam</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>77</updateRate>
+        <imageTopicName>camera/image</imageTopicName>
+        <cameraInfoTopicName>camera/camera_info</cameraInfoTopicName>
+        <frameName>downward_cam_optical_frame</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
   <!-- stick -->
   <!-- Spawn velodyne -->
   <!--

@@ -66,13 +66,13 @@ void iris_drone_commander::start(){
     break;
 
   case Command::SEND_WAYPOINT:
-     vehicle_->moveVehicle(0.7);
+     vehicle_->moveVehicle(1.0);
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status= true; // done executing the waypoint
     break;
 
   case Command::SEND_PATH:
-     vehicle_->FollowPath(0.7);
+     vehicle_->FollowPath(0.8);
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true;  // done following the path
     break;
@@ -80,7 +80,7 @@ void iris_drone_commander::start(){
 
   case Command::HOVER_IF_NO_WAYPOINT_RECEIVED:
       hoverPose.header.stamp = ros::Time::now();
-      hoverPose.header.frame_id = "world";
+      hoverPose.header.frame_id = "fcu";
       hoverPose.pose = vehicle_->getlastSP();
       localPosePub.publish(hoverPose);
 

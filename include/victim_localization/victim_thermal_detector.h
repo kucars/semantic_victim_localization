@@ -59,7 +59,7 @@ public:
   message_filters::Subscriber<geometry_msgs::PoseStamped> *loc_sub_;
   message_filters::Synchronizer<MySyncPolicy> *sync;
   std::string thermal_image_topic;
-  std::string topic_Odometry;
+  std::string topic_Pose;
 
 
   ros::Time getCaptureTime();

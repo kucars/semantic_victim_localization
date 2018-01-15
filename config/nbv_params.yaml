@@ -65,7 +65,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 3
+map_type: 0
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -102,7 +102,7 @@ gama: 0.15
 # 0: 3D-Raytracing
 # 1: 2D-Raytracing
 
-raytracing_type: 0
+raytracing_type: 1
 publish_ray: true
 rebuild_octomap_for_2D_Raytracing: false
 
@@ -119,7 +119,7 @@ publish_2D_map: true
 ############
 # 0: Straight Line between two points
 # 1: Reactive Planner
-nav_type: 0
+nav_type: 1
 
 uav_fixed_height: 1.0
 extensionRange: 1.0
@@ -154,8 +154,8 @@ view_generator_nn_pos_res_y: 1.0
 view_generator_nn_pos_res_z: 1.0
 view_generator_nn_pos_res_yaw: rad(pi/3)
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 3
-view_generator_nn_adaptive_utility_threshold: 0.3
+view_generator_nn_adaptive_utility_threshold: 1111
+adaptive_ig_max_iteration: 1
 frontier_reached_with_distance: 5
 use_inflated_obstacles: true
 frontier_yaw: rad(pi/4)
@@ -177,7 +177,8 @@ victim_found_prob: 0.9
 ############
 topic_ssd_keras: "ssd_detction/box"
 topic_depth_image: "front_cam/depth/image_raw"
-topic_Odometry: "iris/mavros/local_position/pose"
+topic_Pose: "iris/mavros/local_position/pose"
+topic_Odometry: "iris/mavros/local_position/odom"
 topic_Position: "iris/mavros/setpoint_position/local"
 topic_segmented_PointCloud: "ssd/segmented_PointCloud"
 
@@ -185,5 +186,5 @@ map_topic_DL: "victim_map/grid_map_DL"
 map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
 
-detection_enabled: true
+detection_enabled: false
 

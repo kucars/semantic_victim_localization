@@ -8,13 +8,13 @@ victim_detector_base()
   ros::param::param<double>("~thermal_min_Area_Victim", minAreaVictim_ , 40.0);
 
   ros::param::param("~thermal_Image_topic", thermal_image_topic, std::string("/thermal_cam/image_raw"));
-  ros::param::param("~topic_Odometry", topic_Odometry, std::string("iris/mavros/local_position/pose"));
+  ros::param::param("~topic_Pose", topic_Pose, std::string("iris/mavros/local_position/pose"));
 
   image_transport::ImageTransport it(nh_);
 
   //message_filters configurations
   thermal_image_sub  = new message_filters::Subscriber<sensor_msgs::Image>(nh_, thermal_image_topic, 1);
-  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Odometry, 1);
+  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Pose, 1);
   sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *thermal_image_sub ,*loc_sub_);
 
   // Callbacks

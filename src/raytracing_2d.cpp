@@ -187,7 +187,6 @@ void Raytracing2D::compute2DRaysAtPose(geometry_msgs::Pose p)
 
 grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_)
 {
-  std::cout << " this is 2d ray tracing\n";
 
   if (publish_ray_) visualTools->deleteAllMarkers(); // clear the previous rays
 

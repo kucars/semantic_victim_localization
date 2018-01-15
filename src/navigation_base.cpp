@@ -12,7 +12,6 @@ navigationBase::navigationBase()
   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
   ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
 
-
 }
 
 void navigationBase::setCurrentPose(geometry_msgs::Pose p)
@@ -31,13 +30,13 @@ double navigationBase::getDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p
 
 bool navigationBase::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
 {
-  std::cout << "[Warning:] " << cc.red << " Navigation method is the Base\n" << cc.reset;
+  std::cout << "[Warning:] " << cc.red << " Navigation method is the Base & no implementation is provided\n" << cc.reset;
   return false;
 }
 
 bool navigationBase::GeneratePath(geometry_msgs::Pose end, std::vector<geometry_msgs::Pose> &Path)
 {
-  std::cout << "[Warning:] " << cc.red << " Navigation method is the Base\n" << cc.reset;
+  std::cout << "[Warning:] " << cc.red << " Navigation method is the Base & no implementation is provided\n" << cc.reset;
   return false;
 }
 
@@ -63,7 +62,7 @@ std::vector<geometry_msgs::Pose>
      Diff_x= end.position.x - start.position.x;
      Diff_y= end.position.y - start.position.y;
 
-     if (fabs(Diff_x) <= 0.2 && fabs(Diff_y) <= 0.2)
+     if (fabs(Diff_x) <= step_size && fabs(Diff_y) <= step_size)
      {
        ROS_INFO ("the two poses are close so no Path discretization is needed");
        Formed_Path.push_back(start);

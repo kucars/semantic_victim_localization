@@ -132,6 +132,7 @@ void TestNBZ::updateHistory()
         iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
         iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
         iteration_msg.curr_max_prob  =Map_->curr_max_prob;
+        iteration_msg.generator_type =view_generate_->generator_type;
 
         //iteration_msg.utilities        = View_evaluate_->info_utilities_;
 
@@ -199,8 +200,8 @@ void TestNBZ::navigate()
                                                   drone_communicator_->GetPose(),0.1);
 
     std::cout << "generated path is of size ....." << path_to_waypoint.size() << std::endl;
-    for (int i=0; i<path_to_waypoint.size() ; i++)
-      std::cout << path_to_waypoint[i]  << std::endl;
+    //for (int i=0; i<path_to_waypoint.size() ; i++)
+    //  std::cout << path_to_waypoint[i]  << std::endl;
 
     if (!drone_communicator_->Execute_path(path_to_waypoint))
     {
@@ -215,7 +216,7 @@ void TestNBZ::navigate()
     navigation_->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
     Occlusion_Map_->GetActiveOrigin(grid_origin_x,grid_origin_y);
-    navigation_->SetOriginPose(grid_origin_x,grid_origin_x,round(drone_communicator_->GetPose().position.z));
+    navigation_->SetOriginPose(grid_origin_x,grid_origin_y,round(drone_communicator_->GetPose().position.z));
 
     if (navigation_->GeneratePath(View_evaluate_->getTargetPose(),path_to_waypoint)) {
       printf("path Found...\n");

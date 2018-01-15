@@ -59,23 +59,72 @@ victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::No
 
 void victim_map_combined::Update()
 {
+  victim_map_Thermal_->Update();
+  std::cout << " Done updating thermal map\n";
+  victim_map_dl_->Update();
+  std::cout << " Done updating dl map\n";
+  victim_map_wireless_->Update();
+  std::cout << " Done updating wireless map\n";
+
+
+  map_status.victim_found=false; //initialize detection to false
+  curr_max_prob=0; //initiate current max probabitity to zero
+
+
+  // update map
+  Position position;
+  Index index;
+
+  //ros::Time time_1= ros::Time::now();
+
+  for (grid_map::GridMapIterator iterator(map);
+       !iterator.isPastEnd(); ++iterator) {
+
+    index=*iterator;
+    map.getPosition(index, position);
+
+    map.atPosition(layer_name,position)= alpha*victim_map_dl_->map.atPosition(victim_map_dl_->getlayer_name(),position)
+        + beta*victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position)
+        + gama*victim_map_wireless_->map.atPosition(victim_map_wireless_->getlayer_name(),position);
+
+    if (map.atPosition(layer_name,position) >= victim_found_prob ) {
+      std::cout << "yes victim found...." << std::endl;
+      map_status.victim_found=true;
+      map.getPosition(index,map_status.victim_loc);
+    }
+  }
+  curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob
+      + gama*victim_map_wireless_->curr_max_prob;
+
+  std::cout<< "current max prob is..." << curr_max_prob << std::endl;
+
+  //ros::Duration elapsed_time= ros::Time::now()-time_1;
+  //ROS_INFO("Time taken to update is the combined map is: %f", elapsed_time.toSec());
+
+
+  //      if (data(index(0), index(1)) > 0.9 ) {
+  //        map_status.victim_found=true;
+  //        map.getPosition(index,map_status.victim_loc);
+  //        break;
+  //      }
+
+  //  grid_map::Matrix& data = map[this->getlayer_name()];
+  //  for (GridMapIterator iterator(map); !iterator.isPastEnd(); ++iterator) {
+  //      const Index index(*iterator);
+  //      if (data(index(0), index(1)) > 0.9 ) {
+  //        map_status.victim_found=true;
+  //        map.getPosition(index,map_status.victim_loc);
+  //        break;
+  //      }
+  //  }
+
+
 //  victim_map_Thermal_->Update();
-//  std::cout << " Done updating thermal map\n";
-//  victim_map_dl_->Update();
 //  std::cout << " Done updating dl map\n";
-//  victim_map_wireless_->Update();
-//  std::cout << " Done updating wireless map\n";
-
-
-//  map_status.victim_found=false; //initialize detection to false
-//  curr_max_prob=0; //initiate current max probabitity to zero
-
 
 //  // update map
 //  Position position;
 //  Index index;
-
-//  //ros::Time time_1= ros::Time::now();
 
 //  for (grid_map::GridMapIterator iterator(map);
 //       !iterator.isPastEnd(); ++iterator) {
@@ -83,64 +132,23 @@ void victim_map_combined::Update()
 //    index=*iterator;
 //    map.getPosition(index, position);
 
-//    map.atPosition(layer_name,position)= alpha*victim_map_dl_->map.atPosition(victim_map_dl_->getlayer_name(),position)
-//        + beta*victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position)
-//        + gama*victim_map_wireless_->map.atPosition(victim_map_wireless_->getlayer_name(),position);
-
-//    if (map.atPosition(layer_name,position) >= victim_found_prob ) {
-//      std::cout << "yes victim found...." << std::endl;
-//      map_status.victim_found=true;
-//      map.getPosition(index,map_status.victim_loc);
-//    }
+//    map.atPosition(layer_name,position)= victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position);
 //  }
-//  curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob
-//      + gama*victim_map_wireless_->curr_max_prob;
-
-//  std::cout<< "current max prob is..." << curr_max_prob << std::endl;
-
-//  //ros::Duration elapsed_time= ros::Time::now()-time_1;
-//  //ROS_INFO("Time taken to update is the combined map is: %f", elapsed_time.toSec());
-
-
-//  //      if (data(index(0), index(1)) > 0.9 ) {
-//  //        map_status.victim_found=true;
-//  //        map.getPosition(index,map_status.victim_loc);
-//  //        break;
-//  //      }
-
-//  //  grid_map::Matrix& data = map[this->getlayer_name()];
-//  //  for (GridMapIterator iterator(map); !iterator.isPastEnd(); ++iterator) {
-//  //      const Index index(*iterator);
-//  //      if (data(index(0), index(1)) > 0.9 ) {
-//  //        map_status.victim_found=true;
-//  //        map.getPosition(index,map_status.victim_loc);
-//  //        break;
-//  //      }
-//  //  }
-
-  //debugging.....
-
- victim_map_dl_->Update();
- std::cout << " Done updating dl map\n";
-
-   // update map
-   Position position;
-   Index index;
-
-   for (grid_map::GridMapIterator iterator(map);
-        !iterator.isPastEnd(); ++iterator) {
-
-     index=*iterator;
-     map.getPosition(index, position);
-
-     map.atPosition(layer_name,position)= victim_map_dl_->map.atPosition(victim_map_dl_->getlayer_name(),position);
-
   publish_Map();
   std::cout << " Done updating Combined map\n";
 
   //ros::Rate(0.0001).sleep();
 }
+
+void victim_map_combined::setCurrentPose(geometry_msgs::Pose ps)
+{
+  Victim_Map_Base::setCurrentPose(ps);
+  victim_map_dl_->setCurrentPose(ps);
+  victim_map_Thermal_->setCurrentPose(ps);
+  victim_map_wireless_->setCurrentPose(ps);
+  std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
+
 void victim_map_combined::setDroneCommunicator(drone_communicator *drone_comm_)
 {
   Victim_Map_Base::setDroneCommunicator(drone_comm_);

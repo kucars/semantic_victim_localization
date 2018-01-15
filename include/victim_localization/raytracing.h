@@ -93,7 +93,7 @@ public:
   int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
-  bool  isInsideRegionofInterest(double z , double tolerance=0.3);
+  bool  isInsideRegionofInterest(double z , double tolerance=0.4);
   void  setDroneCommunicator(drone_communicator *drone_comm_);
   void  publish_Map(grid_map::GridMap Map);
   void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);

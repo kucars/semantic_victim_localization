@@ -8,6 +8,7 @@ view_generator_IG()
   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 0.5);
 
   frontier_yaw_res_=M_PI/4.0; // the code is tuned to work with this yaw resolution
+  generator_type=Generator::Frontier_Generator;
 }
 
 
@@ -32,6 +33,7 @@ view_generator_IG()
 
   std::vector<geometry_msgs::Pose> FinalFrontier;
   Frontier_yaw_rejected_poses.clear();
+
 
   for(unsigned int i = 0; i < allFrontiers.size(); ++i){
      //if(!isFrontierReached(allFrontiers[i])){
@@ -238,7 +240,7 @@ void view_generator_ig_frontier::generateViews()
   }
 
   // add to the rejected poses the rejected frontier that point toward the known.
-  //rejected_poses.insert(rejected_poses.end(),Frontier_yaw_rejected_poses.begin(),Frontier_yaw_rejected_poses.end());
+  rejected_poses.insert(rejected_poses.end(),Frontier_yaw_rejected_poses.begin(),Frontier_yaw_rejected_poses.end());
 
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
 

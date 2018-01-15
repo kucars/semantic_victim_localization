@@ -2,10 +2,11 @@
 
 view_generator_ig_nn_adaptive::view_generator_ig_nn_adaptive():
 view_generator_IG(),
-  scale_factor_(1)
+scale_factor_(1)
 {
   ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 5);
   ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 3.0);
+  generator_type=Generator::NN_Adaptive_Generator;
 }
 
 bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
@@ -30,7 +31,7 @@ void view_generator_ig_nn_adaptive::generateViews()
 {
   if (isStuckInLocalMinima())
   {
-    scale_factor_*= 1.4;
+    scale_factor_*= 1.2;
     std::cout << "[ViewGeneratorNNAdaptive]: " << cc.yellow << "Local minima detected. Increasing scale factor to " << scale_factor_ << "\n" << cc.reset;
 
     if (scale_factor_ >= 7.5)

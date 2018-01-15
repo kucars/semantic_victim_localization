@@ -12,14 +12,14 @@ tf_listener = new tf::TransformListener();
 //Parameters
 std::string topic_ssd_keras;
 std::string topic_depth_image;
-std::string topic_Odometry;
+std::string topic_Pose;
 std::string topic_Position;
 std::string topic_segmented_PointCloud;
 
 
 ros::param::param("~topic_ssd_keras", topic_ssd_keras, std::string("/ssd_detction/box"));
 ros::param::param("~topic_depth_image", topic_depth_image, std::string("front_cam/depth/image_raw"));
-ros::param::param("~topic_Odometry", topic_Odometry, std::string("iris/mavros/local_position/pose"));
+ros::param::param("~topic_Pose", topic_Pose, std::string("iris/mavros/local_position/pose"));
 ros::param::param("~topic_Position", topic_Position, std::string("/iris/mavros/setpoint_position/local"));
 ros::param::param("~topic_segmented_PointCloud", topic_segmented_PointCloud, std::string("ssd/segmented_PointCloud"));
 ros::param::param("~RGB_image_x_resolution", image_x_resol, 640.0);
@@ -31,7 +31,7 @@ ros::param::param("~RGB_focal_length", RGB_FL, 524.2422531097977);
 
 //message_filters configurations
 depth_in_  = new message_filters::Subscriber<sensor_msgs::Image>(nh_, topic_depth_image, 1);
-loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Odometry, 1);
+loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Pose, 1);
 sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *depth_in_ ,*loc_sub_);
 
 // Callbacks

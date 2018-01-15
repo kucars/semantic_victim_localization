@@ -10,6 +10,3 @@ grid_map_visualizations:
      layer: victim_DL
      data_min: 0
      data_max: 1
-
-
-

@@ -2,7 +2,8 @@
 
 view_generator_IG::view_generator_IG():
   vis_sphere_counter_(0),
-  vis_marker_array_prev_size_(0)
+  vis_marker_array_prev_size_(0),
+  generator_type(Generator::NN_Generator)
 {
   // Read parameters
 

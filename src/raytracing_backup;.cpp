@@ -1,6 +1,6 @@
 #include "victim_localization/raytracing.h"
 
-RayTracing::RayTracing(view_generator_IG *vg):
+Raytracing::Raytracing(view_generator_IG *vg):
   view_gen_ (vg)
 {
 
@@ -14,7 +14,7 @@ RayTracing::RayTracing(view_generator_IG *vg):
   getCameraRotationMtxs();
 }
 
-void RayTracing::update()
+void Raytracing::update()
 {
 
   tree_               = view_gen_->manager_->octree_.get();
@@ -41,7 +41,7 @@ void RayTracing::update()
 
 
 
-double RayTracing::computeRelativeRays()
+double Raytracing::computeRelativeRays()
 {
   rays_far_plane_.clear();
 
@@ -64,7 +64,7 @@ double RayTracing::computeRelativeRays()
   }
 }
 
-void RayTracing::computeRaysAtPose(geometry_msgs::Pose p)
+void Raytracing::computeRaysAtPose(geometry_msgs::Pose p)
 {
   rays_far_plane_at_pose_.clear();
 
@@ -88,7 +88,7 @@ void RayTracing::computeRaysAtPose(geometry_msgs::Pose p)
   }
 }
 
-void RayTracing::getCameraRotationMtxs()
+void Raytracing::getCameraRotationMtxs()
 {
   tf::TransformListener tf_listener;
   tf::StampedTransform transform;
@@ -116,7 +116,7 @@ void RayTracing::getCameraRotationMtxs()
 
 
 
-void RayTracing::setCameraSettings(double fov_h, double fov_v, double r_max, double r_min)
+void Raytracing::setCameraSettings(double fov_h, double fov_v, double r_max, double r_min)
 {
   HFOV_deg = fov_h;
   VFOV_deg = fov_v;
@@ -124,13 +124,13 @@ void RayTracing::setCameraSettings(double fov_h, double fov_v, double r_max, dou
   range_min_ = r_min;
 }
 
-bool RayTracing::isNodeInBounds(octomap::OcTreeKey &key)
+bool Raytracing::isNodeInBounds(octomap::OcTreeKey &key)
 {
   octomap::point3d p = tree_->keyToCoord(key);
   return isPointInBounds(p);
 }
 
-bool RayTracing::isNodeFree(octomap::OcTreeNode node)
+bool Raytracing::isNodeFree(octomap::OcTreeNode node)
 {
   if (node.getOccupancy() <= 1-tree_->getOccupancyThres())
     return true;
@@ -138,7 +138,7 @@ bool RayTracing::isNodeFree(octomap::OcTreeNode node)
   return false;
 }
 
-bool RayTracing::isNodeOccupied(octomap::OcTreeNode node)
+bool Raytracing::isNodeOccupied(octomap::OcTreeNode node)
 {
   if (node.getOccupancy() >= tree_->getOccupancyThres())
     return true;
@@ -146,12 +146,12 @@ bool RayTracing::isNodeOccupied(octomap::OcTreeNode node)
   return false;
 }
 
-bool RayTracing::isNodeUnknown(octomap::OcTreeNode node)
+bool Raytracing::isNodeUnknown(octomap::OcTreeNode node)
 {
   return !isNodeFree(node) && !isNodeOccupied(node);
 }
 
-bool RayTracing::isPointInBounds(octomap::point3d &p)
+bool Raytracing::isPointInBounds(octomap::point3d &p)
 {
   bool result = (p.x() >= view_gen_->obj_bounds_x_min_ && p.x() <= view_gen_->obj_bounds_x_max_ &&
                  p.y() >= view_gen_->obj_bounds_y_min_ && p.y() <= view_gen_->obj_bounds_y_max_ &&
@@ -162,7 +162,7 @@ bool RayTracing::isPointInBounds(octomap::point3d &p)
 
 
 
-double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
+double Raytracing::getNodeOccupancy(octomap::OcTreeNode* node)
 {
   double p;
 
@@ -178,7 +178,7 @@ double RayTracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap RayTracing::Project_3d_rayes_to_2D_plane(Pose p_)
+grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(Pose p_)
 {
   //  // Source: Borrowed partially from
   //  // https://github.com/uzh-rpg/rpg_ig_active_reconstruction/blob/master/ig_active_reconstruction_octomap/src/code_base/octomap_basic_ray_ig_calculator.inl

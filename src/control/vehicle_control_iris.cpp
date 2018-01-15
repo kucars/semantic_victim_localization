@@ -10,13 +10,13 @@ VehicleControlIris::VehicleControlIris():
   ros::NodeHandle ros_node;
 
   // Parameters
-  std::string topic_odometry;
+  std::string topic_Odometry;
   std::string topic_state;
   std::string topic_arming;
   std::string topic_set_mode;
   std::string topic_setpoint;
-
-  ros::param::param("~topic_odometry", topic_odometry, std::string("/ground_truth/odometry"));
+  ros::param::param("~topic_Odometry", topic_Odometry, std::string("/ground_truth/odometry"));
+  //ros::param::param("~topic_Odometry", topic_Odometry, std::string("/iris/mavros/local_position/odom"));
   ros::param::param("~topic_setpoint", topic_setpoint, std::string("/iris/mavros/setpoint_position/local"));
   ros::param::param("~topic_state", topic_state, std::string("iris/mavros/state"));
   ros::param::param("~topic_arming", topic_arming, std::string("iris/mavros/cmd/arming"));
@@ -25,7 +25,7 @@ VehicleControlIris::VehicleControlIris():
   ros::param::param("~nav_bounds_z_max", uav_height_max_, 10.0);
 
   // Callbacks
-  sub_odom = ros_node.subscribe(topic_odometry, 1, &VehicleControlIris::callbackOdometry, this);
+  sub_odom = ros_node.subscribe(topic_Odometry, 1, &VehicleControlIris::callbackOdometry, this);
   sub_state = ros_node.subscribe(topic_state, 10, &VehicleControlIris::callbackState, this);
   sub_setpoint = ros_node.subscribe(topic_setpoint, 10,&VehicleControlIris::callbackSP, this);
   pub_setpoint = ros_node.advertise<geometry_msgs::PoseStamped>("/iris/mavros/setpoint_position/local", 10);
@@ -96,7 +96,7 @@ void VehicleControlIris::moveVehicle(double threshold_sensitivity)
 {
   // Create stamped pose
   geometry_msgs::PoseStamped ps;
-  ps.header.frame_id = "base_link";
+  ps.header.frame_id = "fcu";
   ps.header.stamp = ros::Time::now();
   ps.pose = setpoint_;
 
