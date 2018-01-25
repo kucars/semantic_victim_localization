@@ -2,7 +2,7 @@
 #define TEST_NAVIGATION_H
 
 #include "victim_localization/reactive_path_planner.h"
-#include "control/drone_communicator.h"
+#include "control/vehicle_communicator.h"
 #include "victim_localization/volumetric_map_manager.h"
 #include "mutex"
 #include "thread"
@@ -23,7 +23,7 @@ class test_navigation
 public:
   test_navigation(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private );
   ReactivePathPlanner *planner_;
-  drone_communicator *drone_communicator_;
+  vehicle_communicator *drone_communicator_;
   volumetric_mapping::OctomapManager *manager_;
 
   rviz_visual_tools::RvizVisualToolsPtr visualTools;

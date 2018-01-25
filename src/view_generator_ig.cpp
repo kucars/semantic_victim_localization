@@ -10,10 +10,10 @@ view_generator_IG::view_generator_IG():
   ros::param::param("~view_generator_nn_pos_res_x", res_x_, 1.0);
   ros::param::param("~view_generator_nn_pos_res_y", res_y_, 1.0);
   ros::param::param("~view_generator_nn_pos_res_z", res_z_, 1.0);
-  ros::param::param("~view_generator_nn_pos_res_yaw", res_yaw_, M_PI/3.0); // (pi/3)
+  ros::param::param("~view_generator_nn_pos_res_yaw", res_yaw_, M_PI/4.0); // (pi/3)
 
   ros::param::param("~object_bounds_x_min", obj_bounds_x_min_,-1.0);
-  ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 1.0);
+  ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 2.0);
   ros::param::param("~object_bounds_y_min", obj_bounds_y_min_,-1.0);
   ros::param::param("~object_bounds_y_max", obj_bounds_y_max_, 1.0);
   ros::param::param("~object_bounds_z_min", obj_bounds_z_min_, 0.0);
@@ -37,9 +37,8 @@ view_generator_IG::view_generator_IG():
     ROS_WARN( "navigation type is unknown for the view generator, default value is set to",
               std::string(ros::this_node::getName() + "/nav_type"));
   }
+
   ros::NodeHandle nh_;
-
-
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/ViewPoints_visualisation"));
   visualTools->loadMarkerPub();
 
@@ -61,46 +60,59 @@ bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
 
 bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 {
-  double resl= manager_->getResolution();
-  double box_size= obj_bounds_x_max_;
-  double Occupied_threshold= 0.8;
+//  double resl= manager_->getResolution();
+//  double box_size= obj_bounds_x_max_;
+//  double Occupied_threshold= 0.8;
 
+//  // check that the box (of size 1m^3) around the sampled point has not occlusion
 
-  // check that the box (of size 1m^3) around the sampled point has not occlusion
+//  for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
+//    for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
+//      for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
+//         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))!=1) continue; // if the cell is not free , return false
+//         std::cout << manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))<< std::endl;
+//         return false;
+//      }
+//    }
+//  }
+//  return true;
 
-  for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
-    for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
-      for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
-         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))!=1) continue; // if the cell is not free , return false
-         std::cout << manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))<< std::endl;
-         return false;
-      }
-    }
-  }
-  return true;
+  Eigen::Vector3d loc(p.position.x, p.position.y,p.position.z);
+  Eigen::Vector3d box_size(0.5,0.5,0.5);
+if (generator_type!=Generator::NN_Adaptive_Generator){
+ if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;}
+else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
+ return false;
 }   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
 
 
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
   if (!isInsideBounds(p) ){
-  //  std::cout << "rejectedbyvalidity" << std::endl;
+    std::cout << "rejectedbyvalidity" << std::endl;
     return false;
   }
 
+//if (generator_type!=Generator::Frontier_Generator)
+//{
   if (!isSafe(p)){
-  //  std::cout << "rejectedbySafety" << std::endl;
+    std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
+//}
+//else
+//{
+//  std::cout << cc.blue << "Avoid safe checking, this is done by the reactive planner..\n" << cc.reset;
+//}
 
-  if (manager_ == NULL) {
+if (manager_ == NULL) {
     ROS_ERROR_THROTTLE(1, "Planner not set up: No octomap available!");
     return false;
   }
 
 if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
-  //  std::cout << "rejectedbycollision" << std::endl;
+    std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
 
@@ -126,14 +138,13 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
   //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
   cellStatus = manager_->getLineStatusBoundingBox(
         origin,
-        direction + origin + direction.normalized() * dOvershoot_,
+        direction + origin, //+ direction.normalized() * dOvershoot_,
         boundingbox_);
   //std::cout << "status is: " << cellStatus << std::endl;
   if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)
     return false;
 
   return true;
-
 }
 
 void view_generator_IG::visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose)
@@ -217,14 +228,13 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
 
 
   //Generating 3-D state lattice as z-axis movement is restrained (fixed)
-  for (int i_x=-1; i_x<=1; i_x++)
+  for (double i_x=-res_x_; i_x<=res_x_; i_x=i_x+1)
   {
-    for (int i_y=-1; i_y<=1; i_y++)
+    for (double i_y=-res_x_; i_y<=res_x_; i_y=i_y+1)
     {
-      for (int i_yaw=-1; i_yaw<=1; i_yaw++)
+      for (double i_yaw=-M_PI; i_yaw<M_PI; i_yaw+=res_yaw_)
       {
         // Do not generate any viewpoints in current location
-
         if (!generate_at_current_location && i_x==0 && i_y==0)
           continue;
 
@@ -232,11 +242,11 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
           continue;
 
         geometry_msgs::Pose p;
-        p.position.x = currX + res_x_*i_x*cos(currYaw) + res_y_*i_y*sin(currYaw);
-        p.position.y = currY - res_x_*i_x*sin(currYaw) + res_y_*i_y*cos(currYaw);
+        p.position.x = currX + i_x*cos(currYaw) + i_y*sin(currYaw);
+        p.position.y = currY - i_x*sin(currYaw) + i_y*cos(currYaw);
         p.position.z = uav_fixed_height ;//+ res_z_*i_z; // z-axis movement is fixed
 
-        p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + res_yaw_*i_yaw);
+        p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + i_yaw);
         initial_poses.push_back(p);
       }
     }

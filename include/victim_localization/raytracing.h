@@ -22,7 +22,7 @@
 #include <tf/transform_listener.h>
 #include <Eigen/Geometry>
 #include <victim_localization/view_generator_ig.h>
-#include <control/drone_communicator.h>
+#include <control/vehicle_communicator.h>
 
 
 typedef geometry_msgs::Point Point;
@@ -39,6 +39,7 @@ struct OctomapKeyCompare {
   }
 };
 
+
 class Raytracing
 {
 public:
@@ -47,7 +48,10 @@ public:
 
   geometry_msgs::Pose current_pose_;
   std::shared_ptr<octomap::OcTree> tree_;
-  drone_communicator *drone_comm;
+  vehicle_communicator *drone_comm;
+  VehicleControlBase *vehicle;
+  volumetric_mapping::OctomapManager *manager_;
+
   nav_msgs::OccupancyGridPtr grid_;
 
   std::string Layer_name_;
@@ -57,7 +61,7 @@ public:
   double range_min_;
   double x_arena_max;
   double y_arena_max;
-  std::string camera_frame;
+  std::string camera_optical_frame;
   std::string base_frame;
   double tree_resolution;
   Eigen::Matrix3d camera_rotation_mtx_; // Camera rotation mtx
@@ -94,7 +98,9 @@ public:
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
   bool  isInsideRegionofInterest(double z , double tolerance=0.4);
-  void  setDroneCommunicator(drone_communicator *drone_comm_);
+  void  setDroneCommunicator(vehicle_communicator *drone_comm_);
+  void setVehicle(VehicleControlBase *vehicle_);
+  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
   void  publish_Map(grid_map::GridMap Map);
   void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   virtual void  update();

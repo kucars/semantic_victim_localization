@@ -1,5 +1,5 @@
-#ifndef TEST_FLIGHT_H
-#define TEST_FLIGHT_H
+#ifndef TEST_NBV_ORIGIN
+#define TEST_NBV_ORIGIN
 
 #include <victim_localization/common.h>
 
@@ -54,7 +54,7 @@ enum State {
 }
 
 
-class TestNBZ
+class Test_NBV
 {
 
   tf::TransformListener tf_;
@@ -65,7 +65,6 @@ public:
   TimeProfiler timer;
 
 
-  vehicle_communicator *drone_communicator_;
   VehicleControlBase *vehicle_;
   Victim_Map_Base *Map_;
   nbv_history *history_;
@@ -77,12 +76,14 @@ public:
 
   int map_type;
   int nav_type;
+  int vehicle_type;
   int view_generator_type;
   int view_evaluator_type;
+  double x, y, z, yaw;
 
-  //debug
- ros::Time T1;
- ros::Duration D;
+   //debug
+  ros::Time T1;
+  ros::Duration D;
   ros::Rate NBV_loop_rate;
 
   //Navigation
@@ -95,7 +96,7 @@ public:
   view_generator_IG *view_generate_;
   view_evaluator_base *View_evaluate_;
 
-  TestNBZ(const ros::NodeHandle &nh_, const ros::NodeHandle &nh_private_);
+  Test_NBV(const ros::NodeHandle &nh_, const ros::NodeHandle &nh_private_);
   NBVState::State state;
   bool is_done_map_update;
   int waypointNum;
@@ -107,8 +108,6 @@ public:
   void initNavigation();
   void initViewGenerator();
   void initViewEvaluator();
-
-
 
   void generateViewpoints();
   void evaluateViewpoints();
@@ -125,7 +124,7 @@ public:
 
 
 
-#endif // TEST_FLIGHT_H
+#endif // TEST_NBV_ORIGIN
 
 
 

@@ -5,6 +5,8 @@ view_generator_ig_frontier(),
 scale_factor_(1),
 adaptive_iteration_(0)
 {
+generator_type=Generator::NN_Generator;
+
 ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 3);
 ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 5.0);
 ros::param::param<int>("~adaptive_ig_max_iteration", adaptive_ig_max_iteration_, 3);
@@ -67,7 +69,7 @@ void view_generator_ig_adaptive_frontier::generateViews()
     std::cout << "[ViewGenerator]: " << cc.green << "Perform Frontier Generator\n" << cc.reset;
     view_generator_ig_frontier::generateViews();
     nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-    generator_type=Generator::NN_Adaptive_Generator;
+    generator_type=Generator::Frontier_Generator;
   }
 
   float utility = nbv_history_->getMaxUtility(minima_iterations_);

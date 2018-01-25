@@ -21,7 +21,9 @@ public:
   double gama;
 
   void Update();
-  void setDroneCommunicator(drone_communicator *drone_comm_);
+  void setDroneCommunicator(vehicle_communicator *drone_comm_);
+  void setVehicle(VehicleControlBase *vehicle);
+  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
   void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   void setCurrentPose(geometry_msgs::Pose ps);
 
