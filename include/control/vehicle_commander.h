@@ -2,6 +2,8 @@
 #define IRIS_DRONE_COMMANDER_H
 
 #include "control/vehicle_control_iris.h"
+#include "control/vehicle_control_iris_origin.h"
+#include "control/vehicle_control_floating_sensor.h"
 #include "std_msgs/Bool.h"
 #include "std_msgs/Int32.h"
 #include "victim_localization/rotate_action.h"
@@ -26,7 +28,7 @@ class iris_drone_commander
 {
 public:
   iris_drone_commander(const ros::NodeHandle &nh, const ros::NodeHandle &nhPrivate);
-  VehicleControlIris *vehicle_;
+  VehicleControlBase *vehicle_;
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
   ros::Publisher  localPosePub;
@@ -40,6 +42,8 @@ public:
   geometry_msgs::PoseStamped hoverPose;
 
   double start_x, start_y, start_z, start_yaw;
+  int vehicle_type;
+  std::string base_frame;
 
   ros::ServiceServer service_rotation;
   ros::ServiceServer service_waypoint;

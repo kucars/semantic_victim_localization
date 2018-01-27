@@ -81,6 +81,8 @@ public:
   double image_x_offset;
   double image_y_offset;
   double RGB_FL;
+  std::string camera_optical_frame;
+
 
 
   //added for ssd client

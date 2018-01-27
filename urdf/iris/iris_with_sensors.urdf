@@ -567,15 +567,15 @@
   </gazebo>
   <!-- forward facing camera -->
   <joint name="front_cam_joint" type="fixed">
-    <origin rpy="0 0.26179 0" xyz="0 0 -0.05"/>
+    <origin rpy="0 0 0" xyz="0 0 0.07"/>
     <parent link="base_link"/>
     <child link="front_cam_link"/>
   </joint>
   <link name="front_cam_link">
     <inertial>
-      <mass value="0.000200"/>
+      <mass value="0.000000"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
-      <inertia ixx="5.8083e-4" ixy="0" ixz="0" iyy="3.0833e-5" iyz="0" izz="5.9083e-4"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -657,17 +657,6 @@
     </sensor>
   </gazebo>
   <!-- Thermal Facing RGB camera -->
-  <!-- 
-   <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_camera.urdf.xacro" />
-    <xacro:generic_camera name="thermal_cam" parent="base_link" ros_topic="RGB/image_raw" cam_info_topic="RGB/camera_info" update_rate="77" res_x="1228" res_y="1027" image_format="R8G8B8" hfov="52.9855">
-    <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>  
-  </xacro:generic_camera>
-
- <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_thermal_camera.urdf.xacro" />
-  <xacro:generic_thermal_camera name="thermal_cam" parent="base_link" ros_topic="thermal/image_raw" cam_info_topic="RGB/camera_info" update_rate="10" res_x="160" res_y="120" image_format="R8G8B8" hfov="52.9855">
-  <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>  
-</xacro:generic_thermal_camera>
--->
   <!-- stick -->
   <!-- Spawn velodyne -->
   <!--

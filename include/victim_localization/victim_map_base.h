@@ -5,7 +5,7 @@
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <victim_localization/raytracing.h>
 #include <victim_localization/raytracing_2d.h>
-#include <control/drone_communicator.h>
+#include <control/vehicle_communicator.h>
 #include <grid_map_msgs/GridMap.h>
 #include <cmath>
 #include "math.h"
@@ -45,7 +45,8 @@ public:
   Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   ~Victim_Map_Base();
 
-  drone_communicator *drone_comm;
+  vehicle_communicator *drone_comm;
+  VehicleControlBase *vehicle_;
 
 
   std::string map_topic;
@@ -73,6 +74,7 @@ public:
   double octomap_resol;
   double victim_found_prob;
   double curr_max_prob;
+  Position curr_max_loc;
   int raytracing_type;
 
   grid_map::GridMap map;
@@ -109,14 +111,14 @@ public:
   std::string getlayer_name();
   void setlayer_name(std::string layer_);
   void setDetectionResult(Status detection_status);
-  void setOctomapManager(volumetric_mapping::OctomapManager *manager);
 
   void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
   grid_map::Polygon Update_region(grid_map::GridMap Map, geometry_msgs::Pose corner_);
-  virtual void setDroneCommunicator(drone_communicator *drone_comm_);
+  virtual void setDroneCommunicator(vehicle_communicator *drone_comm_);
+  virtual void setOctomapManager(volumetric_mapping::OctomapManager *manager);
+  virtual void setVehicle(VehicleControlBase *vehicle);
   virtual void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   virtual void setCurrentPose(geometry_msgs::Pose ps);
-
 
 };
 

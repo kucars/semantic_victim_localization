@@ -1,29 +1,37 @@
-#ifndef VIEW_EVALUATOR_IG_H
-#define VIEW_EVALUATOR_IG_H
+#ifndef VIEW_EVALUATOR_BASE_H
+#define VIEW_EVALUATOR_BASE_H
+#include <ros/ros.h>
+#include <math.h>
+#include <iostream>
+#include <geometry_msgs/PoseStamped.h>
+#include <visualization_msgs/Marker.h>
+#include <std_msgs/Float32.h>
+#include <tf_conversions/tf_eigen.h>
+#include <tf/transform_listener.h>
+#include <octomap_world/octomap_manager.h>
+#include <Eigen/Geometry>
+#include <sensor_msgs/PointCloud2.h>
 
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/victim_map_base.h>
-#include <sensor_msgs/PointCloud2.h>
-
 #include <octomap/octomap.h>
 #include <octomap/OcTree.h>
 #include <octomap/OcTreeNode.h>
 
-#include <octomap_world/octomap_manager.h>
-#include <Eigen/Geometry>
 
-class view_evaluator_IG
+
+class view_evaluator_base
 {
 public:
   float info_selected_utility_;
   float info_entropy_total_;
 
-  view_evaluator_IG();
+  view_evaluator_base();
   geometry_msgs::Pose getTargetPose();
   void setViewGenerator(view_generator_IG* v);
   void setMappingModule(Victim_Map_Base* m);
   void update_parameters();
-  void evaluate();
+  virtual void evaluate();
 
    void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
 
@@ -44,6 +52,7 @@ public:
   double current_yaw_;
   std::string MapLayer;
   geometry_msgs::Pose selected_pose_;
+  int selected_index;
   double info_distance_total_;
   std::vector<double> info_utilities_;
 
@@ -52,19 +61,18 @@ public:
   double max_depth_d;
   double x_arena_max;
   double y_arena_max;
-  std::string camera_frame;
+  std::string camera_optical_frame;
   std::string base_frame;
 
   double tree_resolution;
   double const_;
   double calculateIG(geometry_msgs::Pose p);
+  virtual double calculateUtiltiy(geometry_msgs::Pose p);
+
   double getCellEntropy(Position cell_);
   double calculateDistance(geometry_msgs::Pose p);
-  std::string getMethodName();
-
-
-
+  virtual std::string getMethodName();
 
 };
 
-#endif // VIEW_EVALUATOR_IG_H
+#endif // VIEW_EVALUATOR_BASE_H

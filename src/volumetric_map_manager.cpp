@@ -4,9 +4,18 @@
 Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   m_octree(NULL),
   m_gridmap(&gridMap),
-  m_worldFrameId("/world"), m_baseFrameId("base"),
+  m_worldFrameId("/world"), m_baseFrameId("/base"),
   m_minSizeX(0.0), m_minSizeY(0.0)
 {
+  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 0.8);
+  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1.2);
+  ros::param::param<bool>("~publish_2D_map", m_publish2DMap , true);
+  ros::param::param<std::string>("~topic_pointcloud",topic_pointcloud_,
+                                 std::string("/floating_sensor/camera/depth/points"));
+
+  ros::param::param<double>("~pcl_throttle_", pcl_throttle_ , 0.25);
+  ros::param::param<double>("~map2d_throttle_", map2D_throttle_ , 2);
+
   manager_= manager;
   pointcloud_sub_ = nh_.subscribe(topic_pointcloud_, 1,  &Volumetric_Map::callbackSetPointCloud,this);
 
@@ -15,23 +24,27 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   m_maxTreeDepth = m_treeDepth;
   m_gridmap->info.resolution = m_octree->getResolution();
 
-  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 0.8);
-  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1.2);
-  ros::param::param<bool>("~publish_2D_map", m_publish2DMap , true);
-
   m_mapPub = nh_.advertise<nav_msgs::OccupancyGrid>("projected_map", 1);
+  previous_time= ros::Time::now();
 }
 
 void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg)
 {
-
-  manager_->insertPointcloudWithTf(input_msg);
   if (manager_ == NULL)
     ROS_ERROR_THROTTLE(1, "Map not set up: No octomap available!");
 
-  Convert2DMaptoOccupancyGrid(ros::Time::now());
-}
+  static double last_pcl = ros::Time::now().toSec();
+  if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
+    manager_->insertPointcloudWithTf(input_msg);
+    last_pcl += pcl_throttle_;
+  }
 
+  static double last_map2D= ros::Time::now().toSec();
+  if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
+    Convert2DMaptoOccupancyGrid(ros::Time::now());
+    last_map2D += map2D_throttle_;
+  }
+}
 void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
 {
   if (m_octree->size() <= 1){
@@ -306,8 +319,9 @@ void Volumetric_Map::adjustMapData(nav_msgs::OccupancyGridPtr map, const nav_msg
 
 void Volumetric_Map::Publish2DOccupancyMap(void)
 {
-  if (m_publish2DMap)
-    m_mapPub.publish(*m_gridmap);
+  if (m_mapPub.getNumSubscribers()>0)
+    if (m_publish2DMap)
+      m_mapPub.publish(*m_gridmap);
 }
 
 void Volumetric_Map::SetCostMapRos(costmap_2d::Costmap2DROS *costmapR_)
@@ -319,17 +333,14 @@ void Volumetric_Map::GetActiveOctomapSize(double &x_size, double &y_size)
 {
   costmap_=costmap_ros_->getCostmap();
 
-   x_size= costmap_->getSizeInMetersX();
-   y_size= costmap_->getSizeInMetersY();
+  x_size= costmap_->getSizeInMetersX();
+  y_size= costmap_->getSizeInMetersY();
 
 }
 void Volumetric_Map::GetActiveOrigin(double &x_origin, double &y_origin)
 {
-
   costmap_=costmap_ros_->getCostmap();
-
   x_origin = costmap_->getOriginX() + costmap_->getSizeInMetersX()/2;
   y_origin = costmap_->getOriginY() + costmap_->getSizeInMetersY()/2;
-
 }
 

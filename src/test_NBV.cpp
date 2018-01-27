@@ -21,9 +21,25 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
     ROS_INFO("test_NBZ: Begin!");
 }
 
+void TestNBZ::initVehicle(){
+  int vehicle_type;
+  ros::param::param<int>("~vehicle_type",vehicle_type,0);
+  switch(vehicle_type)
+  {
+  default:
+  case 0:
+    vehicle_ = new VehicleControlIris();
+    break;
+  case 1:
+    vehicle_ = new VehicleControlIrisOrigin();
+    break;
+  case 2:
+    vehicle_ = new VehicleControlFloatingSensor();
+    break;
+   }
+}
 void TestNBZ::initMap(){
     ros::param::param("~map_type", map_type, 0);
-std::cout << "1..." << std::endl;
     switch(map_type)
     {
     default:
@@ -49,8 +65,8 @@ void TestNBZ::initNavigation(){
     {
     default:
     case 0:
-      navigation_ = new straightLine(nh,nh_private,manager_);
-      break;
+     // navigation_ = new straightLine(nh,nh_private,manager_);
+     // break;
     case 1:
       navigation_ = new ReactivePathPlanner(nh,nh_private,manager_);
       break;
@@ -72,7 +88,7 @@ void TestNBZ::initViewGenerator(){
       view_generate_ = new view_generator_ig_nn_adaptive();
       break;
     case 2:
-      view_generate_ = new view_generator_ig_nn_adaptive();
+      view_generate_ = new view_generator_ig_frontier();
       break;
     case 3:
       view_generate_ = new view_generator_ig_adaptive_frontier();
@@ -80,12 +96,48 @@ void TestNBZ::initViewGenerator(){
     }
 }
 
+void TestNBZ::initViewEvaluator(){
+
+    ros::param::param("~view_evaluator_type", view_evaluator_type, 5);
+
+    switch(view_evaluator_type)
+    {
+    default:
+    case 0:
+      View_evaluate_ = new view_evaluator_ig();
+      break;
+    case 1:
+      View_evaluate_ = new  view_evaluator_MaxSUM();
+      break;
+    case 2:
+      View_evaluate_ = new view_evaluator_MaxMax();
+      break;
+    case 3:
+      View_evaluate_ = new view_evaluator_MaxMIN();
+    case 4:
+      View_evaluate_ = new view_evaluator_MinNEIGH();
+    break;
+    case 5:
+      View_evaluate_ = new view_evaluator_log_reward();
+    break;
+    case 6:
+      View_evaluate_ = new view_evaluator_ig_exp();
+    break;
+    case 7:
+      View_evaluate_ = new view_evaluator_ig_exp_max();
+    break;
+
+
+    }
+}
 void TestNBZ::initOctomap(){
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
+
   Occlusion_Map_ = new Volumetric_Map(manager_);
 
   CostMapROS_ = new costmap_2d::Costmap2DROS ("costmap",tf_);
+
   CostMapROS_->start();
   Occlusion_Map_->SetCostMapRos(CostMapROS_);
 }
@@ -95,7 +147,6 @@ void TestNBZ::initParameters(){
 
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
-  View_evaluate_ = new view_evaluator_IG();
   history_=  new nbv_history();
   view_generate_->setHistory(history_);
   view_generate_->setOcclusionMap(Occlusion_Map_);
@@ -107,9 +158,14 @@ void TestNBZ::initParameters(){
   View_evaluate_->setViewGenerator(view_generate_);
 
   // initialize vehicle communicator
-  drone_communicator_ = new drone_communicator(nh,nh_private,manager_);
+  drone_communicator_ = new vehicle_communicator(nh,nh_private,manager_);
+
   Map_->setDroneCommunicator(drone_communicator_);
+
   Map_->SetNavMap(Occlusion_Map_->m_gridmap);
+
+  Map_->setOctomapManager(manager_);
+
 }
 
 void TestNBZ::updateHistory()
@@ -132,6 +188,10 @@ void TestNBZ::updateHistory()
         iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
         iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
         iteration_msg.curr_max_prob  =Map_->curr_max_prob;
+        iteration_msg.curr_max_loc_x  =Map_->curr_max_loc[0];
+        iteration_msg.curr_max_loc_y  =Map_->curr_max_loc[1];
+
+
         iteration_msg.generator_type =view_generate_->generator_type;
 
         //iteration_msg.utilities        = View_evaluate_->info_utilities_;
@@ -139,6 +199,7 @@ void TestNBZ::updateHistory()
         iteration_msg.time_iteration   = timer.getLatestTime("[NBVLoop]Iteration")/1000; // time in sec
 
         pub_iteration_info.publish(iteration_msg);
+        Occlusion_Map_->Convert2DMaptoOccupancyGrid(ros::Time::now());
 }
 }
 
@@ -226,6 +287,9 @@ void TestNBZ::navigate()
       ROS_WARN("Unable to generate path, terminating....");
     }
 
+    view_generate_->visualTools->deleteAllMarkers();
+    view_generate_->visualTools->trigger();
+
 
   break;
 
@@ -246,7 +310,7 @@ void TestNBZ::navigate()
  while (ros::ok() && !drone_communicator_->GetStatus())
    {
    ros::spinOnce();
-   NBV_loop_rate.sleep();
+   ros::Rate(5).sleep();
    }
    }
 
@@ -262,7 +326,11 @@ void TestNBZ::generateViewpoints()
     return;
   }
 
-   std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
+
+    std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
+
+  navigation_->reactivePlannerServer->visualTools->deleteAllMarkers();
+  navigation_->reactivePlannerServer->visualTools->trigger();
 
   view_generate_->setCurrentPose(drone_communicator_->GetPose());
   view_generate_->setvictimmap(Map_->map,Map_->getlayer_name());
@@ -296,6 +364,8 @@ void TestNBZ::UpdateMap()
 
   Map_->Update();
 
+  Occlusion_Map_->Convert2DMaptoOccupancyGrid(ros::Time::now());
+
   if (Map_->getMapResultStatus().victim_found)
   {
     std::cout << cc.magenta << "Victim Found at Location: " << "(x,y)=" << "(" <<
@@ -318,8 +388,10 @@ void TestNBZ::runStateMachine()
      switch(state)
      {   
      case NBVState::STARTING_ROBOT:
-     if (!drone_communicator_->GetStatus())
+     if (!drone_communicator_->GetStatus()){
        break; // check if the drone is ready from drone commander node
+     }
+     std::cout << "drone is ready\n";
      state = NBVState::START_MAP_UPDATE;
        break;
 
@@ -336,7 +408,11 @@ void TestNBZ::runStateMachine()
 
      case NBVState::VIEWPOINT_GENERATION_COMPLETE:
        state = NBVState::VIEWPOINT_EVALUATION;
+       T1 = ros::Time::now();
        evaluateViewpoints();
+        D= ros::Time::now()-T1;
+       std::cout << "time taken for Viewpoint evaluator is..." << D.toSec() <<std::endl;     break;
+
      break;
 
      case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
@@ -382,13 +458,14 @@ int main(int argc, char **argv)
 
   TestNBZ *test_;
   test_ = new TestNBZ(nh,nh_private);
+  test_->initVehicle();
   test_->initMap();
   test_->initOctomap();
   test_->initNavigation();
   test_->initViewGenerator();
+  test_->initViewEvaluator();
   test_->initParameters();
 
   test_->runStateMachine();
-
   return 0;
 }

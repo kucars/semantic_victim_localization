@@ -30,19 +30,31 @@ public:
   geometry_msgs::Pose setpoint_;
   std::vector<geometry_msgs::Pose> setpath_;
 
+  ros::Time setpoint_last_received;
+  geometry_msgs::PoseStamped setpoint_last_pose;
+
+
   VehicleControlBase();
   virtual void initialize(){};
   virtual void start(double x, double y, double z, double yaw){};
+  virtual void start(){};
   virtual void setOffboardState(geometry_msgs::PoseStamped ps){};
+  virtual void setOffboardState(){};
   virtual bool isReady(){};
   virtual bool isStationary(double threshold_sensitivity){};
   virtual void setSpeed(double speed){};
+  virtual void setPath(nav_msgs::Path path){} ;
+  virtual void setPath(std::vector<geometry_msgs::Pose> path){} ;
   virtual void setWaypoint(double x, double y, double z, double yaw){};
   virtual void setWaypoint(double x, double y, double z, geometry_msgs::Quaternion orientation_){};
   virtual void setWaypoint(geometry_msgs::Pose p){};
   virtual void setWaypointIncrement(double x, double y, double z, double yaw){};
   virtual void moveVehicle(double threshold_sensitivity = 1){};
+  virtual void FollowPath(double threshold_sensitivity = 1){};
   virtual void rotateOnTheSpot(){};
+  virtual void Evaluate4Points(double x, double y, double z){};
+  virtual geometry_msgs::Pose transformSetpoint2Global (const geometry_msgs::Pose p_set){};
+  virtual geometry_msgs::Pose transformGlobal2Setpoint (const geometry_msgs::Pose p_global){};
 
 
   geometry_msgs::Pose  getPose();
@@ -51,12 +63,14 @@ public:
   geometry_msgs::Quaternion getOrientation();
   double getYaw();
   mavros_msgs::State getState();
-
+  virtual geometry_msgs::Pose getlastSP(){};
+  virtual ros::Time getlastSPTime(){};
 
   double getAngularDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2);
   double getDistance(geometry_msgs::Pose p1, geometry_msgs::Pose p2);
   bool   isNear(double p1, double p2, double threshold_sensitivity );
   bool   isNear(const geometry_msgs::Pose p_target, const geometry_msgs::Pose p_current, double threshold_sensitivity);
+  void SetVehicleROSParams();
 };
 
 #endif // VEHICLECONTROLBASE_H

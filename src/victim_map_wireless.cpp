@@ -102,6 +102,7 @@ void Victim_Map_Wireless::Publish_Offline_Map()
 
   offline_map["offline"]=offline_map["offline"]/curr_max_prob_; // normalized over the maximum value
 
+  if (pub_map_offline.getNumSubscribers()>0){
   ros::Time time = ros::Time::now();
   offline_map.setTimestamp(time.toNSec());
   grid_map_msgs::GridMap message;
@@ -109,6 +110,8 @@ void Victim_Map_Wireless::Publish_Offline_Map()
   pub_map_offline.publish(message);
   ROS_INFO_THROTTLE(1.0, "Offline map (timestamp %f) published.", message.info.header.stamp.toSec());
   //ros::Rate(0.00001).sleep();
+}
+
 }
 
 void Victim_Map_Wireless::Update()
@@ -153,6 +156,7 @@ void Victim_Map_Wireless::Update()
     if(data(index(0), index(1))> curr_max_prob)
       curr_max_prob=data(index(0), index(1));
   }
+
   if (pub_map.getNumSubscribers()>0)
     publish_Map();
 }

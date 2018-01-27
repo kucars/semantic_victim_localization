@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<launch>
+    <!-- World types are mutually exclusive. Only set ONE of them to "1" -->
+
+    <!-- Vehicle settings -->
+<arg name="use_floating_sensor" default="true"/>
+
+<arg name="Floating_sensor_model" default="$(find victim_localization)/urdf/floating_sensor/floating_sensor.sdf"/>
+<arg name="iris_model" default="$(find victim_localization)/urdf/iris/iris_with_sensors.sdf" />
+<arg name="iris_mddel_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
+
+<arg name="world" default="$(find victim_localization)/world/twoRoomsSmallthreeDL.world"/>
+<arg name="headless" default="false"/>
+<arg name="gui" default="true"/>
+<arg name="debug" default="false"/>
+<arg name="verbose" default="false"/>
+<arg name="paused" default="false"/>
+
+    <!-- Starting position -->
+    <arg name="vehicle_starting_x" value="-2"/>
+    <arg name="vehicle_starting_y" value="0"/>
+    <arg name="vehicle_starting_z" value="0.3"/>
+    <arg name="vehicle_starting_Y" value="0"/>
+
+
+    <!-- Spawn Gazebo environment -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="headless" value="$(arg headless)"/>
+        <arg name="gui" value="$(arg gui)"/>
+        <arg name="world_name" value="$(arg world)" />
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="verbose" value="$(arg verbose)" />
+        <arg name="paused" value="$(arg paused)" />
+    </include>
+
+    <!-- Spawn Floating Sensor  -->
+<group if="$(arg use_floating_sensor)">
+    <include file="$(find victim_localization)/launch/spawn_vehicle_floating_sensor.launch">
+      <arg name="vehicle_starting_x" value="$(arg vehicle_starting_x)"/>
+      <arg name="vehicle_starting_y" value="$(arg vehicle_starting_y)"/>
+      <arg name="vehicle_starting_z" value="$(arg vehicle_starting_z)"/>
+      <arg name="vehicle_starting_Y" value="$(arg vehicle_starting_Y)"/>
+    </include>
+</group>
+
+    <!-- Spawn iris vehicle and Firmware-->
+<group unless="$(arg use_floating_sensor)">
+    <include file="$(find victim_localization)/launch/spawn_vehicle_uav_with_Firmware.launch">
+    <arg name="vehicle_starting_x" value="$(arg vehicle_starting_x)"/>
+    <arg name="vehicle_starting_y" value="$(arg vehicle_starting_y)"/>
+    <arg name="vehicle_starting_z" value="$(arg vehicle_starting_z)"/>
+    <arg name="vehicle_starting_Y" value="$(arg vehicle_starting_Y)"/>
+    <arg name="sdfRobot" value="$(arg iris_model)"/>
+    <arg name="urdfRobot" value="$(arg iris_model_urdf)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="world" value="$(arg world)" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="verbose" value="$(arg verbose)" />
+    <arg name="paused" value="$(arg paused)" />
+    </include>
+</group>
+
+<node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 500"/>
+
+
+</launch>

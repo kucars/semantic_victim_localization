@@ -69,7 +69,7 @@ class ssdKeras():
         self.StartImage= cv2.imread('/home/abdulrahman/catkin_ws/src/victim_localization/resources/start.jpg')
         self.to_draw=cv2.resize(self.StartImage, (640, 480))
 
-        self.image_sub = rospy.Subscriber("front_cam/rgb/image_raw", Image, self.detect_image,queue_size=1)  # the appropriate callbacks
+        self.image_sub = rospy.Subscriber("/floating_sensor/camera/rgb/image_raw", Image, self.detect_image,queue_size=1)  # the appropriate callbacks
 
         self.box_coordinate_pub = rospy.Publisher("/ssd_detction/box", DL_msgs_boxes ,queue_size=5)  # the appropriate callbacks
         self.SSD_Serv = rospy.Service('SSD_Detection', DL_box, self.SSD_Detection_Server)

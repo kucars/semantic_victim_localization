@@ -3,10 +3,10 @@
 ############
 tf_frame: "world"
 resolution: 1.0
-visualize_max_z: 3.0
-sensor_max_range: 5.0
+#visualize_max_z: 5.0
+#sensor_max_range: 7.0
 map_publish_frequency: 1.0
-treat_unknown_as_occupied: false
+#treat_unknown_as_occupied: false
 visualize_search_space: false
 debug: false
 sample_orientations: false

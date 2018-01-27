@@ -41,7 +41,6 @@ private:
   ros::NodeHandle nh;
   ros::NodeHandle nh_private;
   volumetric_mapping::OctomapManager * mapManager = NULL;
-  rviz_visual_tools::RvizVisualToolsPtr visualTools;
   geometry_msgs::Point robotCenter;
   geometry_msgs::Vector3 gridSize;
   geometry_msgs::Pose gridStart;
@@ -65,6 +64,7 @@ private:
   ~ReactivePlannerServer();
   //bool plannerCallback(sspp::sspp_srv::Request &req, sspp::sspp_srv::Response &res);
   //void callback(const sensor_msgs::PointCloud2::ConstPtr &cloudIn);
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
 
   // overloading functions
   bool PathGeneration(geometry_msgs::Pose start_, geometry_msgs::Pose end_,nav_msgs::Path &path_);

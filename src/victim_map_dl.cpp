@@ -77,9 +77,10 @@ void victim_map_DL::Update()
     map.getPosition(index, position);
 
     //check current max probabilty
-    if (map.atPosition(layer_name, position)> curr_max_prob)
+    if (map.atPosition(layer_name, position)> curr_max_prob){
       curr_max_prob=map.atPosition(layer_name, position);
-
+      curr_max_loc=position;
+}
     if (!temp_Map.isInside(position)) continue;
     if (!raytracing_->isInsideBounds(position)) continue;
 

@@ -7,6 +7,8 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   nh_(nh),
   nh_private_(nh_private)
 {
+  std::string topic_Pose;
+
   //default values for configs
   ros::param::param<double>("~fov_horizontal", HFOV_deg , 58);
   ros::param::param<double>("~fov_vertical", VFOV_deg , 45);
@@ -19,10 +21,11 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   ros::param::param<int>("~raytracing_type", raytracing_type , 1); // 1: 3DRaytracing, 2: 2DRaytracing
 
   ros::param::param<bool>("~detection_enabled", detection_enabled , false); // added for debugging purpose
+  ros::param::param("~topic_Pose", topic_Pose, std::string("/floating_sensor/poseStamped"));
 
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
 
-  sub_loc = nh_.subscribe("/iris/mavros/local_position/pose", 1, &Victim_Map_Base::callbackdrawFOV, this);
+  sub_loc = nh_.subscribe(topic_Pose, 1, &Victim_Map_Base::callbackdrawFOV, this);
   pub_polygon = nh_.advertise<geometry_msgs::PolygonStamped>("polygon", 1, true);
 
   //initialize_victim_to_false
@@ -31,6 +34,7 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
 
   map_status.victim_found=false;
   curr_max_prob=0;
+  curr_max_loc(0,0);
 
   victimMapName="victim Map base";
   std::cout <<"done with the base\n";
@@ -123,6 +127,8 @@ void Victim_Map_Base::callbackdrawFOV(const PoseStamped &ps_stamped){
 
 
 void Victim_Map_Base::publish_Map(){
+  if (pub_map.getNumSubscribers()==0) return;
+
   ros::Time time = ros::Time::now();
   map.setTimestamp(time.toNSec());
   grid_map_msgs::GridMap message;
@@ -189,7 +195,16 @@ std::string Victim_Map_Base::VictimMapType(){
   return victimMapName;
 }
 
-void Victim_Map_Base::setDroneCommunicator(drone_communicator *drone_comm_){
+void Victim_Map_Base::setVehicle(VehicleControlBase *vehicle){
+  vehicle_ = vehicle;
+  raytracing_->setVehicle(vehicle);
+}
+
+void Victim_Map_Base::setOctomapManager(volumetric_mapping::OctomapManager *manager)
+{
+  raytracing_->setOctomapManager(manager);
+}
+void Victim_Map_Base::setDroneCommunicator(vehicle_communicator *drone_comm_){
   drone_comm = drone_comm_;
   raytracing_->setDroneCommunicator(drone_comm);
 }

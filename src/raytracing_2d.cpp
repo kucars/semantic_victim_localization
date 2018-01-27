@@ -53,9 +53,9 @@ void Raytracing2D::GenerateOctomap(bool rebuild_once, bool publish){
   octree_2d.reset(new octomap::OcTree(grid_->info.resolution));
 
 
-  if (octree_2d->getResolution() != drone_comm->manager_->getResolution())
+  if (octree_2d->getResolution() != manager_->getResolution())
     std::cout << "octree_2d has different resolution: " << octree_2d->getResolution()
-             << " ," << drone_comm->manager_->getResolution() << std::endl;
+             << " ," << manager_->getResolution() << std::endl;
 
   // convert occupancy grid to Grid Map type for easy data maniputation
   if(!GridMapRosConverter::fromOccupancyGrid(*grid_,"occlusion",map_))
@@ -148,7 +148,7 @@ double Raytracing2D::compute2DRelativeRays()
   double min_x = -range_max_ * tan(HFOV_deg/2 * deg2rad);
   double max_x =  range_max_ * tan(HFOV_deg/2 * deg2rad);
 
-  double x_step = drone_comm->manager_->getResolution();
+  double x_step = manager_->getResolution();
 
   for( double x = min_x; x<=max_x; x+=x_step )
   {
@@ -194,7 +194,7 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
   compute2DRaysAtPose(p_);
   grid_map::GridMap Pose_map ;
   Pose_map.setFrameId("map");
-  Pose_map.setGeometry(Length(range_max_*2.5,range_max_*2.5),map_res,Position (p_.position.x,p_.position.y));
+  Pose_map.setGeometry(Length(range_max_*2.1,range_max_*2.1),map_res,Position (p_.position.x,p_.position.y));
   Pose_map.add({"temp"},0.5);  //0 for free, 0.5 for unexplored,
 
   // set the height to the same height of the 2d octomap
@@ -202,6 +202,8 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
 
 
   std::set<octomap::OcTreeKey, OctomapKeyCompare> nodes; //all nodes in a set are UNIQUE
+
+  //debug
 
   for (int i=0; i<rays_far_plane_at_pose_.size(); i++)
   {
@@ -213,13 +215,15 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
     octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
 
     // Cast through unknown cells as well as free cells
+
     bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
+
     if (!found_endpoint)
     {
       endpoint = origin + dir * range;
     }
 
-    if( found_endpoint ) {
+   //if( found_endpoint ) {
       /* Check ray
    *
    * We first draw a ray from the UAV to the endpoint
@@ -235,29 +239,40 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
       // std::cout << "NEWRAY" << origin << std::endl;
 
       octomap::KeyRay ray;
+
       tree_->computeRayKeys( origin, endpoint, ray );
 
       for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
       {
         octomap::point3d p = tree_->keyToCoord(*it);
 
-        //std::cout << "this is the point from the ray: " << p << std::endl;
-
         // project the point to the Map
         octomap::OcTreeNode* node = tree_->search(*it);
         Position position(p.x(),p.y());
 
      //   if (!isInsideRegionofInterest(p.z())) continue;
-
+        if (!Pose_map.isInside(position))  continue;
         if (!isInsideBounds(position)) continue;
 
         double prob = getNodeOccupancy(node);
-        if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
-        if (prob < 0.2)
-          if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+        if(Pose_map.atPosition("temp",position)==1)
+        {
+          break;
+        }
+
+        if(prob>0.8)
+        {
+          Pose_map.atPosition("temp",position)=1;
+        }
+
+        else{
+          if (Pose_map.atPosition("temp",position)!=1)
+            Pose_map.atPosition("temp",position)=0;
+        }
       }
-    }
+
+    //}
 
     octomap::OcTreeKey end_key;
     if (tree_->coordToKeyChecked(endpoint,end_key))
@@ -267,17 +282,28 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
       Position position(p.x(),p.y());
 
      // if (!isInsideRegionofInterest(p.z())) continue;
-
+      if (!Pose_map.isInside(position))  continue;
       if (!isInsideBounds(position)) continue;
 
       double prob = getNodeOccupancy(node);
-      if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
-      if (prob < 0.2)
-        if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+      if(Pose_map.atPosition("temp",position)==1)
+      {
+        continue;
+      }
+
+      if(prob>0.8)
+      {
+        Pose_map.atPosition("temp",position)=1;
+      }
+
+      else{
+        if (Pose_map.atPosition("temp",position)!=1)
+          Pose_map.atPosition("temp",position)=0;
+      }
+
     }
 
-    // visualize the ray
     if (publish_ray_){
     geometry_msgs::Pose  end_;
     end_.position.x=endpoint.x();
@@ -290,9 +316,13 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
 if (publish_ray_) visualTools->trigger();
 
 
-  if (publish_)
-    publish_Map(Pose_map);
-  publish_Map2(map_);
+
+  if (publish_){
+    if(pub_temp_map.getNumSubscribers()>0)
+         publish_Map(Pose_map);
+    if(pub_temp_map1.getNumSubscribers()>0)
+        publish_Map2(map_);
+}
 
   return Pose_map;
 }
@@ -300,7 +330,7 @@ if (publish_ray_) visualTools->trigger();
 
 void Raytracing2D::publish_Map2(GridMap Map)
 {
-  ros::Time time = ros::Time::now();
+  ros::Time time= ros::Time::now();
   Map.setTimestamp(time.toNSec());
   grid_map_msgs::GridMap message;
   GridMapRosConverter::toMessage(Map, message);

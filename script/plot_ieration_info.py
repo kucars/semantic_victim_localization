@@ -27,6 +27,8 @@ entropy_total = {}
 time_iteration = {}
 time_iteration_total= {}
 curr_max_prob = {}
+curr_max_loc_x = {}
+curr_max_loc_y = {}
 generator_type = {}
 selected_utility = {}
 
@@ -49,6 +51,7 @@ def main():
         ax_plot[1][2].clear()
 
         ax_plot[2][0].clear()
+        ax_plot[2][1].clear()
 
         for key in iterations:
           ax_plot[0][0].plot(iterations[key], selected_utility[key], label=key)
@@ -56,20 +59,27 @@ def main():
           ax_plot[0][2].plot(iterations[key], generator_type[key], label=key)
           ax_plot[1][0].plot(iterations[key], time_iteration[key], label=key)
           ax_plot[1][1].plot(iterations[key], time_iteration_total[key], label=key)
-          ax_plot[1][2].plot(iterations[key], curr_max_prob[key], label=key)
-          ax_plot[2][0].plot(iterations[key], distance[key], label=key)
+          ax_plot[1][2].plot(iterations[key], distance[key], label=key)
+          ax_plot[2][0].plot(iterations[key], curr_max_prob[key], label=key)
+          ax_plot[2][1].plot(curr_max_loc_x[key], curr_max_loc_y[key], label=key)
 
         ax_plot[0][0].set_ylabel('Utility (Total)')
         ax_plot[0][1].set_ylabel('Global Entropy')
         ax_plot[0][2].set_ylabel('Generator Type')
         ax_plot[1][0].set_ylabel('Iteration Time (s)')
         ax_plot[1][1].set_ylabel('Total Time (s)')
-        ax_plot[1][2].set_ylabel('Current Max Victim prob')
         ax_plot[1][2].set_ylabel('Distance Travelled (m)')
+        ax_plot[2][0].set_ylabel('Current Max Victim prob')
+        ax_plot[2][1].set_ylabel('Current Max Victim loc Y (m)')
 
-        ax_plot[-1][0].set_xlabel('Iterations')
-        ax_plot[-1][1].set_xlabel('Iterations')
-        ax_plot[-1][2].set_xlabel('Iterations')
+        ax_plot[0][0].set_xlabel('Iterations')
+        ax_plot[0][1].set_xlabel('Iterations')
+        ax_plot[0][2].set_xlabel('Iterations')
+        ax_plot[1][0].set_xlabel('Iterations')
+        ax_plot[1][1].set_xlabel('Iterations')
+        ax_plot[1][2].set_xlabel('Iterations')
+        ax_plot[2][0].set_xlabel('Iterations')
+        ax_plot[2][1].set_xlabel('Current Max Victim loc X (m)')
 
 
         # Add legends
@@ -101,8 +111,11 @@ def callback(data):
     entropy_total[method] = []
     time_iteration[method] = []
     time_iteration_total[method] = []
-    curr_max_prob[method] = []
     generator_type[method] = []
+    curr_max_prob[method] = []
+    curr_max_loc_x[method] = []
+    curr_max_loc_y[method] = []
+
     selected_utility[method] = []
 
 
@@ -117,8 +130,10 @@ def callback(data):
       'Distance Travelled',
       'Time Iteration (s)',
       'Total Time (s)',
+      'Generator Type',
       'Current Max Victim Prob',
-      'Generator Type,
+      'Current Max Victim loc X',
+      'Current Max Victim loc Y',
       ])
 
   # Iterations went back in time. Indicates start of new NBV loop. Exit program
@@ -131,6 +146,9 @@ def callback(data):
   distance[method].append(data.distance_total)
   time_iteration[method].append(data.time_iteration)
   curr_max_prob[method].append(data.curr_max_prob)
+  curr_max_loc_x[method].append(data.curr_max_prob)
+  curr_max_loc_y[method].append(data.curr_max_prob)
+
   generator_type[method].append(data.generator_type)
 
   selected_utility[method].append(data.selected_utility)
@@ -160,8 +178,10 @@ def callback(data):
     data.distance_total,
     data.time_iteration,
     time_iteration_total[method][-1],
-    data.curr_max_prob,
     data.generator_type,
+    data.curr_max_prob,
+    data.curr_max_loc_x,
+    data.curr_max_loc_y,
     ]
     )
 

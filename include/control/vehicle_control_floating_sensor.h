@@ -22,18 +22,26 @@ private:
 public:
   VehicleControlFloatingSensor();
 
-  void callbackPose(const geometry_msgs::Pose& pose_msg);
+  void callbackPose(const geometry_msgs::PoseStamped& pose_msg);
 
   bool isReady();
   bool isSationary(double threshold_sensitivity = 1);
-
   void moveVehicle(double threshold_sensitivity = 1);
+  void FollowPath(double threshold_sensitivity = 1);
   void setSpeed(double speed);
+  void setPath(nav_msgs::Path path) ;
+  void setPath(std::vector<geometry_msgs::Pose> path) ;
   void setWaypoint(double x, double y, double z, double yaw);
+  void setWaypoint(double x, double y, double z, geometry_msgs::Quaternion orientation_);
   void setWaypoint(geometry_msgs::Pose p);
   void setWaypointIncrement(double x, double y, double z, double yaw);
   void start(double x, double y, double z, double yaw);
+  void start();
   void updateTwist();
+  void Evaluate4Points(double x, double y, double z);
+  void rotateOnTheSpot();
+  geometry_msgs::Pose getlastSP();
+  ros::Time getlastSPTime();
 };
 
 #endif // VEHICLECONTROLIRIS_H

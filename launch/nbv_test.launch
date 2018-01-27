@@ -4,9 +4,10 @@
     <arg name="tf_frame" default="world" />
     <arg name="mesh_resolution" default="1.0" />
     <arg name="resolution" default="0.3" />
-    <arg name="visualize_max_z" default="2.5" />
-    <arg name="sensor_max_range" default="5.0" />
-    <arg name="param_file" default="$(find victim_localization)/config/exploration.yaml" />
+    <arg name="visualize_max_z" default="5" />
+    <arg name="sensor_max_range" default="7.0" />
+    <arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
+    <arg name="grid_map_visualizer" default="false"/>
     <arg name="debug" default="false"/>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
@@ -19,7 +20,6 @@
        <rosparam command="load" file="$(arg param_file)" />
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
-       <rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
 </node>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" unless="$(arg debug)">
@@ -32,47 +32,45 @@
        <rosparam command="load" file="$(arg param_file)" />
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
-       <rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
 </node>
 
 
 <!-- Launch iris_commander to manager iris drone-->
 
-<node pkg="victim_localization" type="iris_commander" name="iris_commander">
-<rosparam file="$(find victim_localization)/config/nbv_params.yaml" command="load"/>
+<node pkg="victim_localization" type="vehicle_commander" name="vehicle_commander" output="screen" >
+<rosparam command="load" file="$(arg param_file)" />
 </node>
-
 
 <!-- Launch the grid map visualizer -->
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="DL" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_DL.yaml" />
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="DL">
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_DL.yaml" />
 </node>
 
+<group if="$(arg grid_map_visualizer)">
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="thermal" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_thermal.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_thermal.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="Combined" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_combined.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_combined.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="occlusion" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_occlusion.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_occlusion.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="wireless" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_wireless.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_wireless.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="offline" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_wireless_offline.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_wireless_offline.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="test" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/victim_Map_test.yaml" />
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_test.yaml" />
 </node>
+<node pkg="grid_map_visualization" type="grid_map_visualization" name="Nav" output="screen">
+<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_Navigation.yaml" />
+</node>
+</group>
 
 <!-- Launch RViz with the demo configuration -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" />
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" />
 
 </launch>

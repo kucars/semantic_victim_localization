@@ -16,17 +16,18 @@ std::string topic_Pose;
 std::string topic_Position;
 std::string topic_segmented_PointCloud;
 
-
 ros::param::param("~topic_ssd_keras", topic_ssd_keras, std::string("/ssd_detction/box"));
-ros::param::param("~topic_depth_image", topic_depth_image, std::string("front_cam/depth/image_raw"));
-ros::param::param("~topic_Pose", topic_Pose, std::string("iris/mavros/local_position/pose"));
-ros::param::param("~topic_Position", topic_Position, std::string("/iris/mavros/setpoint_position/local"));
+ros::param::param("~topic_depth_image", topic_depth_image, std::string("/floating_sensor/camera/depth/image_raw"));
+ros::param::param("~topic_Pose", topic_Pose, std::string("/floating_sensor/poseStamped"));
+ros::param::param("~topic_setPose", topic_Position, std::string("floating_sensor/set_pose"));
 ros::param::param("~topic_segmented_PointCloud", topic_segmented_PointCloud, std::string("ssd/segmented_PointCloud"));
 ros::param::param("~RGB_image_x_resolution", image_x_resol, 640.0);
 ros::param::param("~RGB_image_y_resolution", image_y_resol, 480.0);
 ros::param::param("~RGB_image_x_offset", image_x_offset, 320.5);
 ros::param::param("~RGB_image_y_offset", image_y_offset, 240.5);
 ros::param::param("~RGB_focal_length", RGB_FL, 524.2422531097977);
+
+ros::param::param<std::string>("~camera_optical_frame", camera_optical_frame , "/floating_sensor/camera_depth_optical_frame");
 
 
 //message_filters configurations
@@ -41,9 +42,8 @@ sync->registerCallback(boost::bind(&SSD_Detection_with_clustering::CallBackData,
 pub_segemented_human_pointcloud = nh_.advertise<sensor_msgs::PointCloud2>(topic_segmented_PointCloud, 4);
 
 //client to interact with Python SSD_detection Code
-pub_setpoint = nh_.advertise<geometry_msgs::PoseStamped>("/iris/mavros/setpoint_position/local", 10);
+pub_setpoint = nh_.advertise<geometry_msgs::PoseStamped>(topic_Position, 10);
 client = nh_private.serviceClient<victim_localization::DL_box>("SSD_Detection");
-
 }
 
 
@@ -243,7 +243,7 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
 
         centroid.get(point_centroid);
         point_centroid_gm.point=pose_conversion::convertToGeometryMsgPoint(point_centroid);
-        point_centroid_gm.header.frame_id="front_cam_depth_optical_frame";
+        point_centroid_gm.header.frame_id=camera_optical_frame;
 
         try
         {
@@ -268,7 +268,7 @@ void SSD_Detection_with_clustering::PublishSegmentedPointCloud(const pcl::PointC
    if (input_PointCloud.size()==0) return;
    sensor_msgs::PointCloud2 output_msg;
    pcl::toROSMsg(input_PointCloud, output_msg); 	//cloud of original (white) using original cloud
-   output_msg.header.frame_id = "front_cam_depth_optical_frame";
+   output_msg.header.frame_id = camera_optical_frame;
    output_msg.header.stamp = ros::Time::now();
    pub_segemented_human_pointcloud.publish(output_msg);
 }

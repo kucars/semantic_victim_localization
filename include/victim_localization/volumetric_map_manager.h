@@ -60,11 +60,13 @@ class Volumetric_Map
 
 public:
    //....variables....
-
-  std::string topic_pointcloud_  = "/front_cam/depth/points";
+  ros::Time previous_time;
+  std::string topic_pointcloud_;
   ros::Subscriber pointcloud_sub_;
   costmap_2d::Costmap2DROS *costmap_ros_;
   costmap_2d::Costmap2D *costmap_;
+  double pcl_throttle_;
+  double map2D_throttle_;
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
@@ -75,6 +77,7 @@ public:
   void SetCostMapRos(costmap_2d::Costmap2DROS *costmap_);
 
 
+  void Convert2DMaptoOccupancyGrid(const ros::Time &rostime);
 
 
 protected:
@@ -111,7 +114,6 @@ protected:
     void adjustMapData( nav_msgs::OccupancyGridPtr map,
                        const nav_msgs::MapMetaData& oldMapInfo) const;
 
-    void Convert2DMaptoOccupancyGrid(const ros::Time &rostime);
 
     void Publish2DOccupancyMap(void);
 

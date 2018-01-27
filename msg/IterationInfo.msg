@@ -8,6 +8,8 @@ geometry_msgs/Pose selected_pose
 float32 selected_utility
 
 float32 curr_max_prob
+float32 curr_max_loc_x
+float32 curr_max_loc_y
 int32 generator_type
 
 float32 time_iteration

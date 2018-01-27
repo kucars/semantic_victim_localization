@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="name" default="floating_sensor"/>
+  <arg name="model" default="$(find victim_localization)/urdf/floating_sensor/floating_sensor.sdf"/>
+  <arg name="tf_prefix" default="$(optenv ROS_NAMESPACE)"/>
+  <arg name="vehicle_starting_x" default="3.0"/>
+  <arg name="vehicle_starting_y" default="0"/>
+  <arg name="vehicle_starting_z" default="2.0"/>
+  <arg name="vehicle_starting_Y" default="0"/>
+  <arg name="enable_logging" default="false"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="log_file" default="iris"/>
+
+  <!-- send the robot XML to param server -->
+  <param name="robot_description" textfile="$(arg model)"/>
+  <param name="tf_prefix" type="string" value="$(arg tf_prefix)" />
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_floating_sensor" pkg="gazebo_ros" type="spawn_model"
+   args="-param robot_description
+         -sdf
+         -x $(arg vehicle_starting_x)
+         -y $(arg vehicle_starting_y)
+         -z $(arg vehicle_starting_z)
+         -Y $(arg vehicle_starting_Y)
+         -model $(arg name)"
+   respawn="false" output="screen">
+  </node>
+
+
+  <!-- Camera1 -->
+  <node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbda_tf" args="
+        0.0  0.0 -0.1
+             0.000  0.0  0.000   1.0
+	/floating_sensor/base_link
+	/floating_sensor/camera_frame
+	500"
+  />
+
+  <node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbdb_tf" args="
+        0 0 0
+         -0.5 0.5  -0.5 0.5
+        /floating_sensor/camera_frame
+        /floating_sensor/camera_depth_optical_frame
+        500"
+  />
+
+</launch>

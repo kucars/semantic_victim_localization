@@ -1,14 +1,20 @@
 #include "victim_localization/view_generator_ig_frontier.h"
 
 view_generator_ig_frontier::view_generator_ig_frontier():
-view_generator_IG()
+view_generator_IG(),
+Initialized_VictimNavMap(false)
 {
   ros::param::param<double>("~frontier_reached_with_distance", dist_for_frontier_reached , 10);
   ros::param::param<bool>("~use_inflated_obstacles", use_inflated_obs_ , true);
   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 0.5);
+  ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
+  ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
 
   frontier_yaw_res_=M_PI/4.0; // the code is tuned to work with this yaw resolution
   generator_type=Generator::Frontier_Generator;
+
+  pub_Nav_map=nh_.advertise<grid_map_msgs::GridMap>("Nav_map", 1, true);
+  Nav_map_layer="Victim_Nav";
 }
 
 
@@ -22,7 +28,31 @@ view_generator_IG()
   std::vector<Index> allFrontiers;
   std::vector<geometry_msgs::Pose> allFrontierPose;
   // check for all cells in the victim map whether or not they are frontier cells
+
+  // Generate a Common Region Map between the victim_map and the navigation map,
+
   for (grid_map::GridMapIterator iterator(victim_map);
+       !iterator.isPastEnd(); ++iterator)
+  {
+    Position p;
+    int costmap_index;
+    Index index_=*iterator;
+    if (victim_map.at(map_layer,index_)==0.5) continue;
+    victim_map.getPosition(index_,p);
+
+    unsigned int mx,my;
+    if(!costmap_->worldToMap(p[0],p[1],mx,my)) continue;
+    //if(!IsWithinCostmap(p[0],p[1])) contniue;
+    costmap_index=costmap_->getIndex(mx,my);
+    if(checkValidity(costmap_index)) Victim_Nav_map.at(Nav_map_layer,index_)=0;
+  }
+
+  //publish Victim_Nav_Map
+  if(pub_Nav_map.getNumSubscribers()>0)
+  publish_Map(Victim_Nav_map);
+
+
+  for (grid_map::GridMapIterator iterator(Victim_Nav_map);
        !iterator.isPastEnd(); ++iterator) {
     Index index=*iterator;
     if(isFrontier(index)){
@@ -40,7 +70,7 @@ view_generator_IG()
       Position P;
       geometry_msgs::Pose FrontierPose;
 
-      victim_map.getPosition(allFrontiers[i],P);
+      Victim_Nav_map.getPosition(allFrontiers[i],P);
       FrontierPose.position.x =P[0];
       FrontierPose.position.y=P[1];
       FrontierPose.position.z=uav_fixed_height;
@@ -64,7 +94,7 @@ bool view_generator_ig_frontier::isFrontierReached(Index point){
   tf::poseStampedTFToMsg(robotPose, robotPoseMsg);
 
   Position p;
-  victim_map.getPosition(point,p);
+  Victim_Nav_map.getPosition(point,p);
 
   double dx = robotPoseMsg.pose.position.x - p[0];
   double dy = robotPoseMsg.pose.position.y - p[1];
@@ -85,12 +115,12 @@ bool view_generator_ig_frontier::isFrontier(Index point){
 
     for(int i = 0; i < 8; ++i){
       if(isValid(adjacentPoints[i])){
-        if(victim_map.at(map_layer,adjacentPoints[i]) == 0.5){  //0.5 indicate unknown cell
+        if(Victim_Nav_map.at(Nav_map_layer,adjacentPoints[i]) == 0.5){  //0.5 indicate unknown cell
           int no_inf_count = 0;
           Index noInfPoints[8];
           getAdjacentPoints(adjacentPoints[i],noInfPoints);
           for(int j = 0; j < 8; j++){
-            if( isValid(noInfPoints[j]) && victim_map.at(map_layer,noInfPoints[i]) == 0.5){
+            if( isValid(noInfPoints[j]) && Victim_Nav_map.at(Nav_map_layer,noInfPoints[i]) == 0.5){
               ++no_inf_count;
               if(no_inf_count > 2){
                 return true;
@@ -110,8 +140,8 @@ bool view_generator_ig_frontier::isFreeFrontiers(Index point){
 
   Position p;
   int costmap_index;
-  victim_map.getPosition(point,p);
-  if (victim_map.at(map_layer,point)>=0.5 ) return false;
+  Victim_Nav_map.getPosition(point,p);
+  if (Victim_Nav_map.at(Nav_map_layer,point)>=0.5 ) return false;
   unsigned int mx,my;
   costmap_->worldToMap(p[0],p[1],mx,my);
   costmap_index=costmap_->getIndex(mx,my);
@@ -176,8 +206,8 @@ inline Index view_generator_ig_frontier::downleft(Index point){
 }
 
 bool view_generator_ig_frontier::isValid(Index point){
-  if ((point[0] >= 0) && (point[0]  < victim_map.getSize()(0)))
-      if ((point[1] >= 0) && (point[1]  < victim_map.getSize()(0)))
+  if ((point[0] >= 0) && (point[0]  < Victim_Nav_map.getSize()(0)))
+      if ((point[1] >= 0) && (point[1]  < Victim_Nav_map.getSize()(0)))
         return true;
 
    return false;
@@ -203,17 +233,17 @@ bool view_generator_ig_frontier::setYawtoViewpoint(geometry_msgs::Pose Frontier,
 
 bool view_generator_ig_frontier::IsPointingtoUnkown(double yaw, Index index_)
 {
-   if ((-M_PI/8 <= yaw) && (yaw <= M_PI/8))  {if(victim_map.at(map_layer,left(index_)) == 0.5) return true;}
-   else if ((-M_PI/8.0 < yaw) && (yaw <= -3.0*M_PI)/8.0)  {if(victim_map.at(map_layer,upleft(index_)) == 0.5) return true;}
-   else if (((-3*M_PI)/8< yaw) && (yaw <= (-5*M_PI)/8))  {if(victim_map.at(map_layer,up(index_)) == 0.5) return true;}
-   else if (((-5*M_PI)/8< yaw) && (yaw  <= (-7*M_PI)/8))  {if(victim_map.at(map_layer,upright(index_)) == 0.5) return true;}
+   if ((-M_PI/8 <= yaw) && (yaw <= M_PI/8))  {if(Victim_Nav_map.at(Nav_map_layer,left(index_)) == 0.5) return true;}
+   else if ((-M_PI/8.0 < yaw) && (yaw <= -3.0*M_PI)/8.0)  {if(Victim_Nav_map.at(Nav_map_layer,upleft(index_)) == 0.5) return true;}
+   else if (((-3*M_PI)/8< yaw) && (yaw <= (-5*M_PI)/8))  {if(Victim_Nav_map.at(Nav_map_layer,up(index_)) == 0.5) return true;}
+   else if (((-5*M_PI)/8< yaw) && (yaw  <= (-7*M_PI)/8))  {if(Victim_Nav_map.at(Nav_map_layer,upright(index_)) == 0.5) return true;}
 
-   else if ((M_PI/8 < yaw) && (yaw  <= (3*M_PI)/8))  {if(victim_map.at(map_layer,downleft(index_)) == 0.5) return true;}
-   else if (((3*M_PI)/8< yaw) && (yaw  <= (5*M_PI)/8))  {if(victim_map.at(map_layer,down(index_)) == 0.5) return true;}
-   else if (((5*M_PI)/8< yaw) && (yaw  <= (7*M_PI)/8))  {if(victim_map.at(map_layer,downright(index_)) == 0.5) return true;}
+   else if ((M_PI/8 < yaw) && (yaw  <= (3*M_PI)/8))  {if(Victim_Nav_map.at(Nav_map_layer,downleft(index_)) == 0.5) return true;}
+   else if (((3*M_PI)/8< yaw) && (yaw  <= (5*M_PI)/8))  {if(Victim_Nav_map.at(Nav_map_layer,down(index_)) == 0.5) return true;}
+   else if (((5*M_PI)/8< yaw) && (yaw  <= (7*M_PI)/8))  {if(Victim_Nav_map.at(Nav_map_layer,downright(index_)) == 0.5) return true;}
 
-   else if (((7*M_PI)/8 < yaw) && (yaw  <= M_PI))  {if(victim_map.at(map_layer,right(index_)) == 0.5) return true;}
-   else if (((-7*M_PI)/8 < yaw) && (yaw  <= -M_PI))  {if(victim_map.at(map_layer,right(index_)) == 0.5) return true;}
+   else if (((7*M_PI)/8 < yaw) && (yaw  <= M_PI))  {if(Victim_Nav_map.at(Nav_map_layer,right(index_)) == 0.5) return true;}
+   else if (((-7*M_PI)/8 < yaw) && (yaw  <= -M_PI))  {if(Victim_Nav_map.at(Nav_map_layer,right(index_)) == 0.5) return true;}
 
   return false;
 }
@@ -288,6 +318,17 @@ void view_generator_ig_frontier::setupMapData()
 {
   costmap_ = costmap_ros_->getCostmap();
   occupancy_grid_array_ = costmap_->getCharMap();
+
+  if (!Initialized_VictimNavMap)
+  {
+    //Initialize Navigation_victim_map
+    Victim_Nav_map.setFrameId("map");
+    Victim_Nav_map.setGeometry(Length(x_arena_max,y_arena_max), victim_map.getResolution()); //(Map is 20 by 20 meter with a resolution of 1m).
+    Victim_Nav_map.add(Nav_map_layer,0.5); // initialize probability in the map to 0.5
+    Initialized_VictimNavMap=true;
+  }
+  else
+  Victim_Nav_map[Nav_map_layer].setConstant(0.5);
 }
 
 
@@ -296,4 +337,29 @@ std::string view_generator_ig_frontier::getMethodName()
   return "frontier";
 }
 
+void view_generator_ig_frontier::publish_Map(grid_map::GridMap Map){
+  ros::Time time = ros::Time::now();
+  Map.setTimestamp(time.toNSec());
+  grid_map_msgs::GridMap message;
+  GridMapRosConverter::toMessage(Map, message);
+  pub_Nav_map.publish(message);
+  ROS_INFO_THROTTLE(1.0, "Grid map (timestamp %f) published.", message.info.header.stamp.toSec());
+}
 
+bool view_generator_ig_frontier::IsWithinCostmap(double x1, double x2)
+{
+  double x_size,y_size,x_origin,y_origin;
+
+
+  costmap_=costmap_ros_->getCostmap();
+
+   x_size= costmap_->getSizeInMetersX();
+   y_size= costmap_->getSizeInMetersY();
+  x_origin = costmap_->getOriginX() + costmap_->getSizeInMetersX()/2;
+  y_origin = costmap_->getOriginY() + costmap_->getSizeInMetersY()/2;
+
+  if ((x1>=(x_origin-(x_size/2))) && (x1<=(x_origin+(x_size/2))))
+    if ((x2>=(y_origin-(y_size/2))) && (x2<=(y_origin+(y_size/2))))
+      return true;
+  return false;
+}

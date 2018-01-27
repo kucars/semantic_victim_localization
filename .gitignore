@@ -33,5 +33,6 @@
 
 #ignore specific folder
 script/plots/*
+resources/backup_files/*
 
 *~

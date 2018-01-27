@@ -1,0 +1,44 @@
+############
+## Scenario settings
+############
+Thermal_topic: Yes1
+
+home:
+  filter:
+    filter_cascade_1: 
+      in:  cloud_in
+      out: cloud_out
+      filter:
+        first_applied_filter:
+          - config_for_filter_1
+          - config_for_filter_2
+        second_applied_filter:
+          - config_for_filter_1
+          - config_for_filter_2
+    filter_cascade_2:
+      in:  other_cloud_in
+      out: other_cloud_out
+      filter:
+        first_applied_filter:
+          - config_for_filter_1
+          - config_for_filter_2
+        second_applied_filter:
+          - config_for_filter_1
+          - config_for_filter_2
+
+
+home1:
+  topic1: Yes1
+  topic2: Yes2
+  topic3: Yes3
+
+pc:
+  "0":
+    pc1: a
+    pc2: b
+  "1":
+    pc1: c
+    pc2: d
+  "2":
+    pc1: d
+    pc2: e

@@ -93,6 +93,7 @@ void victim_map_combined::Update()
       map.getPosition(index,map_status.victim_loc);
     }
   }
+
   curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob
       + gama*victim_map_wireless_->curr_max_prob;
 
@@ -149,7 +150,7 @@ void victim_map_combined::setCurrentPose(geometry_msgs::Pose ps)
   std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
 
-void victim_map_combined::setDroneCommunicator(drone_communicator *drone_comm_)
+void victim_map_combined::setDroneCommunicator(vehicle_communicator *drone_comm_)
 {
   Victim_Map_Base::setDroneCommunicator(drone_comm_);
   victim_map_dl_->setDroneCommunicator(drone_comm_);
@@ -158,6 +159,20 @@ void victim_map_combined::setDroneCommunicator(drone_communicator *drone_comm_)
   std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
 
+void victim_map_combined::setOctomapManager(OctomapManager *manager)
+{
+  Victim_Map_Base::setOctomapManager(manager);
+  victim_map_dl_->setOctomapManager(manager);
+  victim_map_Thermal_->setOctomapManager(manager);
+  victim_map_wireless_->setOctomapManager(manager);
+}
+
+void victim_map_combined::setVehicle(VehicleControlBase *vehicle){
+  Victim_Map_Base::setVehicle(vehicle);
+  victim_map_dl_->setVehicle(vehicle);
+  victim_map_Thermal_->setVehicle(vehicle);
+  victim_map_wireless_->setVehicle(vehicle);
+}
 void victim_map_combined::SetNavMap(nav_msgs::OccupancyGridPtr Nav_map)
 {
   Victim_Map_Base::SetNavMap(Nav_map);

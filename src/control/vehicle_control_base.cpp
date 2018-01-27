@@ -5,10 +5,14 @@
 VehicleControlBase::VehicleControlBase():
   is_ready_(false)
 {
-  ros::param::param("~distance_threshold", distance_threshold_, 0.4);
+  ros::param::param("~distance_threshold", distance_threshold_, 0.3);
   ros::param::param("~angular_threshold", angular_threshold_, DEG2RAD(10.0));
-  ros::param::param("~linear_speed_threshold", linear_speed_threshold_, 0.05);
+  ros::param::param("~linear_speed_threshold", linear_speed_threshold_, 0.1);   //before 0.05
   ros::param::param("~angular_speed_threshold", angular_speed_threshold_, 0.1);  //before 0.03
+
+  std::cout << "calling the ROSPARAM" << std::endl;
+  this->SetVehicleROSParams();
+  std::cout << "done\n";
 }
 
 
@@ -94,4 +98,48 @@ bool VehicleControlBase::isNear(const geometry_msgs::Pose p_target, const geomet
   }
 
   return false;
+}
+
+void VehicleControlBase::SetVehicleROSParams(){
+  std::string topic_setPose1;
+  std::string topic_Odometry, topic_Pose,topic_setPose,topic_rgb_image,topic_depth_image,topic_pointcloud;
+  std::string camera_optical_frame,base_frame;
+  XmlRpc::XmlRpcValue param;
+
+  int vehicle_type;
+  ros::param::param<int>("~vehicle_type", vehicle_type, 1);
+  std::string vehicle_num=std::to_string(vehicle_type);
+
+  ros::NodeHandle nh_private;
+  // get Vehicle topics
+    nh_private.getParam(ros::this_node::getName()+"/Topics", param);
+    topic_Odometry=(std::string)param[vehicle_num]["topic_Odometry"];
+    topic_Pose=(std::string)param[vehicle_num]["topic_Pose"];
+    topic_setPose=(std::string)param[vehicle_num]["topic_setPose"];
+    topic_rgb_image=(std::string)param[vehicle_num]["topic_rgb_image"];
+    topic_depth_image=(std::string)param[vehicle_num]["topic_depth_image"];
+    topic_pointcloud=(std::string)param[vehicle_num]["topic_pointcloud"];
+
+  // get Vehicle frames
+    nh_private.getParam(ros::this_node::getName()+"/Frames", param);
+    camera_optical_frame=(std::string)param[vehicle_num]["camera_optical_frame"];
+    base_frame=(std::string)param[vehicle_num]["base_frame"];
+
+  // Update the topics & frames in ROS::PARAM
+    ros::param::del(ros::this_node::getName()+"/Topics");
+    ros::param::del(ros::this_node::getName()+"/Frames");
+
+    ros::param::set(ros::this_node::getName()+"/topic_Odometry",topic_Odometry);
+    ros::param::set(ros::this_node::getName()+"/topic_Pose",topic_Pose);
+    ros::param::set(ros::this_node::getName()+"/topic_setPose",topic_setPose);
+    ros::param::set(ros::this_node::getName()+"/topic_rgb_image",topic_rgb_image);
+    ros::param::set(ros::this_node::getName()+"/topic_depth_image",topic_depth_image);
+    ros::param::set(ros::this_node::getName()+"/topic_pointcloud",topic_pointcloud);
+    ros::param::set(ros::this_node::getName()+"/camera_optical_frame",camera_optical_frame);
+    ros::param::set(ros::this_node::getName()+"/base_frame",base_frame);
+
+    std::cout << "pointcloud topic...." << topic_pointcloud << std::endl;
+    std::cout << "this is comming from " << ros::this_node::getName() << std::endl;
+    // override other nodes params
+    ros::param::set(ros::this_node::getName()+"/costmap/robot_base_frame",base_frame);
 }

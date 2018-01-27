@@ -15,6 +15,7 @@ Panels:
         - /Image1
         - /MarkerArray3
         - /Image2
+        - /MarkerArray4
       Splitter Ratio: 0.5
     Tree Height: 723
   - Class: rviz/Selection
@@ -134,7 +135,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: Map
-      Topic: /occlusion/map_
+      Topic: /DL/map_
       Unreliable: false
       Use Timestamp: false
       Value: true
@@ -151,13 +152,13 @@ Visualization Manager:
       Unreliable: false
       Value: false
     - Class: rviz/MarkerArray
-      Enabled: false
+      Enabled: true
       Marker Topic: /test_NBV/octomap_occupied
       Name: MarkerArray
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Image
       Enabled: false
       Image Topic: /image_detection1
@@ -170,6 +171,28 @@ Visualization Manager:
       Transport Hint: raw
       Unreliable: false
       Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /sspp_visualisation
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+      Tree:
+        {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -194,24 +217,24 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.587179183959961
+      Distance: 23.759153366088867
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.1931475400924683
-        Y: -0.8075205087661743
-        Z: 1.722482681274414
+        X: -2.845845937728882
+        Y: -0.18293285369873047
+        Z: 1.2566455602645874
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8047972917556763
+      Pitch: 1.4297964572906494
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.12984849512577057
+      Yaw: 1.5798343420028687
     Saved: ~
 Window Geometry:
   Displays:

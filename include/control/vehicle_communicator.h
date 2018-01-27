@@ -11,6 +11,7 @@
 #include "victim_localization/waypoint_action.h"
 #include "victim_localization/status_action.h"
 #include "rviz_visual_tools/rviz_visual_tools.h"
+#include "vehicle_control_base.h"
 
 
 
@@ -23,10 +24,10 @@ enum State {
 };
 }
 
-class drone_communicator
+class vehicle_communicator
 {
 public:
-  drone_communicator(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private,
+  vehicle_communicator(const ros::NodeHandle& nh, const ros::NodeHandle& nh_private,
                      volumetric_mapping::OctomapManager *mapManager);
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;

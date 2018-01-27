@@ -166,9 +166,20 @@ add_executable (test_NBV
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
-    src/control/drone_communicator.cpp
+    src/control/vehicle_control_iris_origin.cpp
+    src/control/vehicle_control_floating_sensor.cpp
+    src/control/vehicle_communicator.cpp
 
+    src/view_evaluator_base.cpp
     src/view_evaluator_ig.cpp
+    src/view_evaluator_max_sum.cpp
+    src/view_evaluator_max_max.cpp
+    src/view_evaluator_max_min.cpp
+    src/view_evaluator_min_neigh.cpp
+    src/view_evaluator_log_reward.cpp
+    src/view_evaluator_ig_exp_max.cpp
+    src/view_evaluator_ig_exp.cpp
+
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
     src/view_generator_ig_frontier.cpp
@@ -219,51 +230,65 @@ add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(thermalVictim ${catkin_LIBRARIES})
 
+add_executable(testNode src/test_node.cpp)
+add_dependencies(testNode  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+target_link_libraries(testNode ${catkin_LIBRARIES})
 
+add_library(floating_sensor_position_plugin src/vehicle/floating_sensor_position_plugin.cpp)
+target_link_libraries(floating_sensor_position_plugin ${GAZEBO_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable (navigation_test
-    src/test_navigation.cpp
-
-    src/control/vehicle_control_base.cpp
-    src/control/vehicle_control_iris.cpp
-    src/control/drone_communicator.cpp
-    src/volumetric_map_manager.cpp
-    src/raytracing.cpp
-    src/raytracing_2d.cpp
-
-
-    src/navigation_base.cpp
-    src/straightline.cpp
-    src/reactive_path_planner.cpp
-    src/reactive_planner_server.cpp
-    )
-add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(navigation_test
-    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
-    ${catkin_LIBRARIES}
-    ${Eigen_LIBRARIES}
-    ${OCTOMAP_LIBRARIES}
-    ${PCL_LIBRARIES}
-    ${CGAL_LIBRARY}
-    ${CGAL_Core_LIBRARY}
-    ${rviz_visual_tools_LIBRARIES}
-    SSPathPlanner
+install(TARGETS
+  floating_sensor_position_plugin
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
+#add_executable (navigation_test
+#    src/test_navigation.cpp
+
+#    src/control/vehicle_control_base.cpp
+#    src/control/vehicle_control_iris.cpp
+#    src/control/drone_communicator.cpp
+#    src/volumetric_map_manager.cpp
+#    src/raytracing.cpp
+#    src/raytracing_2d.cpp
 
 
-add_executable (iris_commander
-    src/control/iris_drone_commander.cpp
-    src/control/drone_communicator.cpp
+#    src/navigation_base.cpp
+#    src/straightline.cpp
+#    src/reactive_path_planner.cpp
+#    src/reactive_planner_server.cpp
+#    )
+#add_dependencies(navigation_test ${catkin_EXPORTED_TARGETS})
+
+#target_link_libraries(navigation_test
+#    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+#    ${catkin_LIBRARIES}
+#    ${Eigen_LIBRARIES}
+#    ${OCTOMAP_LIBRARIES}
+#    ${PCL_LIBRARIES}
+#    ${CGAL_LIBRARY}
+#    ${CGAL_Core_LIBRARY}
+#    ${rviz_visual_tools_LIBRARIES}
+#    SSPathPlanner
+#)
+
+
+
+add_executable (vehicle_commander
+    src/control/vehicle_commander.cpp
+    src/control/vehicle_communicator.cpp
 
     src/control/vehicle_control_base.cpp
     src/control/vehicle_control_iris.cpp
+    src/control/vehicle_control_floating_sensor.cpp
+    src/control/vehicle_control_iris_origin.cpp
+
     )
 
-add_dependencies(iris_commander ${catkin_EXPORTED_TARGETS})
+add_dependencies(vehicle_commander ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(iris_commander
+target_link_libraries(vehicle_commander
     ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
     ${catkin_LIBRARIES}
     ${Eigen_LIBRARIES}

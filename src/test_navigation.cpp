@@ -28,7 +28,7 @@ void test_navigation::Configuration()
   planner_ = new ReactivePathPlanner(nh_,nh_private_,manager_);
   planner_->start();
 
-  drone_communicator_ = new drone_communicator(nh_,nh_private_,manager_);
+  drone_communicator_ = new vehicle_communicator(nh_,nh_private_,manager_);
 }
 
 

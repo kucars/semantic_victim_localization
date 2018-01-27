@@ -16,17 +16,14 @@ Raytracing::Raytracing(double map_res_):
   ros::param::param("~nav_bounds_z_min", nav_bounds_z_min_, 0.5);
   ros::param::param("~nav_bounds_z_max", nav_bounds_z_max_, 5.0);
   ros::param::param("~uav_fixed_height", uav_fixed_height_, 1.0);
-
   ros::param::param("~publish_ray", publish_ray_, true);
+  ros::param::param<std::string>("~camera_optical_frame", camera_optical_frame ,std::string("/floating_sensor/camera_depth_optical_frame"));
+  ros::param::param<std::string>("~base_frame", base_frame ,std::string("floating_sensor/base_link"));
 
   setCameraSettings(fov_h, fov_v, r_max, r_min);
   getCameraRotationMtxs();
 
   pub_temp_map=nh_.advertise<grid_map_msgs::GridMap>("temp_map", 1, true);
-
-  base_frame="base_link";
-  camera_frame="front_cam_depth_optical_frame";
-
 
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Rays"));
   visualTools->loadMarkerPub();
@@ -65,7 +62,7 @@ Raytracing::~Raytracing(){}
 
 void Raytracing::update()
 {
-  tree_               = drone_comm->manager_->octree_;
+  tree_               = manager_->octree_;
 //  current_pose_       = drone_comm->GetPose();
 
 // Update evaluation bounds
@@ -97,8 +94,8 @@ double Raytracing::computeRelativeRays()
   double max_x =  range_max_ * tan(HFOV_deg/2 * deg2rad);
   double max_y =  range_max_ * tan(VFOV_deg/2 * deg2rad);
 
-  double x_step = drone_comm->manager_->getResolution();
-  double y_step = drone_comm->manager_->getResolution();
+  double x_step = manager_->getResolution();
+  double y_step = manager_->getResolution();
 
   for( double x = min_x; x<=max_x; x+=x_step )
   {
@@ -146,7 +143,7 @@ void Raytracing::getCameraRotationMtxs()
   {
     try
     {
-      tf_listener.lookupTransform(base_frame, camera_frame, ros::Time(0), transform);
+      tf_listener.lookupTransform(base_frame, camera_optical_frame, ros::Time(0), transform);
       break; // Success, break out of the loop
     }
     catch (tf2::LookupException ex){
@@ -253,10 +250,13 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
       if (!isInsideBounds(position)) continue;
 
       double prob = getNodeOccupancy(node);
-      if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
       if (prob < 0.2)
-        if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
+        Pose_map.atPosition("temp",position)=0;
+
+      else if (prob >= 0.2) {
+      Pose_map.atPosition("temp",position)=1;
+      }
     }
     }
 
@@ -273,11 +273,14 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
         if (!isInsideBounds(position)) continue;
 
          double prob = getNodeOccupancy(node);
-         if (prob > 0.8) Pose_map.atPosition("temp",position)=1;
 
          if (prob < 0.2)
-           if (Pose_map.atPosition("temp",position)!=1) Pose_map.atPosition("temp",position)=0;
-    }
+           Pose_map.atPosition("temp",position)=0;
+
+         else if (prob > 0.2) {
+         Pose_map.atPosition("temp",position)=1;
+         }
+       }
 
      // visualize the ray
      if (publish_ray_){
@@ -321,7 +324,17 @@ bool Raytracing::isInsideRegionofInterest(double z , double tolerance)
   return true;
 }
 
-void Raytracing::setDroneCommunicator(drone_communicator *drone_comm_){
+void Raytracing::setVehicle(VehicleControlBase *vehicle_)
+{
+  vehicle= vehicle_;
+}
+
+void Raytracing::setOctomapManager(volumetric_mapping::OctomapManager *manager)
+{
+  manager_ = manager;
+}
+
+void Raytracing::setDroneCommunicator(vehicle_communicator *drone_comm_){
   drone_comm = drone_comm_;
 }
 

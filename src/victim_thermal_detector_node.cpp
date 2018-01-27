@@ -4,10 +4,43 @@ victim_thermal_detector::victim_thermal_detector(ros::NodeHandle &nh_, ros::Node
 {
   ros::param::param<double>("~min_Dist_Between_Blobs", minDistBetweenBlobs_ , 40.0);
   ros::param::param<double>("~thermal_min_Area_Victim", minAreaVictim_ , 40.0);
+  std::string Thermal_topic;
 
+//  XmlRpc::XmlRpcValue filters;
+//  std::cout << "Node Space... " << ros::this_node::getNamespace() << std::endl;
+//   pnh_.getParam("/thermalVictim/home/filter", filters);
+//   ROS_ASSERT(filters.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+//   for(XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = filters.begin(); it != filters.end(); ++it) {
+//     ROS_INFO_STREAM("Found filter: " << (std::string)(it->first) << " ==> " << filters[it->first]);
+//     // Do stuff with filters:
+//     ROS_INFO_STREAM("filter_cascade_1: in: " << filters[it->first]["in"]);
+//     ROS_INFO_STREAM("filter_cascade_1: filter: first_applied_filter: config_for_filter_1: " << filters[it->first]["filter"]["first_applied_filter"][0]);
+//   }
+
+  XmlRpc::XmlRpcValue param;
+  nh_.getParam(ros::this_node::getName()+"/pc", param);
+  ROS_ASSERT(param.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+  //XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = param.begin();
+
+  std::cout << param.getType() << std::endl;
+
+  std::cout << param[std::to_string(0)]["pc1"] << std::endl;
+ // std::cout << param["topic3"]["pc2"] << std::endl;
+  //nh_.setParam("/COCOC",param["pc2"]);
+
+//  std::map<std::string,std::string> map_s;
+//  pnh_.getParam("my_string_map", map_s);
+
+//  std::cout << map_s[0]<< std::endl;
+
+
+  ros::param::param<std::string>("/thermalVictim/Thermal_topic",Thermal_topic,
+                                 "thermal_cam/image_raw");
   image_transport::ImageTransport it(nh_);
   image_transport::ImageTransport p_it(pnh_);
-  sub_image = it.subscribe("/thermal_cam/image_raw", 1, &victim_thermal_detector::imageCallback,this);
+  sub_image = it.subscribe(Thermal_topic, 1, &victim_thermal_detector::imageCallback,this);
+  std::cout << sub_image.getTopic() << std::endl;
+
   pub_detection_ = it.advertise("image_detection1", 10);
 }
 

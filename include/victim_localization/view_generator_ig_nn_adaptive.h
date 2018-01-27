@@ -10,12 +10,16 @@ public:
   virtual void generateViews();
   std::string getMethodName();
   double scale_factor_;
+  double scale_multiplier_;
 
 
 private:
   int minima_iterations_;
   double minima_threshold_;
   bool isStuckInLocalMinima();
+  bool IsPreviouslyCheckedSamples(double i_x,double i_y);
+  bool do_adaptive_generation;
+
 
 };
 

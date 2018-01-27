@@ -15,6 +15,17 @@ public:
   bool setYawtoViewpoint(geometry_msgs::Pose Frontier, Index index_, std::vector<geometry_msgs::Pose> &Frontier_with_yaws);
   bool IsPointingtoUnkown(double yaw, Index index_);
 
+  ros::NodeHandle nh_;
+  ros::Publisher pub_Nav_map;
+  void publish_Map(grid_map::GridMap Map);
+  grid_map::GridMap Victim_Nav_map;
+  std::string Nav_map_layer;
+  double x_arena_max;
+  double y_arena_max;
+  bool IsWithinCostmap(double x1,double x2);
+
+
+
   view_generator_ig_frontier();
   std::vector<geometry_msgs::Pose> FindFrontiers();
 
@@ -59,11 +70,14 @@ public:
   double dist_for_frontier_reached;
   bool use_inflated_obs_;
 
+  bool Initialized_VictimNavMap;
+
 
   virtual void generateViews();
 
   void Visualize();
   bool checkValidity(int costmap_index);
+
 
 };
 
