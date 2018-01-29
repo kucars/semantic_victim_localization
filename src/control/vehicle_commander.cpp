@@ -19,6 +19,8 @@ nh_private_(nhPrivate)
     vehicle_ = new VehicleControlFloatingSensor();
     break;
   }
+
+  std::cout << "Vehicle type............................... "<< vehicle_type << std::endl;
  command_status = false;
 
  // Parameters
@@ -30,6 +32,8 @@ nh_private_(nhPrivate)
  std::string topic_command_status;
 
  ros::param::param("~topic_setPose", topic_ps, std::string("iris/mavros/setpoint_position/local"));
+
+ std::cout << "topic_setPose............................... "<< topic_ps << std::endl;
 
  // communication topic for service
  ros::param::param("~topic_service_rotate", topic_service_rotate, std::string("/rotate"));
@@ -47,7 +51,7 @@ nh_private_(nhPrivate)
  service_path2 = nh_private_.advertiseService(topic_service_path2,&iris_drone_commander::execute_path2,this);
  service_status = nh_private_.advertiseService(topic_command_status,&iris_drone_commander::check_status,this);
 
- ROS_INFO("start the iris drone commander");
+ ROS_INFO("start the drone commander");
 }
 
 
@@ -74,7 +78,17 @@ void iris_drone_commander::start(){
   case Command::ROTATE:
     std::cout << "execute_four_waypoints"<< std::endl;
      //vehicle_->Evaluate4Points(start_x,start_y,start_z);
+    vehicle_->setWaypoint(-4,0.0,1.0,0);
+     vehicle_->moveVehicle();
      vehicle_->rotateOnTheSpot();
+     vehicle_->setWaypoint(-3,0.0,1.0,0);
+
+     vehicle_->moveVehicle();
+     vehicle_->rotateOnTheSpot();
+     vehicle_->setWaypoint(-2.4,0.0,1.0,0);
+     vehicle_->moveVehicle();
+     vehicle_->rotateOnTheSpot();
+
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true; // done
      std::cout << "done with the Four Point Evaluation" << std::endl;
@@ -121,7 +135,7 @@ void iris_drone_commander::Takeoff()
   ROS_INFO("Starting vehicle................");
   vehicle_->start(start_x, start_y, start_z, start_yaw);
   ROS_INFO("Moving vehicle..................");
-  vehicle_->moveVehicle(1);
+  vehicle_->moveVehicle();
   ROS_INFO("Done moving.....................");
 }
 

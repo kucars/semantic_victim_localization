@@ -78,7 +78,7 @@ double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
 double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
 double uav_fixed_height_;
 
-virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false);
+virtual grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false, bool castThroughUnkown=true);
 
 
 Raytracing(double map_res_);
@@ -97,7 +97,7 @@ public:
   int getPointCountAtOcTreeKey(octomap::OcTreeKey key);
   double computeRelativeRays();
   void computeRaysAtPose(geometry_msgs::Pose p);
-  bool  isInsideRegionofInterest(double z , double tolerance=0.4);
+  bool  isInsideRegionofInterest(double z , double tolerance=0.3);
   void  setDroneCommunicator(vehicle_communicator *drone_comm_);
   void setVehicle(VehicleControlBase *vehicle_);
   void setOctomapManager(volumetric_mapping::OctomapManager *manager);

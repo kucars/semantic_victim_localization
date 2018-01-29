@@ -64,7 +64,7 @@ void victim_map_DL::Update()
   bool publish=true;
   raytracing_->Initiate(publish,rebuild);
 
-  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,false);
 
   map_status.victim_found=false; //initialize detection to false
 
@@ -148,7 +148,6 @@ void victim_map_DL::Update()
 
   if (pub_map.getNumSubscribers()>0)
   publish_Map();
-
 }
 
 

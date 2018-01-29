@@ -102,7 +102,7 @@ bool VehicleControlBase::isNear(const geometry_msgs::Pose p_target, const geomet
 
 void VehicleControlBase::SetVehicleROSParams(){
   std::string topic_setPose1;
-  std::string topic_Odometry, topic_Pose,topic_setPose,topic_rgb_image,topic_depth_image,topic_pointcloud;
+  std::string topic_Odometry, topic_Pose,topic_setPose,topic_rgb_image,topic_depth_image,topic_pointcloud,topic_thermal_image;
   std::string camera_optical_frame,base_frame;
   XmlRpc::XmlRpcValue param;
 
@@ -118,6 +118,7 @@ void VehicleControlBase::SetVehicleROSParams(){
     topic_setPose=(std::string)param[vehicle_num]["topic_setPose"];
     topic_rgb_image=(std::string)param[vehicle_num]["topic_rgb_image"];
     topic_depth_image=(std::string)param[vehicle_num]["topic_depth_image"];
+    topic_depth_image=(std::string)param[vehicle_num]["topic_thermal_image"];
     topic_pointcloud=(std::string)param[vehicle_num]["topic_pointcloud"];
 
   // get Vehicle frames
@@ -134,6 +135,7 @@ void VehicleControlBase::SetVehicleROSParams(){
     ros::param::set(ros::this_node::getName()+"/topic_setPose",topic_setPose);
     ros::param::set(ros::this_node::getName()+"/topic_rgb_image",topic_rgb_image);
     ros::param::set(ros::this_node::getName()+"/topic_depth_image",topic_depth_image);
+    ros::param::set(ros::this_node::getName()+"/topic_thermal_image",topic_thermal_image);
     ros::param::set(ros::this_node::getName()+"/topic_pointcloud",topic_pointcloud);
     ros::param::set(ros::this_node::getName()+"/camera_optical_frame",camera_optical_frame);
     ros::param::set(ros::this_node::getName()+"/base_frame",base_frame);

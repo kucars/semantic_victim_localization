@@ -13,7 +13,7 @@ double view_evaluator_MinNEIGH::calculateUtility(geometry_msgs::Pose p){
 
   mapping_module_->raytracing_->Initiate(false);
 
-  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p,true);
+  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p,true,true);
 
   double Info_view=0;
   min_belief=std::numeric_limits<float>::infinity();

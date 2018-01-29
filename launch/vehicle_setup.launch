@@ -1,15 +1,14 @@
 <?xml version="1.0" ?>
 <launch>
-    <!-- World types are mutually exclusive. Only set ONE of them to "1" -->
 
     <!-- Vehicle settings -->
 <arg name="use_floating_sensor" default="true"/>
 
 <arg name="Floating_sensor_model" default="$(find victim_localization)/urdf/floating_sensor/floating_sensor.sdf"/>
 <arg name="iris_model" default="$(find victim_localization)/urdf/iris/iris_with_sensors.sdf" />
-<arg name="iris_mddel_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
+<arg name="iris_model_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
 
-<arg name="world" default="$(find victim_localization)/world/twoRoomsSmallthreeDL.world"/>
+<arg name="world" default="$(find victim_localization)/world/twoRoomsSmallthreeT.world"/>
 <arg name="headless" default="false"/>
 <arg name="gui" default="true"/>
 <arg name="debug" default="false"/>

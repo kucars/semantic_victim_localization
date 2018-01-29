@@ -67,6 +67,9 @@ public:
   ros::Publisher  pub_iteration_info;
   TimeProfiler timer;
 
+  rviz_visual_tools::RvizVisualToolsPtr visualTools;
+  ros::Time t_start;
+
 
   vehicle_communicator *drone_communicator_;
   VehicleControlBase *vehicle_;

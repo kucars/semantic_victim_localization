@@ -7,17 +7,24 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   m_worldFrameId("/world"), m_baseFrameId("/base"),
   m_minSizeX(0.0), m_minSizeY(0.0)
 {
-  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 0.8);
-  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1.2);
+  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 0.9);
+  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1.1);
   ros::param::param<bool>("~publish_2D_map", m_publish2DMap , true);
   ros::param::param<std::string>("~topic_pointcloud",topic_pointcloud_,
                                  std::string("/floating_sensor/camera/depth/points"));
 
-  ros::param::param<double>("~pcl_throttle_", pcl_throttle_ , 0.25);
-  ros::param::param<double>("~map2d_throttle_", map2D_throttle_ , 2);
+  ros::param::param<std::string>("~topic_Pose",topic_Pose,
+                                 std::string("/floating_sensor/poseStamped"));
 
   manager_= manager;
-  pointcloud_sub_ = nh_.subscribe(topic_pointcloud_, 1,  &Volumetric_Map::callbackSetPointCloud,this);
+  pointcloud_in_  = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, topic_pointcloud_, 1);
+  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Pose, 1);
+  sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *pointcloud_in_ ,*loc_sub_);
+
+  // Callbacks
+  sync->registerCallback(boost::bind(&Volumetric_Map::callbackSetPointCloud, this, _1, _2));
+
+  //pointcloud_sub_ = nh_.subscribe(topic_pointcloud_, 1,  &Volumetric_Map::callbackSetPointCloud,this);
 
   m_octree = manager_->octree_;
   m_treeDepth = m_octree->getTreeDepth();
@@ -28,22 +35,23 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   previous_time= ros::Time::now();
 }
 
-void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg)
+void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
+                                           const geometry_msgs::PoseStamped::ConstPtr& loc)
 {
   if (manager_ == NULL)
     ROS_ERROR_THROTTLE(1, "Map not set up: No octomap available!");
 
-  static double last_pcl = ros::Time::now().toSec();
-  if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
+ // static double last_pcl = ros::Time::now().toSec();
+ // if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
     manager_->insertPointcloudWithTf(input_msg);
-    last_pcl += pcl_throttle_;
-  }
+ //   last_pcl += pcl_throttle_;
+//  }
 
-  static double last_map2D= ros::Time::now().toSec();
-  if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
+ // static double last_map2D= ros::Time::now().toSec();
+ // if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
     Convert2DMaptoOccupancyGrid(ros::Time::now());
-    last_map2D += map2D_throttle_;
-  }
+   // last_map2D += map2D_throttle_;
+ // }
 }
 void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
 {

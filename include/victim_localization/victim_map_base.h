@@ -48,6 +48,8 @@ public:
   vehicle_communicator *drone_comm;
   VehicleControlBase *vehicle_;
 
+  std::string camera_optical_frame;
+
 
   std::string map_topic;
   std::string layer_name="general";//="victim";

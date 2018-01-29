@@ -13,7 +13,6 @@ Raytracing2D::Raytracing2D(double map_res_):
   free_nodes_pub_ = nh_.advertise<visualization_msgs::MarkerArray>(
         "octomap_free_", 1, true);
   pub_temp_map1=nh_.advertise<grid_map_msgs::GridMap>("temp_map1", 1, true);
-
 }
 
 Raytracing2D::Raytracing2D(double map_res_, double HFOV_deg, double VFOV_deg,
@@ -185,7 +184,7 @@ void Raytracing2D::compute2DRaysAtPose(geometry_msgs::Pose p)
  }
  }
 
-grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_)
+grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_, bool castThroughUnkown)
 {
 
   if (publish_ray_) visualTools->deleteAllMarkers(); // clear the previous rays
@@ -216,11 +215,16 @@ grid_map::GridMap Raytracing2D::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, b
 
     // Cast through unknown cells as well as free cells
 
-    bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
+    bool found_endpoint = tree_->castRay(origin, dir, endpoint, castThroughUnkown, range);
 
-    if (!found_endpoint)
+    if (!found_endpoint )
     {
-      endpoint = origin + dir * range;
+      if (!castThroughUnkown){
+      if(getNodeOccupancy(tree_->search(endpoint))!=0.5)
+       endpoint = origin + dir * range;
+      }
+      else
+       endpoint = origin + dir * range;
     }
 
    //if( found_endpoint ) {

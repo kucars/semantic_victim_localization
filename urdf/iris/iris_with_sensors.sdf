@@ -34,10 +34,42 @@
         </surface>
       </collision>
       <collision name='base_link_fixed_joint_lump__front_cam_link_collision_1'>
-        <pose frame=''>0 0 0.07 0 -0 0</pose>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
         <geometry>
           <box>
             <size>0.007 0.13 0.02</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <collision name='base_link_fixed_joint_lump__thermal_cam_link_collision_2'>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
+          </box>
+        </geometry>
+        <surface>
+          <contact>
+            <ode/>
+          </contact>
+          <friction>
+            <ode/>
+          </friction>
+        </surface>
+      </collision>
+      <collision name='base_link_fixed_joint_lump__thermal_cam_thermal_link_collision_3'>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
           </box>
         </geometry>
         <surface>
@@ -65,7 +97,7 @@
         </material>
       </visual>
       <visual name='base_link_fixed_joint_lump__front_cam_link_visual_1'>
-        <pose frame=''>0 0 0.07 0 -0 0</pose>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
         <geometry>
           <box>
             <size>0.007 0.13 0.02</size>
@@ -78,9 +110,36 @@
           </script>
         </material>
       </visual>
+      <visual name='base_link_fixed_joint_lump__thermal_cam_link_visual_2'>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>__default__</name>
+          </script>
+        </material>
+      </visual>
+      <visual name='base_link_fixed_joint_lump__thermal_cam_thermal_link_visual_3'>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
+        <geometry>
+          <box>
+            <size>0.01 0.01 0.01</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>__default__</name>
+          </script>
+        </material>
+      </visual>
       <velocity_decay/>
       <velocity_decay/>
-      <gravity>1</gravity>
       <velocity_decay/>
       <sensor name='front_cam' type='depth'>
         <update_rate>20</update_rate>
@@ -104,7 +163,57 @@
           <pointCloudTopicName>front_cam/depth/points</pointCloudTopicName>
           <frameName>front_cam_depth_optical_frame</frameName>
         </plugin>
-        <pose frame=''>0 0.049 0.07 0 -0 0</pose>
+        <pose frame=''>0 0.049 -0.05 0 0.26179 0</pose>
+      </sensor>
+      <velocity_decay/>
+      <sensor name='thermal_cam_camera_sensor' type='camera'>
+        <update_rate>77</update_rate>
+        <camera name='__default__'>
+          <horizontal_fov>0.924771</horizontal_fov>
+          <image>
+            <format>R8G8B8</format>
+            <width>1228</width>
+            <height>1027</height>
+          </image>
+          <clip>
+            <near>0.01</near>
+            <far>100</far>
+          </clip>
+        </camera>
+        <plugin name='thermal_cam_camera_controller' filename='libgazebo_ros_camera.so'>
+          <cameraName>thermal_cam</cameraName>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>77</updateRate>
+          <imageTopicName>RGB/image_raw</imageTopicName>
+          <cameraInfoTopicName>RGB/camera_info</cameraInfoTopicName>
+          <frameName>thermal_cam_optical_frame</frameName>
+        </plugin>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
+      </sensor>
+      <gravity>1</gravity>
+      <velocity_decay/>
+      <sensor name='thermal_cam_camera_sensor' type='camera'>
+        <update_rate>10</update_rate>
+        <camera name='__default__'>
+          <horizontal_fov>0.924771</horizontal_fov>
+          <image>
+            <format>R8G8B8</format>
+            <width>160</width>
+            <height>120</height>
+          </image>
+          <clip>
+            <near>0.01</near>
+            <far>100</far>
+          </clip>
+        </camera>
+        <plugin name='thermal_camera_controller' filename='libgazebo_ros_thermal_camera_color.so'>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>10</updateRate>
+          <imageTopicName>/thermal_cam/image_raw</imageTopicName>
+          <cameraInfoTopicName>/thermal_cam/camera_info</cameraInfoTopicName>
+          <frameName>thermal_cam_optical_frame</frameName>
+        </plugin>
+        <pose frame=''>0 0 -0.05 0 0.26179 0</pose>
       </sensor>
     </link>
     <link name='/ground_truth/odometry_sensorgt_link'>

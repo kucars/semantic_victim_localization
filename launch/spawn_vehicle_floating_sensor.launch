@@ -27,7 +27,6 @@
    respawn="false" output="screen">
   </node>
 
-
   <!-- Camera1 -->
   <node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbda_tf" args="
         0.0  0.0 -0.1
@@ -42,6 +41,14 @@
          -0.5 0.5  -0.5 0.5
         /floating_sensor/camera_frame
         /floating_sensor/camera_depth_optical_frame
+        500"
+  />
+
+  <node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbdb_tf2" args="
+        0 0 0
+         -0.5 0.5  -0.5 0.5
+        /floating_sensor/camera_frame
+        /floating_sensor/camera_thermal_optical_frame
         500"
   />
 

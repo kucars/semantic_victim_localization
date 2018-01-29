@@ -139,28 +139,28 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>6004 495000000</sim_time>
-      <real_time>51 374216725</real_time>
-      <wall_time>1517131080 295661981</wall_time>
-      <iterations>51090</iterations>
+      <sim_time>6055 50000000</sim_time>
+      <real_time>51 788191933</real_time>
+      <wall_time>1517139098 80464295</wall_time>
+      <iterations>50555</iterations>
       <model name='asphalt_plane'>
-        <pose frame=''>-0.010451 0.055967 0 0 -0 0</pose>
+        <pose frame=''>0.000953 -0.009132 0 0 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='link'>
-          <pose frame=''>-0.010451 0.055967 0 0 -0 0</pose>
+          <pose frame=''>0.000953 -0.009132 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='citizen_extras_male_03'>
-        <pose frame=''>0.900781 2.06431 0.060905 0.012545 0.002328 -0.173194</pose>
+      <model name='heat_victim_woman_red_signature'>
+        <pose frame=''>0.869099 2.26093 0 1.57 -0 0</pose>
         <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>0.900781 2.06431 0.060905 0.012545 0.002328 -0.173194</pose>
+        <link name='defaultModel_0::custom_0'>
+          <pose frame=''>0.869099 2.26093 0 1.57 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0.93791 0.275696 -176.559 0 -0 0</wrench>
+          <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
       <model name='plane_model'>
@@ -249,7 +249,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>0.342252 -2.34349 9.75721 -0 1.2538 1.60986</pose>
+        <pose frame=''>-2.82646 -4.75109 17.6263 -0 1.2538 1.60986</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -984,56 +984,6 @@
       </link>
       <static>1</static>
     </model>
-    <model name='citizen_extras_male_03'>
-      <link name='link'>
-        <inertial>
-          <mass>20</mass>
-          <inertia>
-            <ixx>0</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0</iyy>
-            <iyz>0</iyz>
-            <izz>0</izz>
-          </inertia>
-        </inertial>
-        <collision name='collision'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>model://citizen_extras_male_03/meshes/mesh.dae</uri>
-              <scale>1 1 1</scale>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <pose frame=''>0 0 0 0 -0 0</pose>
-          <geometry>
-            <mesh>
-              <uri>model://citizen_extras_male_03/meshes/mesh.dae</uri>
-              <scale>1 1 1</scale>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-        <gravity>1</gravity>
-      </link>
-      <pose frame=''>4.84303 -3.09321 0 0 -0 0</pose>
-    </model>
     <light name='user_point_light_0' type='point'>
       <pose frame=''>3.69641 -2.26449 1 0 -0 0</pose>
       <diffuse>0.5 0.5 0.5 1</diffuse>
@@ -1065,5 +1015,47 @@
         <falloff>1</falloff>
       </spot>
     </light>
+    <model name='heat_victim_woman_red_signature'>
+      <static>1</static>
+      <pose frame=''>1.53863 2.21182 0 1.57 -0 0</pose>
+      <link name='defaultModel_0::custom_0'>
+        <pose frame=''>0 0 0 0 -0 0</pose>
+        <gravity>1</gravity>
+        <self_collide>0</self_collide>
+        <kinematic>0</kinematic>
+        <visual name='custom_0_visual'>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+        <collision name='custom_0_collision'>
+          <geometry>
+            <mesh>
+              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+          <pose frame=''>0 0 0 0 -0 0</pose>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+      </link>
+      <allow_auto_disable>1</allow_auto_disable>
+    </model>
   </world>
 </sdf>

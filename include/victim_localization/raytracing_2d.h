@@ -38,7 +38,7 @@ public:
                               octomap::KeySet* occupied_cells);
   void ResetOctomapRebuild();
 
-  grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false);
+  grid_map::GridMap Generate_2D_Safe_Plane(geometry_msgs::Pose p, bool publish_=false, bool castThroughUnkown=true);
 
   void publish_Map2(GridMap Map);
 

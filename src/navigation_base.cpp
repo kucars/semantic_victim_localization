@@ -75,7 +75,7 @@ std::vector<geometry_msgs::Pose>
       step_size_x=step_size;
       iteration=fabs(Diff_x)/step_size_x;
 
-      step_size_y= Diff_y/iteration;
+      step_size_y= fabs(Diff_y)/iteration;
     }
 
     else if (fabs(Diff_x) < fabs(Diff_y))
@@ -83,13 +83,15 @@ std::vector<geometry_msgs::Pose>
       step_size_y=step_size;
       iteration=fabs(Diff_y)/step_size_y;
 
-      step_size_x= Diff_x/iteration;
+      step_size_x=fabs(Diff_x)/iteration;
     }
 
    //********** Start Path Discretization *************//
 
      (Diff_x>=0) ? x_sign=1 : x_sign=-1;
      (Diff_y>=0) ? y_sign=1 : y_sign=-1;
+
+     std::cout << "After" <<  "diff_x: " << Diff_x << "diff_y: " << Diff_y << std::endl;
 
      geometry_msgs::Pose temp_pose=start;
 
@@ -109,3 +111,121 @@ std::vector<geometry_msgs::Pose>
    return Formed_Path;
 
    }
+
+std::vector<geometry_msgs::Pose>
+    navigationBase::Path_discretizationtoPath(geometry_msgs::Pose start,
+                                         geometry_msgs::Pose end,
+                                         double step_size)
+{
+  double step_size_x,step_size_y,step_size_yaw,step_size_yaw_start,step_size_yaw_end,Diff_x,Diff_y,Diff_yaw,Diff_yaw_start_to_path,Diff_yaw_path_to_end;
+  double iteration , iteration_start, iteration_end;
+  double x_sign,y_sign,yaw_sign,yaw_start_sign,yaw_end_sign;
+
+  std::vector<geometry_msgs::Pose> Formed_Path;
+  double path_angle = atan2(end.position.y - start.position.y,end.position.x - start.position.x);
+
+  Diff_x= end.position.x - start.position.x;
+  Diff_y= end.position.y - start.position.y;
+  Diff_yaw= pose_conversion::getYawFromQuaternion(end.orientation) -
+            pose_conversion::getYawFromQuaternion (start.orientation);
+
+  Diff_yaw_start_to_path= path_angle - pose_conversion::getYawFromQuaternion(start.orientation) -
+            pose_conversion::getYawFromQuaternion (start.orientation);
+
+  Diff_yaw_path_to_end= pose_conversion::getYawFromQuaternion(end.orientation) - path_angle;
+
+
+  if (fabs(Diff_x) <= 0.2 && fabs(Diff_y) <= 0.2)
+  {
+    ROS_INFO ("the two poses are close so no Path discretization is needed");
+    Formed_Path.push_back(start);
+    Formed_Path.push_back(end);
+    return Formed_Path;
+  }
+
+ else if (fabs(Diff_x) >= fabs(Diff_y))
+ {
+   step_size_x=step_size;
+   iteration=fabs(Diff_x)/step_size_x;
+
+   step_size_y= fabs(Diff_y)/iteration;
+
+   step_size_yaw= fabs(Diff_yaw)/iteration;
+ }
+
+ else if (fabs(Diff_x) < fabs(Diff_y))
+ {
+   step_size_y=step_size;
+   iteration=fabs(Diff_y)/step_size_y;
+
+   step_size_x= fabs(Diff_x)/iteration;
+   step_size_yaw= fabs(Diff_yaw)/iteration;
+ }
+
+//********** Start Path Discretization *************//
+
+  // three stages are used.... Discretize start angle to path angle, discretize along the path , discretize from path angle to end
+  (Diff_x>=0) ? x_sign=1 : x_sign=-1;
+  (Diff_y>=0) ? y_sign=1 : y_sign=-1;
+  (Diff_yaw>=0) ? yaw_sign=1 : yaw_sign=-1;
+  (Diff_yaw_start_to_path>=0) ? yaw_start_sign=1 : yaw_start_sign=-1;
+  (Diff_yaw_path_to_end>=0) ? yaw_end_sign=1 : yaw_end_sign=-1;
+
+
+
+  geometry_msgs::Pose temp_pose=start;
+
+// Discretize the start angle to the Path angle
+
+
+     iteration_start= fabs(Diff_yaw_start_to_path)/step_size;
+     step_size_yaw_start= fabs(Diff_yaw_start_to_path)/iteration_start;
+
+     for (double i=0; i< iteration_start-1; i++)
+     {
+      temp_pose.orientation= pose_conversion::getQuaternionFromYaw(
+                             (pose_conversion::getYawFromQuaternion(temp_pose.orientation))
+                             + yaw_start_sign * step_size_yaw_start);
+     Formed_Path.push_back(temp_pose);
+     }
+
+
+
+  Formed_Path.push_back(temp_pose);
+
+// Discretize over the path
+  temp_pose.orientation=pose_conversion::getQuaternionFromYaw(path_angle);
+  Formed_Path.push_back(temp_pose);
+
+  for (double i=0; i< iteration-1; i++)
+  {
+   temp_pose.position.x+= x_sign * step_size_x;
+   temp_pose.position.y+= y_sign * step_size_y;
+   temp_pose.orientation= pose_conversion::getQuaternionFromYaw(
+                             (pose_conversion::getYawFromQuaternion(temp_pose.orientation))
+                             + yaw_sign * step_size_yaw);
+   temp_pose.orientation= end.orientation;
+   Formed_Path.push_back(temp_pose);
+  }
+
+
+  // Discretize the path angle to the end angle
+
+     iteration_end= fabs(Diff_yaw_path_to_end)/step_size;
+     step_size_yaw_end= Diff_yaw_path_to_end/iteration_end;
+
+     for (double i=0; i< iteration_end-1; i++)
+     {
+      temp_pose.orientation= pose_conversion::getQuaternionFromYaw(
+                             (pose_conversion::getYawFromQuaternion(temp_pose.orientation))
+                             + yaw_end_sign * step_size_yaw_end);
+     Formed_Path.push_back(temp_pose);
+     }
+
+
+  // Path Discretization is Done
+
+return Formed_Path;
+
+}
+

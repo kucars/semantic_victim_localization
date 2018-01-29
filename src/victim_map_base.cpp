@@ -36,6 +36,8 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   curr_max_prob=0;
   curr_max_loc(0,0);
 
+  ros::param::param<std::string>("~camera_optical_frame", camera_optical_frame ,std::string("/floating_sensor/camera_depth_optical_frame"));
+
   victimMapName="victim Map base";
   std::cout <<"done with the base\n";
 }

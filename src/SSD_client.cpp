@@ -18,7 +18,7 @@ void SSD_client::Get_SSD_Detection(){
       Detection_success=true;
     }
 
-    std::cout << "detected class" << srv.response.Class.c_str() << std::endl;
+  std::cout << "detected class" << srv.response.Class.c_str() << std::endl;
 
 	ros::spinOnce();
 	//Setting the loop rate

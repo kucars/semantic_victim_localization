@@ -18,6 +18,13 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
     // Initialization
     // >>>>>>>>>>>>>>>>>
     state = NBVState::INITIALIZING;
+
+    visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Final_path"));
+    visualTools->loadMarkerPub();
+
+    visualTools->deleteAllMarkers();
+    visualTools->enableBatchPublishing();
+
     ROS_INFO("test_NBZ: Begin!");
 }
 
@@ -257,12 +264,13 @@ void TestNBZ::navigate()
   {
   default:
   case 2: // move to waypoint if discrete strigntline is used
-    path_to_waypoint = navigation_->Path_discretization(View_evaluate_->getTargetPose(),
-                                                  drone_communicator_->GetPose(),0.1);
+    path_to_waypoint = navigation_->Path_discretizationtoPath(drone_communicator_->GetPose(),View_evaluate_->getTargetPose(),
+                                                  0.02);
 
+    std::cout << "desired pose is..." << View_evaluate_->getTargetPose() << std::endl;
     std::cout << "generated path is of size ....." << path_to_waypoint.size() << std::endl;
-    //for (int i=0; i<path_to_waypoint.size() ; i++)
-    //  std::cout << path_to_waypoint[i]  << std::endl;
+    for (int i=0; i<path_to_waypoint.size() ; i++)
+    std::cout << path_to_waypoint[i]  << std::endl;
 
     if (!drone_communicator_->Execute_path(path_to_waypoint))
     {
@@ -303,16 +311,18 @@ void TestNBZ::navigate()
   break;
   }
 
-  if (!drone_communicator_->GetStatus())
-  {
+  ros::Time wait=ros::Time::now();
+ // if (!drone_communicator_->GetStatus())
+ // {
   std::cout << "[test_NBZ] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
   // wait for the drone commander node until it moves the drone to the viewpoint
- while (ros::ok() && !drone_communicator_->GetStatus())
+// while ((ros::ok() && !drone_communicator_->GetStatus()) || ((ros::Time::now()-wait).toSec()<1.0))
+  while ((ros::ok() && !drone_communicator_->GetStatus()))
    {
    ros::spinOnce();
    ros::Rate(5).sleep();
    }
-   }
+  // }
 
    std::cout << "[test_NBZ] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
    state = NBVState::NAVIGATION_COMPLETE;
@@ -371,6 +381,12 @@ void TestNBZ::UpdateMap()
     std::cout << cc.magenta << "Victim Found at Location: " << "(x,y)=" << "(" <<
                  (Map_->getMapResultStatus().victim_loc)[0] << "," <<
                  (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
+
+    std::cout << "time taken: " << (t_start-ros::Time::now()).toSec() << std::endl;
+    std::cout << "entropy: " << View_evaluate_->info_entropy_total_ << std::endl;
+    std::cout << "distance: " <<  View_evaluate_->info_distance_total_ << std::endl;
+    std::cout << "iteration: " << history_->iteration<< std::endl;
+
     state = NBVState::TERMINATION_MET;
     return;
   }
@@ -383,6 +399,7 @@ void TestNBZ::runStateMachine()
  state = NBVState::STARTING_ROBOT;
 
  timer.start("NBV: Total Time");
+ t_start = ros::Time::now();
    while (ros::ok())
    {
      switch(state)
@@ -427,6 +444,16 @@ void TestNBZ::runStateMachine()
        break;
 
      case NBVState::TERMINATION_MET:
+
+       for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
+       {
+         visualTools->publishLine(history_->selected_poses[i].position,history_->selected_poses[i+1].position, rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE);
+       }
+       for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
+       {
+         visualTools->publishArrow(history_->selected_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
+       }
+       visualTools->trigger();
      break;
      }
      ros::spinOnce();

@@ -30,7 +30,7 @@ double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p)
 
   mapping_module_->raytracing_->Initiate(false);
 
-  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p,true);
+  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p,true,true);
 
   for (grid_map::GridMapIterator iterator(mapping_module_->map); !iterator.isPastEnd(); ++iterator) {
     Position position;

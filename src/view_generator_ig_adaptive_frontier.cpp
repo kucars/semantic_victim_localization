@@ -14,17 +14,17 @@ ros::param::param<int>("~adaptive_ig_max_iteration", adaptive_ig_max_iteration_,
 
 void view_generator_ig_adaptive_frontier::generateViews()
 {
-  if ((scale_factor_<7.5) && (adaptive_iteration_<adaptive_ig_max_iteration_))   // Use the adaptive NN
+  if ((scale_factor_< 8.0) && (adaptive_iteration_<adaptive_ig_max_iteration_))   // Use the adaptive NN
   {
   if (isStuckInLocalMinima())
   {
-    scale_factor_*= 1.4;
+    scale_factor_*= 2.0;
     std::cout << "[ViewGeneratorNNAdaptive]: " << cc.yellow << "Local minima detected. Increasing scale factor to " << scale_factor_ << "\n" << cc.reset;
 
-    if (scale_factor_ >= 7.5)
+    if (scale_factor_ >= 8.0)
     {
       std::cout << "[ViewGeneratorNNAdaptive]: " << cc.red << "Warning: Scale factor very large: " << scale_factor_ << "\n" << cc.reset;
-      scale_factor_ = 7.5;
+      scale_factor_ = 8.0;
     }
   }
   else

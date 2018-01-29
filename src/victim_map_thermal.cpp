@@ -83,7 +83,7 @@ void victim_map_Thermal::Update(){
   bool publish=true;
   raytracing_->Initiate(publish,rebuild);
 
-  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,false);
 
   //polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
@@ -266,7 +266,7 @@ void victim_map_Thermal::GetCameraCenter2World
 (geometry_msgs::PoseStamped &CamCentertoWorld, ros::Time caputre_time){
 
   geometry_msgs::PoseStamped CamCenter;
-  CamCenter.header.frame_id = "thermal_cam_thermal_link";
+  CamCenter.header.frame_id = "/floating_sensor/camera_frame";
   CamCenter.header.stamp = caputre_time;
   CamCenter.pose.position.x=0; CamCenter.pose.position.y=0; CamCenter.pose.position.z=0;
   CamCenter.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);

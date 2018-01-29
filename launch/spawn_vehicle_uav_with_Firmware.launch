@@ -2,12 +2,12 @@
 
     <!-- MAVROS posix SITL environment launch script -->
 
-    <arg name="x" value="-2"/>
-    <arg name="y" value="0"/>
-    <arg name="z" default="0.5"/>
-    <arg name="R" default="0"/>
-    <arg name="P" default="0"/>
-    <arg name="Y" value="3.14"/>
+    <arg name="vehicle_starting_x" default="-2"/>
+    <arg name="vehicle_starting_y" default="0"/>
+    <arg name="vehicle_starting_z" default="0.5"/>
+    <arg name="vehicle_starting_R" default="0"/>
+    <arg name="vehicle_starting_P" default="0"/>
+    <arg name="vehicle_starting_Y" default="3.14"/>
 
     <arg name="est" default="lpe"/>
     <arg name="vehicle" default="iris"/>
@@ -27,12 +27,12 @@
 
 
     <include file="$(find victim_localization)/launch/posix_sitl.launch">
-        <arg name="x" value="$(arg x)"/>
-        <arg name="y" value="$(arg y)"/>
-        <arg name="z" value="$(arg z)"/>
-        <arg name="R" value="$(arg R)"/>
-        <arg name="P" value="$(arg P)"/>
-        <arg name="Y" value="$(arg Y)"/>
+        <arg name="x" value="$(arg vehicle_starting_x)"/>
+        <arg name="y" value="$(arg vehicle_starting_y)"/>
+        <arg name="z" value="$(arg vehicle_starting_z)"/>
+        <arg name="R" value="$(arg vehicle_starting_R)"/>
+        <arg name="P" value="$(arg vehicle_starting_P)"/>
+        <arg name="Y" value="$(arg vehicle_starting_Y)"/>
         <arg name="world" value="$(arg world)"/>
         <arg name="vehicle" value="$(arg vehicle)"/>
 
@@ -58,7 +58,7 @@
 
 
     <node name="$(anon vehicle_spawn)" output="screen" pkg="gazebo_ros" type="spawn_model"
-        args="-sdf -file $(arg sdfRobot) -model $(arg vehicle) -x $(arg x) -y $(arg y) -z $(arg z) -R $(arg R) -P $(arg P) -Y $(arg Y)"/>
+        args="-sdf -file $(arg sdfRobot) -model $(arg vehicle) -x $(arg vehicle_starting_x) -y $(arg vehicle_starting_y) -z $(arg vehicle_starting_z) -R $(arg vehicle_starting_R) -P $(arg vehicle_starting_P) -Y $(arg vehicle_starting_Y)"/>
 
       <!-- send the robot XML to param server -->
 

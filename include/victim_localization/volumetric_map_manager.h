@@ -10,6 +10,8 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <sensor_msgs/PointCloud.h>
+
 #include <octomap_world/octomap_manager.h>
 
 #include <ros/ros.h>
@@ -47,6 +49,12 @@
 #include <octomap/OcTreeKey.h>
 #include <costmap_2d/costmap_2d_ros.h>
 
+//sync_time
+#include <message_filters/subscriber.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/time_synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+
 
 
 //typedef geometry_msgs::Pose Pose;
@@ -62,6 +70,7 @@ public:
    //....variables....
   ros::Time previous_time;
   std::string topic_pointcloud_;
+  std::string topic_Pose;
   ros::Subscriber pointcloud_sub_;
   costmap_2d::Costmap2DROS *costmap_ros_;
   costmap_2d::Costmap2D *costmap_;
@@ -70,6 +79,12 @@ public:
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
+
+  // sync pose with the pointcloud
+  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::PointCloud2,geometry_msgs::PoseStamped> MySyncPolicy;
+  message_filters::Subscriber<sensor_msgs::PointCloud2> *pointcloud_in_;
+  message_filters::Subscriber<geometry_msgs::PoseStamped> *loc_sub_;
+  message_filters::Synchronizer<MySyncPolicy> *sync;
 
   //...Main methods...
   Volumetric_Map(volumetric_mapping::OctomapManager *manager);
@@ -81,7 +96,8 @@ public:
 
 
 protected:
-  void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg);
+  void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
+                             const geometry_msgs::PoseStamped::ConstPtr& loc);
   volumetric_mapping::OctomapManager *manager_;
 
   //2D occupancy Map related functions

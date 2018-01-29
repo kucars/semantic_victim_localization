@@ -138,7 +138,18 @@
 
 
   <!-- Thermal Facing RGB camera -->
- 
+  <!-- Thermal Facing RGB camera -->
+
+   <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_camera.urdf.xacro" />
+    <xacro:generic_camera name="thermal_cam" parent="base_link" ros_topic="RGB/image_raw" cam_info_topic="RGB/camera_info" update_rate="77" res_x="1228" res_y="1027" image_format="R8G8B8" hfov="52.9855">
+    <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>
+  </xacro:generic_camera>
+
+ <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/generic_thermal_camera.urdf.xacro" />
+  <xacro:generic_thermal_camera name="thermal_cam" parent="base_link" ros_topic="thermal/image_raw" cam_info_topic="RGB/camera_info" update_rate="10" res_x="160" res_y="120" image_format="R8G8B8" hfov="52.9855">
+  <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/>
+</xacro:generic_thermal_camera>
+
 
 
   <!-- stick -->

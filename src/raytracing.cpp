@@ -185,7 +185,7 @@ double Raytracing::getNodeOccupancy(octomap::OcTreeNode* node)
 }
 
 
-grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,bool publish_)
+grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, bool publish_, bool castThroughUnkown)
 {
   if (publish_ray_)
   {
@@ -214,6 +214,7 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
     octomap::point3d dir = rays_far_plane_at_pose_[i].normalize();
 
     // Cast through unknown cells as well as free cells
+
     bool found_endpoint = tree_->castRay(origin, dir, endpoint, true, range);
 
     if (!found_endpoint)
@@ -221,8 +222,8 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
       endpoint = origin + dir * range;
     }
 
-    if( found_endpoint ) {
-    /* Check ray
+   //if( found_endpoint ) {
+      /* Check ray
    *
    * We first draw a ray from the UAV to the endpoint
    *
@@ -234,53 +235,73 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_ ,boo
    *
    */
 
-    octomap::KeyRay ray;
-    tree_->computeRayKeys( origin, endpoint, ray );
+      // std::cout << "NEWRAY" << origin << std::endl;
 
-    for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
+      octomap::KeyRay ray;
+
+      tree_->computeRayKeys( origin, endpoint, ray );
+
+      for( octomap::KeyRay::iterator it = ray.begin() ; it!=ray.end(); ++it )
+      {
+        octomap::point3d p = tree_->keyToCoord(*it);
+
+        // project the point to the Map
+        octomap::OcTreeNode* node = tree_->search(*it);
+        Position position(p.x(),p.y());
+
+     //   if (!isInsideRegionofInterest(p.z())) continue;
+        if (!Pose_map.isInside(position))  continue;
+        if (!isInsideBounds(position)) continue;
+
+        double prob = getNodeOccupancy(node);
+
+        if(Pose_map.atPosition("temp",position)==1)
+        {
+          break;
+        }
+
+        if(prob>0.8)
+        {
+          Pose_map.atPosition("temp",position)=1;
+        }
+
+        else{
+          if (Pose_map.atPosition("temp",position)!=1)
+            Pose_map.atPosition("temp",position)=0;
+        }
+      }
+
+    //}
+
+    octomap::OcTreeKey end_key;
+    if (tree_->coordToKeyChecked(endpoint,end_key))
     {
-      octomap::point3d p = tree_->keyToCoord(*it);
-
-      // project the point to the Map
-      octomap::OcTreeNode* node = tree_->search(*it);
+      octomap::OcTreeNode* node = tree_->search(end_key);
+      octomap::point3d p = tree_->keyToCoord(end_key);
       Position position(p.x(),p.y());
 
-      if (!isInsideRegionofInterest(p.z())) continue;
-
+     // if (!isInsideRegionofInterest(p.z())) continue;
+      if (!Pose_map.isInside(position))  continue;
       if (!isInsideBounds(position)) continue;
 
       double prob = getNodeOccupancy(node);
 
-      if (prob < 0.2)
-        Pose_map.atPosition("temp",position)=0;
-
-      else if (prob >= 0.2) {
-      Pose_map.atPosition("temp",position)=1;
+      if(Pose_map.atPosition("temp",position)==1)
+      {
+        continue;
       }
+
+      if(prob>0.8)
+      {
+        Pose_map.atPosition("temp",position)=1;
+      }
+
+      else{
+        if (Pose_map.atPosition("temp",position)!=1)
+          Pose_map.atPosition("temp",position)=0;
+      }
+
     }
-    }
-
-
-      octomap::OcTreeKey end_key;
-     if (tree_->coordToKeyChecked(endpoint,end_key))
-     {
-         octomap::OcTreeNode* node = tree_->search(end_key);
-         octomap::point3d p = tree_->keyToCoord(end_key);
-         Position position(p.x(),p.y());
-
-        if (!isInsideRegionofInterest(p.z())) continue;
-
-        if (!isInsideBounds(position)) continue;
-
-         double prob = getNodeOccupancy(node);
-
-         if (prob < 0.2)
-           Pose_map.atPosition("temp",position)=0;
-
-         else if (prob > 0.2) {
-         Pose_map.atPosition("temp",position)=1;
-         }
-       }
 
      // visualize the ray
      if (publish_ray_){
