@@ -29,7 +29,6 @@ Raytracing::Raytracing(double map_res_):
   visualTools->loadMarkerPub();
   visualTools->deleteAllMarkers();
   visualTools->enableBatchPublishing();
-
 }
 
 Raytracing::Raytracing(double map_res_, double HFOV_deg, double VFOV_deg,

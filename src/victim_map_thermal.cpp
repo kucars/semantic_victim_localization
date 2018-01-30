@@ -266,7 +266,7 @@ void victim_map_Thermal::GetCameraCenter2World
 (geometry_msgs::PoseStamped &CamCentertoWorld, ros::Time caputre_time){
 
   geometry_msgs::PoseStamped CamCenter;
-  CamCenter.header.frame_id = "/floating_sensor/camera_frame";
+  CamCenter.header.frame_id = camera_thermal_frame;
   CamCenter.header.stamp = caputre_time;
   CamCenter.pose.position.x=0; CamCenter.pose.position.y=0; CamCenter.pose.position.z=0;
   CamCenter.pose.orientation =  pose_conversion::getQuaternionFromYaw(0.0);

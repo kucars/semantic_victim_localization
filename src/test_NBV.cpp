@@ -45,6 +45,7 @@ void TestNBZ::initVehicle(){
     break;
    }
 }
+
 void TestNBZ::initMap(){
     ros::param::param("~map_type", map_type, 0);
     switch(map_type)
@@ -133,7 +134,6 @@ void TestNBZ::initViewEvaluator(){
     case 7:
       View_evaluate_ = new view_evaluator_ig_exp_max();
     break;
-
 
     }
 }
@@ -311,7 +311,7 @@ void TestNBZ::navigate()
   break;
   }
 
-  ros::Time wait=ros::Time::now();
+ // ros::Time wait=ros::Time::now();
  // if (!drone_communicator_->GetStatus())
  // {
   std::cout << "[test_NBZ] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
@@ -408,12 +408,16 @@ void TestNBZ::runStateMachine()
      if (!drone_communicator_->GetStatus()){
        break; // check if the drone is ready from drone commander node
      }
+     Occlusion_Map_->Stop();
      std::cout << "drone is ready\n";
      state = NBVState::START_MAP_UPDATE;
        break;
 
        case NBVState::START_MAP_UPDATE:
        timer.start("[NBVLoop]Iteration");  // detect and update map
+       ros::Rate(1).sleep();
+       Occlusion_Map_->GetPointCloud();
+       while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; ros::Rate(5).sleep();}
        UpdateMap();
        //if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
        break;

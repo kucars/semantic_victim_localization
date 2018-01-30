@@ -117,6 +117,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
+num_recieved_pointCloud: 5
 publish_2D_map: true
 
 ############
@@ -219,7 +220,7 @@ Topics:
         topic_setPose: "floating_sensor/set_pose"
         topic_depth_image: "/floating_sensor/camera/depth/image_raw"
         topic_rgb_image: "/floating_sensor/camera/rgb/image_raw"
-        topic_thermal_image: "/floating_sensor/thermal_cam/image_raw"
+        topic_thermal_image: "floating_sensor/thermal_cam/thermal/image_raw"
         topic_pointcloud: "/floating_sensor/camera/depth/points"
 
 Frames:
@@ -235,7 +236,7 @@ Frames:
 
     "2":  #Floating Sensor
         camera_optical_frame: "/floating_sensor/camera_depth_optical_frame"
-        camera_thermal_frame: "/floating_sensor/camera_depth_optical_frame"
+        camera_thermal_frame: "/floating_sensor/thermal_cam_optical_frame"
         base_frame: "/floating_sensor/base_link"
 
 

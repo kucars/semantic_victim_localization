@@ -78,15 +78,6 @@ void iris_drone_commander::start(){
   case Command::ROTATE:
     std::cout << "execute_four_waypoints"<< std::endl;
      //vehicle_->Evaluate4Points(start_x,start_y,start_z);
-    vehicle_->setWaypoint(-4,0.0,1.0,0);
-     vehicle_->moveVehicle();
-     vehicle_->rotateOnTheSpot();
-     vehicle_->setWaypoint(-3,0.0,1.0,0);
-
-     vehicle_->moveVehicle();
-     vehicle_->rotateOnTheSpot();
-     vehicle_->setWaypoint(-2.4,0.0,1.0,0);
-     vehicle_->moveVehicle();
      vehicle_->rotateOnTheSpot();
 
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
@@ -129,8 +120,6 @@ void iris_drone_commander::Takeoff()
   ros::param::param<double>("~uav_pose_y" , start_y, 0.0);
   ros::param::param<double>("~uav_pose_z" , start_z, 1.0);
   ros::param::param<double>("~uav_pose_yaw" , start_yaw, 3.14);
-
-  vehicle_->setWaypoint(start_x, start_y, start_z, start_yaw);
 
   ROS_INFO("Starting vehicle................");
   vehicle_->start(start_x, start_y, start_z, start_yaw);

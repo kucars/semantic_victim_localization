@@ -64,7 +64,7 @@ void victim_map_DL::Update()
   bool publish=true;
   raytracing_->Initiate(publish,rebuild);
 
-  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,false);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,true);
 
   map_status.victim_found=false; //initialize detection to false
 

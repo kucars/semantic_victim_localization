@@ -35,6 +35,7 @@
     <!-- Spawn Floating Sensor  -->
 <group if="$(arg use_floating_sensor)">
     <include file="$(find victim_localization)/launch/spawn_vehicle_floating_sensor.launch">
+      <arg name="model" value="$(arg Floating_sensor_model)"/>
       <arg name="vehicle_starting_x" value="$(arg vehicle_starting_x)"/>
       <arg name="vehicle_starting_y" value="$(arg vehicle_starting_y)"/>
       <arg name="vehicle_starting_z" value="$(arg vehicle_starting_z)"/>

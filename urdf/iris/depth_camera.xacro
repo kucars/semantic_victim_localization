@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<robot name="iris" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- forward facing camera -->
+
+  <xacro:include filename="$(find victim_localization)/urdf/iris_accessories/realsense_camera.urdf.xacro"/>
+ <xacro:realsense_camera name="front_cam" parent="base_link">
+    <origin xyz="0.0 0.0 -0.05" rpy="0 0.26179 0"/> <!--15 deg for pitch -->  <!-- previous "0.0 0.0 -0.05" rpy="0 0.26179 0"/> -->
+  </xacro:realsense_camera>
+
+</robot>
+

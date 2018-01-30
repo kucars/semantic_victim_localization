@@ -103,7 +103,7 @@ bool VehicleControlBase::isNear(const geometry_msgs::Pose p_target, const geomet
 void VehicleControlBase::SetVehicleROSParams(){
   std::string topic_setPose1;
   std::string topic_Odometry, topic_Pose,topic_setPose,topic_rgb_image,topic_depth_image,topic_pointcloud,topic_thermal_image;
-  std::string camera_optical_frame,base_frame;
+  std::string camera_optical_frame,camera_thermal_frame,base_frame;
   XmlRpc::XmlRpcValue param;
 
   int vehicle_type;
@@ -124,6 +124,7 @@ void VehicleControlBase::SetVehicleROSParams(){
   // get Vehicle frames
     nh_private.getParam(ros::this_node::getName()+"/Frames", param);
     camera_optical_frame=(std::string)param[vehicle_num]["camera_optical_frame"];
+    camera_optical_frame=(std::string)param[vehicle_num]["camera_thermal_frame"];
     base_frame=(std::string)param[vehicle_num]["base_frame"];
 
   // Update the topics & frames in ROS::PARAM
@@ -138,10 +139,9 @@ void VehicleControlBase::SetVehicleROSParams(){
     ros::param::set(ros::this_node::getName()+"/topic_thermal_image",topic_thermal_image);
     ros::param::set(ros::this_node::getName()+"/topic_pointcloud",topic_pointcloud);
     ros::param::set(ros::this_node::getName()+"/camera_optical_frame",camera_optical_frame);
+    ros::param::set(ros::this_node::getName()+"/camera_thermal_frame",camera_thermal_frame);
     ros::param::set(ros::this_node::getName()+"/base_frame",base_frame);
 
-    std::cout << "pointcloud topic...." << topic_pointcloud << std::endl;
-    std::cout << "this is comming from " << ros::this_node::getName() << std::endl;
     // override other nodes params
     ros::param::set(ros::this_node::getName()+"/costmap/robot_base_frame",base_frame);
 }

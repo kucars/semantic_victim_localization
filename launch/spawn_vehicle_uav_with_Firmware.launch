@@ -65,11 +65,37 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
 
       <!-- Given the published joint states, publish tf for the robot links -->
-      <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
 
-   <node pkg="tf" type="static_transform_publisher" name="world_to_base_link" args="0 0 0 0 0 0 /ground_truth//ground_truth/odometry_sensorgt_link /base_link 500"/>
+<!--
+<node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbda_tf" args="
+      0.0  0.0 -0.05
+           0.000   0.131  0.000    0.991
+      /base_link
+      /front_cam_link
+      500"
+/>
 
+<node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbdb_tf" args="
+       0.0  0.049 0.0
+       0 0 0 1
+       /front_cam_link
+       /front_cam_depth_frame
+       500"
+/>
+
+<node pkg="tf" type="static_transform_publisher" name="floating_sensor_rgbdb1_tf" args="
+      0 0 0
+      -0.5 0.5  -0.5 0.5
+      /front_cam_depth_frame
+      /front_cam_depth_optical_frame
+      500"
+/>
+
+-->
+
+<node pkg="tf" type="static_transform_publisher" name="world_to_base_link" args="0 0 0 0 0 0 /ground_truth//ground_truth/odometry_sensorgt_link /base_link 500"/>
 
 </launch>
 

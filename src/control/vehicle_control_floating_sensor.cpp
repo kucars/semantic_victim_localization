@@ -56,22 +56,21 @@ void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
 {
   geometry_msgs::PoseStamped temp_target;
   temp_target.pose = setpoint_;
-  ros::Time wait=ros::Time::now();
 
-  while (ros::Time::now() - wait < ros::Duration(1))
-   {
-   std::cout << "waiting...floating sensor." <<  (ros::Time::now()-wait).toSec() << std::endl;
-   pub_pose.publish(temp_target);
-   //ros::spinOnce();
-   ros::Rate(5).sleep();
-   }
+//  //ros::Time wait=ros::Time::now();
 
-  ros::spinOnce();
-  ros::Rate(1).sleep();
+//  while (ros::Time::now() - wait < ros::Duration(1))
+//   {
+//   std::cout << "waiting...floating sensor." <<  (ros::Time::now()-wait).toSec() << std::endl;
+//   pub_pose.publish(temp_target);
+//   //ros::spinOnce();
+//   ros::Rate(5).sleep();
+//   }
 
-  return;
+//  ros::spinOnce();
+//  ros::Rate(1).sleep();
 
-
+//  return;
 
   if (speed_ < 0)
   {
@@ -93,26 +92,27 @@ void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
     return;
   }
 
-  // Compute new velocities
-//  updateTwist();
-//  std::cout << "iam hrer2.." << std::endl;
+  //Compute new velocities
+  updateTwist();
 
-//  double rate = 50;
-//  geometry_msgs::PoseStamped temp_target_;
-//  temp_target_.pose = vehicle_current_pose_;
+  std::cout << "iam hrer2.." << std::endl;
 
-//  std::cout << "time to target...." << time_to_target_ << std::endl;
-//    for (int i=0; i<time_to_target_*rate; i++)
-//  {
-//    temp_target_.pose.position.x += twist_.linear.x/rate;
-//    temp_target_.pose.position.y += twist_.linear.y/rate;
-//    temp_target_.pose.position.z += twist_.linear.z/rate;
+  double rate = 50;
+  geometry_msgs::PoseStamped temp_target_;
+  temp_target_.pose = vehicle_current_pose_;
 
-//    pub_pose.publish(temp_target_);
+  std::cout << "time to target...." << time_to_target_ << std::endl;
+    for (int i=0; i<time_to_target_*rate; i++)
+  {
+    temp_target_.pose.position.x += twist_.linear.x/rate;
+    temp_target_.pose.position.y += twist_.linear.y/rate;
+    temp_target_.pose.position.z += twist_.linear.z/rate;
 
-//    ros::Rate(rate).sleep();
-//    ros::spinOnce();
-//}
+    pub_pose.publish(temp_target_);
+
+    ros::Rate(rate).sleep();
+    ros::spinOnce();
+}
   /*
   // Publish speed so vehicle will move
   pub_twist.publish(twist_);

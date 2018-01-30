@@ -7,7 +7,7 @@ victim_detector_base()
   ros::param::param<double>("~min_Dist_Between_Blobs", minDistBetweenBlobs_ , 40.0);
   ros::param::param<double>("~thermal_min_Area_Victim", minAreaVictim_ , 40.0);
 
-  ros::param::param("~thermal_Image_topic", thermal_image_topic, std::string("floating_sensor/thermal_cam/image_raw"));
+  ros::param::param("~topic_thermal_image", thermal_image_topic, std::string("floating_sensor/thermal_cam/thermal/image_raw"));
   ros::param::param("~topic_Pose", topic_Pose, std::string("iris/mavros/local_position/pose"));
 
   image_transport::ImageTransport it(nh_);

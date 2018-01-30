@@ -76,6 +76,10 @@ public:
   costmap_2d::Costmap2D *costmap_;
   double pcl_throttle_;
   double map2D_throttle_;
+  bool accept_pointCloud;
+  bool stop;
+  int count_pointCloud;
+  int num_recieved_pointCloud;
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
@@ -93,7 +97,9 @@ public:
 
 
   void Convert2DMaptoOccupancyGrid(const ros::Time &rostime);
-
+  void GetPointCloud();
+  void Stop();
+  bool GetPointCloudDone();
 
 protected:
   void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
@@ -112,6 +118,7 @@ protected:
      void handleFreeNodeInBBX(const OcTreeT::iterator& it);
 
      void update2DMap(const OcTreeT::iterator& it, bool occupied);
+
 
     inline unsigned mapIdx(int i, int j) const {
       return m_gridmap->info.width * j + i;
