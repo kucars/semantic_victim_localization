@@ -8,7 +8,3 @@ victim_detector_base::victim_detector_base()
 victim_detector_base::~victim_detector_base(){}
 
 
-void victim_detector_base::SetVehicleCommunicator(vehicle_communicator *vehicle_comm)
-{
-  vehicle_comm_=vehicle_comm;
-}

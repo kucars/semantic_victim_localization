@@ -4,14 +4,15 @@
 #include <victim_localization/victim_map_base.h>
 #include <victim_localization/victim_map_dl.h>
 #include <victim_localization/victim_map_thermal.h>
-#include <victim_localization/victim_map_wireless_2.h>
-
+#include <victim_localization/victim_map_wireless.h>
 
 class victim_map_combined : public Victim_Map_Base
 {
 public:
   victim_map_combined(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
-
+  victim_map_DL *victim_map_dl_;
+  victim_map_Thermal *victim_map_Thermal_;
+  Victim_Map_Wireless *victim_map_wireless_;
 
 
   std::string combinedMap_layer_name="victim_fused";
@@ -26,11 +27,7 @@ public:
   void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   void setCurrentPose(geometry_msgs::Pose ps);
 
-  Victim_Map_Base *victim_map_dl_;
-  Victim_Map_Base *victim_map_thermal_;
-  Victim_Map_Base *victim_map_wireless_;
 
-  Victim_Map_Base* getMapLayer(int map_number);
 
 };
 

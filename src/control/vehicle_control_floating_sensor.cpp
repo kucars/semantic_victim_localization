@@ -245,16 +245,12 @@ void VehicleControlFloatingSensor::start()
 }
 
 void VehicleControlFloatingSensor::Evaluate4Points(double x, double y, double z){
-  geometry_msgs::Pose p;
-
-   x = vehicle_current_pose_.position.x;
-  y = vehicle_current_pose_.position.y;
-  z = vehicle_current_pose_.position.z;
 
   ROS_INFO("Perfroming -- 4Points Evaluation");
 
   // generate four points
   std::vector <geometry_msgs::Pose> FourPoints;
+  geometry_msgs::Pose p;
   p.position.x= x+0.5;
   p.position.y= y;
   p.position.z = z;
@@ -292,8 +288,6 @@ void VehicleControlFloatingSensor::Evaluate4Points(double x, double y, double z)
     std::cout << "drone start move...."   ;
     moveVehicle(1);
     std::cout << "wating for the drone to move....";
-    ros::Time lastTimeTurnTime=ros::Time::now();
-    while(ros::Time::now() - lastTimeTurnTime < ros::Duration(0.5)) {ros::spinOnce(); ros::Rate(5).sleep();}
   }
 }
 
@@ -304,7 +298,7 @@ void VehicleControlFloatingSensor::rotateOnTheSpot(){
   rotatingPose.pose.position.y = vehicle_current_pose_.position.y;
   rotatingPose.pose.position.z = vehicle_current_pose_.position.z;
   int seqNum=0 ;
-  double angleStep  = 0.05;  //before
+  double angleStep  = 0.05;
   double angle = 0;
   bool done = false;
   double deltaTime = 1;

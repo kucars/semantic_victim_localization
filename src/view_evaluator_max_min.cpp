@@ -6,24 +6,24 @@ view_evaluator_MaxMIN::view_evaluator_MaxMIN():
   min_belief=std::numeric_limits<float>::infinity();
 }
 
-double view_evaluator_MaxMIN::calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module){
+double view_evaluator_MaxMIN::calculateUtility(geometry_msgs::Pose p){
 
   grid_map::GridMap temp_Map;
 
-  mapping_module->raytracing_->Initiate(false);
+  mapping_module_->raytracing_->Initiate(false);
 
-  temp_Map=mapping_module->raytracing_->Generate_2D_Safe_Plane(p,true,true);
+  temp_Map=mapping_module_->raytracing_->Generate_2D_Safe_Plane(p,true,true);
 
   double Info_view=std::numeric_limits<double>::infinity();
 
-  for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEnd(); ++iterator) {
+  for (grid_map::GridMapIterator iterator(mapping_module_->map); !iterator.isPastEnd(); ++iterator) {
     Position position;
     Index index=*iterator;
-    mapping_module->map.getPosition(index, position);
+    mapping_module_->map.getPosition(index, position);
     if(!temp_Map.isInside(position)) continue;
 
     if(temp_Map.atPosition("temp", position)==0){
-      double curr_pro= mapping_module->map.at(mapping_module_->getlayer_name(),index);
+      double curr_pro= mapping_module_->map.at(mapping_module_->getlayer_name(),index);
       if(curr_pro<min_belief)
        min_belief=curr_pro;
   }
@@ -45,7 +45,7 @@ void view_evaluator_MaxMIN::evaluate(){
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-        double utility = calculateUtility(p,mapping_module_);
+        double utility = calculateUtility(p);
 
         if (utility>=0){
     info_utilities_.push_back(utility);

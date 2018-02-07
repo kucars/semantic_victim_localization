@@ -1,8 +1,7 @@
 #include "victim_localization/nbv_history.h"
 
 nbv_history::nbv_history():
- iteration(0),
- max_prob(0)
+ iteration(0)
 {
 
 }

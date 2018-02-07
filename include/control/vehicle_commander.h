@@ -38,7 +38,7 @@ public:
 
   bool command_status;
   Command::State state;
-  bool enable_rotate;
+
   geometry_msgs::PoseStamped hoverPose;
 
   double start_x, start_y, start_z, start_yaw;

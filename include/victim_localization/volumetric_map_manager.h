@@ -80,7 +80,6 @@ public:
   bool stop;
   int count_pointCloud;
   int num_recieved_pointCloud;
-  geometry_msgs::Pose lastpose;
 
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
@@ -103,7 +102,8 @@ public:
   bool GetPointCloudDone();
 
 protected:
-  void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg);
+  void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
+                             const geometry_msgs::PoseStamped::ConstPtr& loc);
   volumetric_mapping::OctomapManager *manager_;
 
   //2D occupancy Map related functions

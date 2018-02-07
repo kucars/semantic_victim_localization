@@ -14,7 +14,6 @@
 #include <victim_localization/common.h>
 #include <octomap_world/octomap_manager.h>
 #include <victim_localization/nbv_history.h>
-
 #include <victim_localization/volumetric_map_manager.h>
 #include <grid_map_ros/grid_map_ros.hpp>
 #include <grid_map_msgs/GridMap.h>
@@ -61,8 +60,6 @@ public:
 
   double obj_bounds_x_max_, obj_bounds_y_max_, obj_bounds_z_max_;
   double obj_bounds_x_min_, obj_bounds_y_min_, obj_bounds_z_min_;
-  double start_x_,start_y_,end_x_,end_y_;
-
   geometry_msgs::Pose current_pose_;
   std::vector<geometry_msgs::Pose> generated_poses;
   std::vector<geometry_msgs::Pose> rejected_poses;

@@ -17,13 +17,8 @@ public:
    std::vector<geometry_msgs::Pose> selected_poses;
   std::vector<float> selected_utility;
    std::vector<float> total_entropy;
-   std::vector<float> time_per_iteration;
-   std::vector<geometry_msgs::Pose> black_listed_poses;
-   double max_prob;
+    std::vector<float> time_per_iteration;
 
-  nbv_history  *vision_nbv_history ;
-  nbv_history  *thermal_nbv_history ;
-  nbv_history  *wireless_nbv_history ;
 };
 
 #endif // NBV_HISTORY_H

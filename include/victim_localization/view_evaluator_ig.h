@@ -9,11 +9,7 @@ class view_evaluator_ig : public view_evaluator_base
 public:
   view_evaluator_ig();
 
-   double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-   double calculateWirelessUtility(geometry_msgs::Pose p,Victim_Map_Base *mapping_module);
-   double calculateCombinedUtility(geometry_msgs::Pose p);
-
-
+   double calculateUtility(geometry_msgs::Pose p);
    std::string getMethodName();
 
 

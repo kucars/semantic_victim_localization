@@ -51,11 +51,10 @@ void Raytracing2D::GenerateOctomap(bool rebuild_once, bool publish){
 
   octree_2d.reset(new octomap::OcTree(grid_->info.resolution));
 
-  std::cout << "grid reslution is.." << grid_->info.resolution << std::endl;
 
-//  if (octree_2d->getResolution() != manager_->getResolution())
-//    std::cout << "octree_2d has different resolution: " << octree_2d->getResolution()
-//             << " ," << manager_->getResolution() << std::endl;
+  if (octree_2d->getResolution() != manager_->getResolution())
+    std::cout << "octree_2d has different resolution: " << octree_2d->getResolution()
+             << " ," << manager_->getResolution() << std::endl;
 
   // convert occupancy grid to Grid Map type for easy data maniputation
   if(!GridMapRosConverter::fromOccupancyGrid(*grid_,"occlusion",map_))
@@ -328,7 +327,6 @@ if (publish_ray_) visualTools->trigger();
     if(pub_temp_map1.getNumSubscribers()>0)
         publish_Map2(map_);
 }
-  //cros::Rate(1).sleep();
 
   return Pose_map;
 }

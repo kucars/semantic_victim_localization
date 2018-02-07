@@ -32,7 +32,6 @@ bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
 
 void view_generator_ig_nn_adaptive::generateViews()
 {
-
   if (isStuckInLocalMinima() && do_adaptive_generation)
   {
     scale_factor_*= scale_multiplier_;
@@ -51,15 +50,13 @@ void view_generator_ig_nn_adaptive::generateViews()
   }
 
   // Scale up sampling resolution
-  double backup_start_x_ = start_x_;
-  double backup_start_y_ = start_y_;
-  double backup_end_x_ = end_x_;
-  double backup_end_y_ = end_y_;
+  double backup_res_x_ = res_x_;
+  double backup_res_y_ = res_y_;
+  double backup_res_z_ = res_z_;
 
-  start_x_ *= scale_factor_;
-  start_y_ *= scale_factor_;
-  end_x_ *= scale_factor_;
-  end_y_ *= scale_factor_;
+  res_x_ *= scale_factor_;
+  res_y_ *= scale_factor_;
+  res_z_ *= scale_factor_;
 
   // for scale_factor=1, generate viewpoint using NN generator
   if (scale_factor_==1)
@@ -67,21 +64,71 @@ void view_generator_ig_nn_adaptive::generateViews()
     view_generator_IG::generateViews(true);
     nav_type = 0; // set navigation type as straight line for adaptive_nn_view_generator
     generator_type=Generator::NN_Generator;
+    return;
   }
 
-  // for scale_factor>1, generate viewpoint using adaptive grid
+  // for scale_factor>1, generate viewpoint using sampled grid
   else
   {
-    view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
-    nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
     generator_type=Generator::NN_Adaptive_Generator;
+
+    std::vector<geometry_msgs::Pose> initial_poses;
+    generated_poses.clear();
+    rejected_poses.clear();
+
+    double currX = current_pose_.position.x;
+    double currY = current_pose_.position.y;
+    double currZ = current_pose_.position.z;
+    double currYaw = pose_conversion::getYawFromQuaternion(current_pose_.orientation);
+
+
+    //Generating 3-D state lattice as z-axis movement is restrained (fixed)
+    for (double i_x=-res_x_; i_x<=res_x_; i_x=i_x+1)
+    {
+      for (double i_y=-res_y_; i_y<=res_y_; i_y=i_y+1)
+      {
+         if (IsPreviouslyCheckedSamples(i_x,i_y)){
+         continue;
+         }
+        for (double i_yaw=-M_PI; i_yaw<M_PI; i_yaw+=res_yaw_)
+        {
+
+          // Do not generate any viewpoints in current location
+          //if (i_x==0 && i_y==0)
+          //continue;
+
+          geometry_msgs::Pose p;
+          p.position.x = currX + i_x*cos(currYaw) + i_y*sin(currYaw);
+          p.position.y = currY - i_x*sin(currYaw) + i_y*cos(currYaw);
+          p.position.z = uav_fixed_height ;//+ res_z_*i_z; // z-axis movement is fixed
+
+          p.orientation = pose_conversion::getQuaternionFromYaw(currYaw + i_yaw);
+          initial_poses.push_back(p);
+        }
+      }
+    }
+
+  for (int i=0; i<initial_poses.size(); i++)
+  {
+    if ( isValidViewpoint(initial_poses[i]) )
+    {
+      generated_poses.push_back(initial_poses[i]);
+    }
+    else
+    {
+      rejected_poses.push_back(initial_poses[i]);
+    }
   }
 
-  // Return start and end  to normal
-    start_x_= backup_start_x_;
-    start_y_= backup_start_y_;
-    end_x_ = backup_end_x_;
-    end_y_=  backup_end_y_;
+  std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
+
+  nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
+  }
+
+  // Return scale to normal
+  res_x_ = backup_res_x_;
+  res_y_ = backup_res_y_;
+  res_z_ = backup_res_z_;
 }
 
 bool view_generator_ig_nn_adaptive::IsPreviouslyCheckedSamples(double i_x,double i_y)

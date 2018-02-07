@@ -9,12 +9,12 @@ class view_evaluator_ig_exp_max: public view_evaluator_base
 public:
   view_evaluator_ig_exp_max();
 
-   double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+   double calculateUtility(geometry_msgs::Pose p);
    std::string getMethodName();
 
 private:
    double w_dist_;
-   double calculateIGMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+   double calculateIGMax(geometry_msgs::Pose p);
 
 
 };

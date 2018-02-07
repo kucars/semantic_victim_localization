@@ -18,16 +18,16 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   ros::param::param<std::string>("~topic_Pose",topic_Pose,
                                  std::string("/floating_sensor/poseStamped"));
 
-  //lastpose.position.x=0;lastpose.position.y=0;lastpose.position.z=0;
+
   manager_= manager;
-//  pointcloud_in_  = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, topic_pointcloud_, 1);
-//  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Pose, 1);
-//  sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(30), *pointcloud_in_ ,*loc_sub_);
+  pointcloud_in_  = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, topic_pointcloud_, 1);
+  loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, topic_Pose, 1);
+  sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *pointcloud_in_ ,*loc_sub_);
 
   // Callbacks
-//  sync->registerCallback(boost::bind(&Volumetric_Map::callbackSetPointCloud, this, _1, _2));
+  sync->registerCallback(boost::bind(&Volumetric_Map::callbackSetPointCloud, this, _1, _2));
 
-  pointcloud_sub_ = nh_.subscribe(topic_pointcloud_, 1,  &Volumetric_Map::callbackSetPointCloud,this);
+  //pointcloud_sub_ = nh_.subscribe(topic_pointcloud_, 1,  &Volumetric_Map::callbackSetPointCloud,this);
 
   m_octree = manager_->octree_;
   m_treeDepth = m_octree->getTreeDepth();
@@ -38,40 +38,30 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   previous_time= ros::Time::now();
 }
 
-
-//void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
-//                                           const geometry_msgs::PoseStamped::ConstPtr& loc)
-void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg)
-
+void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg,
+                                           const geometry_msgs::PoseStamped::ConstPtr& loc)
 {
-  if (manager_ == NULL){
+  if (manager_ == NULL)
     ROS_ERROR_THROTTLE(1, "Map not set up: No octomap available!");
-}
 
 
-
-  // static double last_pcl = ros::Time::now().toSec();
-  // if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
-  // std::cout << "recieved a massage" << std::endl;
-  if (accept_pointCloud){
-    ros::Time current=ros::Time::now();
+ // static double last_pcl = ros::Time::now().toSec();
+ // if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
+  std::cout << "recieved a massage" << std::endl;
+    if (accept_pointCloud){
     manager_->insertPointcloudWithTf(input_msg);
-
-    std::cout << "OCTOMAP IS UPDATED took>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << (ros::Time::now()-current).toSec() << std::endl;
-    current=ros::Time::now();
+    std::cout << "OCTOMAP IS UPDATED>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     Convert2DMaptoOccupancyGrid(ros::Time::now());
-    std::cout << "Conversion took IS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << (ros::Time::now()-current).toSec() << std::endl;
-
     count_pointCloud+=1;
     if (stop) { accept_pointCloud=false;stop=false;}
-  }
-  //   last_pcl += pcl_throttle_;
-  //  }
+    }
+ //   last_pcl += pcl_throttle_;
+//  }
 
-  // static double last_map2D= ros::Time::now().toSec();
-  // if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
-  // last_map2D += map2D_throttle_;
-  // }
+ // static double last_map2D= ros::Time::now().toSec();
+ // if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
+   // last_map2D += map2D_throttle_;
+ // }
 }
 void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
 {
@@ -124,27 +114,16 @@ int Volumetric_Map::IsnodeOccupied (const OcTreeT::iterator& it)  // 1 is occupi
 
   octomap::OcTreeNode* node = m_octree->search(it.getKey());
 
-  if (node == NULL) {
-    return 3;
-  } else if (m_octree->isNodeOccupied(node)) {
+  double prob= node->getOccupancy();
+
+  if (prob>0.8)
     return 1;
-  } else {
+
+  if (prob<0.3)
     return 2;
-  }
 
-  //double prob= node->getOccupancy();
-
-  //if (prob>0.8)
-  //  return 1;
-
-  //if (prob<0.3)
-  //  return 2;
-
-  //return 3;
+  return 3;
 }
-
-
-
 
 
 void Volumetric_Map::PrecheckFor2DMap(const ros::Time &rostime)  /* partially taken from
@@ -384,12 +363,12 @@ void Volumetric_Map::GetActiveOrigin(double &x_origin, double &y_origin)
 
 void Volumetric_Map::GetPointCloud()
 {
-  ros::Time delay= ros::Time::now();
-  while ((ros::Time::now()- delay)<ros::Duration(0.3))
-  {
-    ros::spinOnce();
-    ros::Rate(5).sleep();
-  }
+//  ros::Time delay= ros::Time::now();
+//  while ((ros::Time::now()- delay)<ros::Duration(0.2))
+//  {
+//    ros::spinOnce();
+//    ros::Rate(5).sleep();
+//  }
   count_pointCloud=0;
   accept_pointCloud=true;
 }

@@ -129,8 +129,7 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   visualTools->publishSphere(end.p, rviz_visual_tools::ORANGE, 0.3,"end_pose");
   visualTools->trigger();
 
-  //double robotH = 0.9, robotW = 0.5, narrowestPath = 0.987;
-  double robotH = 0.3, robotW = 0.3, narrowestPath = 0.987;
+  double robotH = 0.9, robotW = 0.5, narrowestPath = 0.987;
 
   robotCenter.x = -0.3f;
   robotCenter.y = 0.0f;
@@ -246,7 +245,7 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
 
   if (dist==0) {
   ROS_WARN("The Robot is already in the target pose.... The path generation is set to success... ");
-  return false;
+  return true;
   }
 
   for(int i =0; i<(pathSegments.size() - 1) ;i++)

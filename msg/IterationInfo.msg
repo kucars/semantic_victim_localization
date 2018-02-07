@@ -1,18 +1,11 @@
 int32 iteration
 float32 distance_total
 float32 entropy_total
-float32 entropy_total_dl
-float32 entropy_total_thermal
-float32 entropy_total_wireless
-
 
 string method_generation
 string method_selection
 geometry_msgs/Pose selected_pose
 float32 selected_utility
-float32 selected_utility_dl
-float32 selected_utility_thermal
-float32 selected_utility_wireless
 
 float32 curr_max_prob
 float32 curr_max_loc_x

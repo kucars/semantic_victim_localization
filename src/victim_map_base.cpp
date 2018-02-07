@@ -5,8 +5,7 @@ using namespace grid_map;
 double range_max_=10;
 Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
   nh_(nh),
-  nh_private_(nh_private),
-  Maptype(MAP::BASE)
+  nh_private_(nh_private)
 {
   std::string topic_Pose;
 

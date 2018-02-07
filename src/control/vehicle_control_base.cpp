@@ -118,13 +118,13 @@ void VehicleControlBase::SetVehicleROSParams(){
     topic_setPose=(std::string)param[vehicle_num]["topic_setPose"];
     topic_rgb_image=(std::string)param[vehicle_num]["topic_rgb_image"];
     topic_depth_image=(std::string)param[vehicle_num]["topic_depth_image"];
-    topic_thermal_image=(std::string)param[vehicle_num]["topic_thermal_image"];
+    topic_depth_image=(std::string)param[vehicle_num]["topic_thermal_image"];
     topic_pointcloud=(std::string)param[vehicle_num]["topic_pointcloud"];
 
   // get Vehicle frames
     nh_private.getParam(ros::this_node::getName()+"/Frames", param);
     camera_optical_frame=(std::string)param[vehicle_num]["camera_optical_frame"];
-    camera_thermal_frame=(std::string)param[vehicle_num]["camera_thermal_frame"];
+    camera_optical_frame=(std::string)param[vehicle_num]["camera_thermal_frame"];
     base_frame=(std::string)param[vehicle_num]["base_frame"];
 
   // Update the topics & frames in ROS::PARAM

@@ -22,10 +22,8 @@ public:
   std::string Nav_map_layer;
   double x_arena_max;
   double y_arena_max;
-  int pointing_to_unknown;
-  double pointing_to_unknown_threshold;
   bool IsWithinCostmap(double x1,double x2);
-  bool isPreviouslyRejected(geometry_msgs::Pose p);
+
 
 
   view_generator_ig_frontier();

@@ -7,9 +7,6 @@
 <arg name="Floating_sensor_model" default="$(find victim_localization)/urdf/floating_sensor/floating_sensor.sdf"/>
 <arg name="iris_model" default="$(find victim_localization)/urdf/iris/iris_with_sensors.sdf" />
 <arg name="iris_model_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
-<arg name="transmitter_sdf" default="$(find victim_localization)/urdf/wireless/transmitter.sdf" />
-<arg name="reciever_sdf" default="$(find victim_localization)/urdf/wireless/reciever.sdf" />
-
 
 <arg name="world" default="$(find victim_localization)/world/twoRoomsSmallthreeT.world"/>
 <arg name="headless" default="false"/>
@@ -21,7 +18,7 @@
     <!-- Starting position -->
     <arg name="vehicle_starting_x" value="-2"/>
     <arg name="vehicle_starting_y" value="0"/>
-    <arg name="vehicle_starting_z" value="1.0"/>
+    <arg name="vehicle_starting_z" value="0.3"/>
     <arg name="vehicle_starting_Y" value="0"/>
 
 
@@ -64,33 +61,6 @@
     </include>
 </group>
 
-
-<!--
- <param name="transmitter/robot_description" textfile="$(arg transmitter_sdf)"/>
-
- <param name="reciever/robot_description" textfile="$(arg reciever_sdf)"/>
-
-  <node name="spawn_transmitter" pkg="gazebo_ros" type="spawn_model"
-   args="-param transmitter/robot_description
-         -sdf
-         -x -3
-         -y -3
-         -z 1
-         -model transmitter"
-   respawn="false" output="screen">
-  </node>
-
-  <node name="spawn_reciever" pkg="gazebo_ros" type="spawn_model"
-   args="-param reciever/robot_description
-         -sdf
-         -x 3
-         -y 3
-         -z 1
-         -model reciever"
-   respawn="false" output="screen">
-  </node>
-
--->
 <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 500"/>
 
 

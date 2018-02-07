@@ -31,16 +31,6 @@ struct Status {
   Position victim_loc;
 };
 
-namespace MAP{
-enum MAPtype{
-  BASE,
-  DL,
-  THERMAL,
-  WIRELESS,
-  COMBINED,
-};
-}
-
 
 class Victim_Map_Base
 {
@@ -54,8 +44,6 @@ protected://get it from config ..
 public:
   Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   ~Victim_Map_Base();
-
-  MAP::MAPtype Maptype;
 
   vehicle_communicator *drone_comm;
   VehicleControlBase *vehicle_;
@@ -98,6 +86,8 @@ public:
   Raytracing *raytracing_;
   std::string victimMapName;
 
+
+
   //Detection_info//
   Position detect_victim_loc_;
   Index detect_victim_index;
@@ -111,8 +101,6 @@ public:
 
   virtual void Update(){};
   virtual void runDetector(){};
-  virtual Victim_Map_Base* getMapLayer(int map_number){std::cout << "WARNING: I am not suppose to be called" << std::endl;};
-
   virtual Status getMapResultStatus();
 
   std::string VictimMapType();

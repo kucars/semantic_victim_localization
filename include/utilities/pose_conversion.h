@@ -7,7 +7,6 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf_conversions/tf_eigen.h>
 #include <tf/transform_datatypes.h>
-#include <grid_map_ros/grid_map_ros.hpp>
 
 namespace pose_conversion{
 // ================
@@ -115,19 +114,8 @@ static inline pcl::PointXYZRGB convertToPclPoint(octomap::point3d p_in)
   return p;
 }
 
-static inline geometry_msgs::Pose convertToGeometryMsgPose(grid_map::Position p_in, double z)
-{
-  geometry_msgs::Pose p;
-  p.position.x=p_in[0]; p.position.y=p_in[1];p.position.z=z;
-  return p;
-}
 
-static inline grid_map::Position convertToGridMapPosition(geometry_msgs::Pose p_in)
-{
-  grid_map::Position p;
-  p[0] = p_in.position.x; p[1] = p_in.position.y;
-  return p;
-}
+
 
 // ================
 // Rotation conversion
