@@ -32,7 +32,7 @@
 - git:
     local-name: sspp
     uri: https://github.com/kuri-kustar/sspp.git
-    version: de7b5fa73cf1677f5c139fba9b9422909135a966
+    version: 0c20dc5bc91e508b8d0cd024d2a2e485955df12a
 
 - git:
     local-name: Thermal-Camera-Plugin
