@@ -10,7 +10,7 @@ public:
   view_evaluator_MaxSUM();
 
    void evaluate();
-   double calculateUtility(geometry_msgs::Pose p);
+   double calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
    std::string getMethodName();
 
 };

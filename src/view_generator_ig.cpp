@@ -28,15 +28,20 @@ view_generator_IG::view_generator_IG():
 
   ros::param::param("~uav_fixed_height", uav_fixed_height, 1.0);
   ros::param::param("~extensionRange", extensionRange_, 1.0);
-  ros::param::param("~bounding_box_x", boundingbox_x_, 0.2);
-  ros::param::param("~bounding_box_y", boundingbox_y_, 0.2);
-  ros::param::param("~bounding_box_z", boundingbox_z_, 0.2);
+  ros::param::param("~bounding_box_x", boundingbox_x_, 0.5);
+  ros::param::param("~bounding_box_y", boundingbox_y_, 0.5);
+  ros::param::param("~bounding_box_z", boundingbox_z_, 0.5);
   ros::param::param("~overshoot", dOvershoot_, 0.25);
 
   if (!ros::param::get(ros::this_node::getName() + "/nav_type", nav_type)) {
     ROS_WARN( "navigation type is unknown for the view generator, default value is set to",
               std::string(ros::this_node::getName() + "/nav_type"));
   }
+
+  start_x_=-res_x_;
+  start_y_=-res_y_;
+  end_x_=res_x_;
+  end_y_=res_y_;
 
   ros::NodeHandle nh_;
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/ViewPoints_visualisation"));
@@ -80,7 +85,7 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
   Eigen::Vector3d loc(p.position.x, p.position.y,p.position.z);
   Eigen::Vector3d box_size(0.5,0.5,0.5);
 if (generator_type!=Generator::NN_Adaptive_Generator){
- if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;}
+ if( manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;}
 else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
  return false;
 }   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
@@ -89,14 +94,14 @@ else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
   if (!isInsideBounds(p) ){
-   // std::cout << "rejectedbyvalidity" << std::endl;
+   std::cout << "rejectedbyvalidity" << std::endl;
     return false;
   }
 
 //if (generator_type!=Generator::Frontier_Generator)
 //{
   if (!isSafe(p)){
-  //  std::cout << "rejectedbySafety" << std::endl;
+    std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
 //}
@@ -112,7 +117,7 @@ if (manager_ == NULL) {
 
 if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
- //   std::cout << "rejectedbycollision" << std::endl;
+    std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
 
@@ -129,16 +134,16 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
   Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
   Eigen::Vector3d direction(p.position.x - origin[0], p.position.y - origin[1],
       p.position.z - origin[2]);
- // if (direction.norm() > extensionRange_)
- // {
- //   direction = extensionRange_ * direction.normalized();
- // }
+  if (direction.norm() > extensionRange_)
+  {
+    direction = extensionRange_ * direction.normalized();
+  }
 
   volumetric_mapping::OctomapManager::CellStatus cellStatus;
   //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
   cellStatus = manager_->getLineStatusBoundingBox(
         origin,
-        direction + origin, //+ direction.normalized() * dOvershoot_,
+        direction + origin + direction.normalized() * dOvershoot_,
         boundingbox_);
   //std::cout << "status is: " << cellStatus << std::endl;
   if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)
@@ -228,9 +233,9 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
 
 
   //Generating 3-D state lattice as z-axis movement is restrained (fixed)
-  for (double i_x=-res_x_; i_x<=res_x_; i_x=i_x+1)
+  for (double i_x=start_x_; i_x<=end_x_; i_x=i_x+res_x_)
   {
-    for (double i_y=-res_x_; i_y<=res_x_; i_y=i_y+1)
+    for (double i_y=start_y_; i_y<=end_y_; i_y=i_y+res_y_)
     {
       for (double i_yaw=-M_PI; i_yaw<M_PI; i_yaw+=res_yaw_)
       {
@@ -287,9 +292,9 @@ void view_generator_IG::setOcclusionMap(Volumetric_Map* Occ)
   occlusion_map = Occ;
 }
 
+
 void view_generator_IG::setvictimmap(grid_map::GridMap map,std::string layer_name)
-{
-  victim_map=map;
+{ victim_map=map;
   map_layer=layer_name;
 }
 

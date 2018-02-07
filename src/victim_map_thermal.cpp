@@ -4,6 +4,7 @@
 victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
   Victim_Map_Base(nh,nh_private)
 {
+  Maptype=MAP::THERMAL;
   ros::param::param<std::string>("~map_topic_thermal", map_topic , "victim_map/grid_map_thermal");
   ros::param::param<double>("~map_resol_thermal", map_resol , 0.2);
 
@@ -83,7 +84,7 @@ void victim_map_Thermal::Update(){
   bool publish=true;
   raytracing_->Initiate(publish,rebuild);
 
-  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,false);
+  temp_Map=raytracing_->Generate_2D_Safe_Plane(current_loc_,true,true);
 
   //polygon=Update_region(temp_Map,(raytracing_->current_pose_));
 
@@ -195,6 +196,9 @@ void victim_map_Thermal::Update(){
   }
   std::cout << "current_max_prob" << curr_max_prob << std::endl;
   // }
+
+
+  if (pub_map.getNumSubscribers()>0)
   publish_Map();
 }
 
@@ -305,7 +309,7 @@ void victim_map_Thermal::runDetector()
   else {
     Status status_temp;
     status_temp.victim_found= false;
-    Position g(0,0);
+    Position g(1,1);
     status_temp.victim_loc=g;
     this->setDetectionResult(status_temp);
     this->setCurrentPose(detector_->capture_ps.pose);

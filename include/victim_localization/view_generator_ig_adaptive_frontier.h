@@ -13,6 +13,7 @@ public:
 
  //visualize
   double scale_factor_;
+  double scale_multiplier_;
 
 private:
   int minima_iterations_;

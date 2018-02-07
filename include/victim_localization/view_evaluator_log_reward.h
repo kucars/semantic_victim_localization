@@ -9,7 +9,7 @@ class view_evaluator_log_reward : public view_evaluator_base
 public:
   view_evaluator_log_reward();
 
-   double calculateUtility(geometry_msgs::Pose p);
+   double calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
    std::string getMethodName();
 
 

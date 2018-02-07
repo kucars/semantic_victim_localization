@@ -92,6 +92,7 @@ add_service_files(
   path_action.srv
   path2_action.srv
   status_action.srv
+  pointcloud_capture.srv
 )
 
 generate_messages(
@@ -152,6 +153,7 @@ include_directories(
     include #Adds my own custom class headers
     include/vicitm_localization
     include/control
+    include/RSSmodel2
     include/keras
 )
 link_directories(${PCL_LIBRARY_DIRS})
@@ -194,7 +196,7 @@ add_executable (test_NBV
     src/victim_map_base.cpp
     src/victim_map_dl.cpp
     src/victim_map_thermal.cpp
-    src/victim_map_wireless.cpp
+    #src/victim_map_wireless.cpp
     src/victim_map_combined.cpp
 
     src/navigation_base.cpp
@@ -207,6 +209,23 @@ add_executable (test_NBV
     src/ssd_detection_with_ecludian_clustering.cpp
 
     src/utilities/time_profiler.cpp
+
+    src/victim_wireless_detector.cpp
+        include/RSSmodel2/RSSmodel2.cpp
+        include/RSSmodel2/rt_nonfinite.cpp
+        include/RSSmodel2/rtGetNaN.cpp
+        include/RSSmodel2/rtGetInf.cpp
+        include/RSSmodel2/RSSmodel2_terminate.cpp
+        include/RSSmodel2/RSSmodel2_initialize.cpp
+        include/RSSmodel2/RSSmodel2_emxutil.cpp
+        include/RSSmodel2/RSSmodel2_emxAPI.cpp
+        include/RSSmodel2/RSSmodel2_data.cpp
+        include/RSSmodel2/RSSmodel2.cpp
+        include/RSSmodel2/randn.cpp
+        include/RSSmodel2/eml_rand_mt19937ar_stateful.cpp
+        include/RSSmodel2/abs1.cpp
+
+    src/victim_map_wireless_2.cpp
     )
 add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
 
@@ -226,6 +245,24 @@ target_link_libraries(test_NBV
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})
 
+#add_executable(WirelessDetector src/victim_wireless_detector.cpp
+#    include/RSSmodel2/RSSmodel2.cpp
+#    include/RSSmodel2/rt_nonfinite.cpp
+#    include/RSSmodel2/rtGetNaN.cpp
+#    include/RSSmodel2/rtGetInf.cpp
+#    include/RSSmodel2/RSSmodel2_terminate.cpp
+#    include/RSSmodel2/RSSmodel2_initialize.cpp
+#    include/RSSmodel2/RSSmodel2_emxutil.cpp
+#    include/RSSmodel2/RSSmodel2_emxAPI.cpp
+#    include/RSSmodel2/RSSmodel2_data.cpp
+#    include/RSSmodel2/RSSmodel2.cpp
+#    include/RSSmodel2/randn.cpp
+#    include/RSSmodel2/eml_rand_mt19937ar_stateful.cpp
+#    include/RSSmodel2/abs1.cpp
+#    )
+#add_dependencies(WirelessDetector ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(WirelessDetector ${catkin_LIBRARIES} )
+
 add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(thermalVictim ${catkin_LIBRARIES})
@@ -242,6 +279,7 @@ install(TARGETS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
+
 
 #add_executable (navigation_test
 #    src/test_navigation.cpp

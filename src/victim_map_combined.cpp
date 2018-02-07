@@ -1,11 +1,10 @@
 #include "victim_localization/victim_map_combined.h"
 
+
 victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
   Victim_Map_Base(nh,nh_private)
 { 
-  victim_map_dl_=new victim_map_DL(nh_,nh_private_);
-  victim_map_Thermal_= new victim_map_Thermal(nh_,nh_private_);
-  victim_map_wireless_= new Victim_Map_Wireless(nh_,nh_private_);
+  Maptype=MAP::COMBINED;
 
   double max_d,min_d;
 
@@ -54,12 +53,18 @@ victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::No
     break;
   }
 
+  victim_map_dl_=new victim_map_DL(nh_,nh_private_);
+  victim_map_thermal_= new victim_map_Thermal(nh_,nh_private_);
+  victim_map_wireless_= new Victim_Map_Wireless(nh_,nh_private_);
+
+  std::cout << "Quit debuginl..................." << victim_map_dl_->map.getResolution();
+
   victimMapName="victim fused map";
 }
 
 void victim_map_combined::Update()
 {
-  victim_map_Thermal_->Update();
+  victim_map_thermal_->Update();
   std::cout << " Done updating thermal map\n";
   victim_map_dl_->Update();
   std::cout << " Done updating dl map\n";
@@ -84,7 +89,7 @@ void victim_map_combined::Update()
     map.getPosition(index, position);
 
     map.atPosition(layer_name,position)= alpha*victim_map_dl_->map.atPosition(victim_map_dl_->getlayer_name(),position)
-        + beta*victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position)
+        + beta*victim_map_thermal_->map.atPosition(victim_map_thermal_->getlayer_name(),position)
         + gama*victim_map_wireless_->map.atPosition(victim_map_wireless_->getlayer_name(),position);
 
     if (map.atPosition(layer_name,position) >= victim_found_prob ) {
@@ -94,7 +99,7 @@ void victim_map_combined::Update()
     }
   }
 
-  curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_Thermal_->curr_max_prob
+  curr_max_prob=alpha*victim_map_dl_->curr_max_prob + beta*victim_map_thermal_->curr_max_prob
       + gama*victim_map_wireless_->curr_max_prob;
 
   std::cout<< "current max prob is..." << curr_max_prob << std::endl;
@@ -145,7 +150,7 @@ void victim_map_combined::setCurrentPose(geometry_msgs::Pose ps)
 {
   Victim_Map_Base::setCurrentPose(ps);
   victim_map_dl_->setCurrentPose(ps);
-  victim_map_Thermal_->setCurrentPose(ps);
+  victim_map_thermal_->setCurrentPose(ps);
   victim_map_wireless_->setCurrentPose(ps);
   std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
@@ -154,7 +159,7 @@ void victim_map_combined::setDroneCommunicator(vehicle_communicator *drone_comm_
 {
   Victim_Map_Base::setDroneCommunicator(drone_comm_);
   victim_map_dl_->setDroneCommunicator(drone_comm_);
-  victim_map_Thermal_->setDroneCommunicator(drone_comm_);
+  victim_map_thermal_->setDroneCommunicator(drone_comm_);
   victim_map_wireless_->setDroneCommunicator(drone_comm_);
   std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
@@ -163,23 +168,40 @@ void victim_map_combined::setOctomapManager(OctomapManager *manager)
 {
   Victim_Map_Base::setOctomapManager(manager);
   victim_map_dl_->setOctomapManager(manager);
-  victim_map_Thermal_->setOctomapManager(manager);
+  victim_map_thermal_->setOctomapManager(manager);
   victim_map_wireless_->setOctomapManager(manager);
 }
 
 void victim_map_combined::setVehicle(VehicleControlBase *vehicle){
   Victim_Map_Base::setVehicle(vehicle);
   victim_map_dl_->setVehicle(vehicle);
-  victim_map_Thermal_->setVehicle(vehicle);
+  victim_map_thermal_->setVehicle(vehicle);
   victim_map_wireless_->setVehicle(vehicle);
 }
 void victim_map_combined::SetNavMap(nav_msgs::OccupancyGridPtr Nav_map)
 {
   Victim_Map_Base::SetNavMap(Nav_map);
-
   victim_map_dl_->raytracing_->SetNavMap(Nav_map);
-  victim_map_Thermal_->raytracing_->SetNavMap(Nav_map);
+  victim_map_thermal_->raytracing_->SetNavMap(Nav_map);
   victim_map_wireless_->raytracing_->SetNavMap(Nav_map);
 
  std::cout << "Nav_Map is set in Combined Map" << std::endl;
+}
+
+Victim_Map_Base* victim_map_combined::getMapLayer(int map_number)
+{
+  switch (map_number) {
+  case (MAP::DL):
+    return victim_map_dl_;
+    break;
+  case (MAP::THERMAL):
+    return victim_map_thermal_;
+    break;
+  case (MAP::WIRELESS):
+    return victim_map_wireless_;
+    break;
+  default:
+    std::cout << "received NONNNNNNNNNNN" << std::endl;
+    break;
+  }
 }

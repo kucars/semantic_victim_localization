@@ -18,13 +18,20 @@
 #include <octomap/OcTree.h>
 #include <octomap/OcTreeNode.h>
 
-
-
 class view_evaluator_base
 {
 public:
   float info_selected_utility_;
+  float info_dl_selected_utility_;
+  float info_thermal_selected_utility_;
+  float info_wireless_selected_utility_;
+
+  float info_selected_direction_; // this param is used for in wireless Viewpoint evaluation
   float info_entropy_total_;
+  float info_dl_entropy_total_;
+  float info_thermal_entropy_total_;
+  float info_wireless_entropy_total_;
+
 
   view_evaluator_base();
   geometry_msgs::Pose getTargetPose();
@@ -61,16 +68,32 @@ public:
   double max_depth_d;
   double x_arena_max;
   double y_arena_max;
+  double wireless_max_range;
   std::string camera_optical_frame;
   std::string base_frame;
 
   double tree_resolution;
   double const_;
-  double calculateIG(geometry_msgs::Pose p);
-  virtual double calculateUtiltiy(geometry_msgs::Pose p);
+  double calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+  virtual double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
 
-  double getCellEntropy(Position cell_);
+  //--------- functions for wireless map which overwrite the original equivalent functions
+  virtual void evaluateWireless();
+  double calculateWirelessIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+  virtual double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+  //----------
+
+  //--------- functions for wireless map which overwrite the original equivalent functions
+  virtual void evaluateCombined();
+  virtual double calculateCombinedUtility(geometry_msgs::Pose p);
+  double alpha;
+  double beta;
+  double gama;
+  //----------
+
+  double getCellEntropy(Position cell_,Victim_Map_Base *mapping_module);
   double calculateDistance(geometry_msgs::Pose p);
+  bool IsSamePosition(geometry_msgs::Pose p1,geometry_msgs::Pose p2);
   virtual std::string getMethodName();
 
 };

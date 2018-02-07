@@ -3,6 +3,7 @@
 victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private):
   Victim_Map_Base(nh,nh_private)
 {
+  Maptype=MAP::DL;
   setlayer_name(DL_layer_name);
 
   detector_ = new SSD_Detection_with_clustering();
@@ -137,7 +138,6 @@ void victim_map_DL::Update()
 //    //check max victim probablitiy
 //      if (map.atPosition(layer_name, position)> curr_max_prob)
 //        curr_max_prob=map.atPosition(layer_name, position);
-
     }
 }
 

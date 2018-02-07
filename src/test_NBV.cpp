@@ -7,7 +7,6 @@
 #include <Eigen/Geometry>
 #include <eigen_conversions/eigen_msg.h>
 
-
 TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
   nh(nh_),
   nh_private(nh_private_),
@@ -134,9 +133,9 @@ void TestNBZ::initViewEvaluator(){
     case 7:
       View_evaluate_ = new view_evaluator_ig_exp_max();
     break;
-
     }
 }
+
 void TestNBZ::initOctomap(){
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
@@ -169,17 +168,22 @@ void TestNBZ::initParameters(){
 
   Map_->setDroneCommunicator(drone_communicator_);
 
+
   Map_->SetNavMap(Occlusion_Map_->m_gridmap);
 
   Map_->setOctomapManager(manager_);
-
 }
 
 void TestNBZ::updateHistory()
 {
     history_->selected_poses.push_back(View_evaluate_->getTargetPose());
     history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
+    std::cout << "best utitlity is ...." << View_evaluate_->info_selected_utility_;
     history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
+    std::cout << "totla utitliy is ...." << View_evaluate_->info_entropy_total_;
+
+    history_->max_prob=Map_->curr_max_prob;
+
     history_->update();
 
     // Publish information about this iteration
@@ -194,16 +198,34 @@ void TestNBZ::updateHistory()
         iteration_msg.method_selection = View_evaluate_->getMethodName();
         iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
         iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
-        iteration_msg.curr_max_prob  =Map_->curr_max_prob;
+        iteration_msg.curr_max_prob  = Map_->curr_max_prob;
         iteration_msg.curr_max_loc_x  =Map_->curr_max_loc[0];
         iteration_msg.curr_max_loc_y  =Map_->curr_max_loc[1];
-
 
         iteration_msg.generator_type =view_generate_->generator_type;
 
         //iteration_msg.utilities        = View_evaluate_->info_utilities_;
+        iteration_msg.time_iteration   = timer.getLatestTime("[NBV)Loop]Iteration")/1000; // time in sec
 
-        iteration_msg.time_iteration   = timer.getLatestTime("[NBVLoop]Iteration")/1000; // time in sec
+        if (Map_->Maptype==MAP::COMBINED){
+          iteration_msg.entropy_total_dl= View_evaluate_->info_dl_entropy_total_;
+          iteration_msg.entropy_total_thermal = View_evaluate_->info_thermal_entropy_total_;
+          iteration_msg.entropy_total_wireless = View_evaluate_->info_wireless_entropy_total_;
+
+          iteration_msg.selected_utility_dl= View_evaluate_->info_dl_selected_utility_;
+          iteration_msg.selected_utility_thermal = View_evaluate_->info_thermal_selected_utility_;
+          iteration_msg.selected_utility_wireless = View_evaluate_->info_wireless_selected_utility_;
+
+        }
+        else
+          {
+              iteration_msg.entropy_total_dl=0;
+              iteration_msg.entropy_total_thermal=0;
+              iteration_msg.entropy_total_wireless=0;
+              iteration_msg.selected_utility_dl=0;
+              iteration_msg.selected_utility_thermal=0;
+              iteration_msg.selected_utility_wireless=0;
+          }
 
         pub_iteration_info.publish(iteration_msg);
         Occlusion_Map_->Convert2DMaptoOccupancyGrid(ros::Time::now());
@@ -281,6 +303,20 @@ void TestNBZ::navigate()
 
   case 1:  // move through path if reactive planner is used
 
+           // initially check for a straight line.
+
+     if (!view_generate_->isCollide(View_evaluate_->getTargetPose()))
+     {
+         if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
+         {
+             ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
+         }
+       history_->black_listed_poses.clear();
+       break;
+     }
+
+     // if straight line did not work then try the reactive planner
+
     Occlusion_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     navigation_->SetDynamicGridSize(grid_size_x,grid_size_y,0);
 
@@ -290,16 +326,19 @@ void TestNBZ::navigate()
     if (navigation_->GeneratePath(View_evaluate_->getTargetPose(),path_to_waypoint)) {
       printf("path Found...\n");
       drone_communicator_->Execute_path(path_to_waypoint);
+      history_->black_listed_poses.clear();
     }
+
     else {
       ROS_WARN("Unable to generate path, terminating....");
-    }
+      if(view_generate_->generator_type==Generator::Frontier_Generator)
+        history_->black_listed_poses.push_back(View_evaluate_->getTargetPose());
+       }
 
     view_generate_->visualTools->deleteAllMarkers();
     view_generate_->visualTools->trigger();
+    break;
 
-
-  break;
 
   case 0:  // move through fixed setpoint
 
@@ -417,7 +456,7 @@ void TestNBZ::runStateMachine()
        timer.start("[NBVLoop]Iteration");  // detect and update map
        ros::Rate(1).sleep();
        Occlusion_Map_->GetPointCloud();
-       while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; ros::Rate(5).sleep();}
+       while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; NBV_loop_rate.sleep();}
        UpdateMap();
        //if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
        break;
@@ -458,6 +497,9 @@ void TestNBZ::runStateMachine()
          visualTools->publishArrow(history_->selected_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
        }
        visualTools->trigger();
+       Map_->publish_Map();
+       ros::spinOnce();
+       ros::Rate(5).sleep();
      break;
      }
      ros::spinOnce();

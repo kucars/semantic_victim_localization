@@ -7,7 +7,7 @@ view_evaluator_MinNEIGH::view_evaluator_MinNEIGH():
   max_belief=-std::numeric_limits<float>::infinity();
 }
 
-double view_evaluator_MinNEIGH::calculateUtility(geometry_msgs::Pose p){
+double view_evaluator_MinNEIGH::calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module){
 
   grid_map::GridMap temp_Map;
 
@@ -51,7 +51,7 @@ void view_evaluator_MinNEIGH::evaluate(){
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-        double utility = calculateUtility(p);
+        double utility = calculateUtility(p,mapping_module_);
 
         if (utility>=0){
     info_utilities_.push_back(utility);

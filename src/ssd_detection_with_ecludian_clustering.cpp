@@ -25,8 +25,9 @@ ros::param::param("~RGB_image_x_resolution", image_x_resol, 640.0);
 ros::param::param("~RGB_image_y_resolution", image_y_resol, 480.0);
 ros::param::param("~RGB_image_x_offset", image_x_offset, 320.5);
 ros::param::param("~RGB_image_y_offset", image_y_offset, 240.5);
-ros::param::param("~RGB_focal_length", RGB_FL, 524.2422531097977);
+ros::param::param("~RGB_focal_length", RGB_FL,554.254691191187);//524.2422531097977);
 
+std::cout << "RGBFL...................................................................." << RGB_FL << std::endl;
 ros::param::param<std::string>("~camera_optical_frame", camera_optical_frame , "/floating_sensor/camera_depth_optical_frame");
 
 
@@ -143,6 +144,12 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
          std::vector<int> indices;
          pcl::removeNaNFromPointCloud(*depth_cloud, *depth_cloud, indices);
 
+//         while(ros::ok())
+//         {
+//         ros::spinOnce();
+//         PublishSegmentedPointCloud(*depth_cloud);
+//         ros::Rate(1).sleep();
+//         }
 
    //  Create the filtering object: downsample the dataset using a leaf size of 1cm
       pcl::VoxelGrid<pcl::PointXYZ> vg;
@@ -190,10 +197,12 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
       }
 
 
+      std::cout << "filter_size is...." << filtered_cloud->points.size() << std::endl;
       if (!filtered_cloud->points.size()) {  // if filtered_cloud size is zero, we should try again with new input cloud data
         //detection_status="repeat";
         return;
           }
+
 
 
       // Creating the KdTree object for the search method of the extraction
@@ -203,7 +212,7 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
       std::vector<pcl::PointIndices> cluster_indices;
       pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
       ec.setClusterTolerance (0.1); // 10cm
-      ec.setMinClusterSize (100);
+      ec.setMinClusterSize (10);
       ec.setMaxClusterSize (25000);
       ec.setSearchMethod (tree);
       ec.setInputCloud (filtered_cloud);
@@ -229,6 +238,13 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
 
      // getting the centroid of the cluster in world frame
         pcl::PointCloud<pcl::PointXYZ> temp_cloud;
+
+        std::cout << "size of pointcloud segmented is.............." << cloud_clusters.size() << std::endl;
+        if (cloud_clusters.size()==0){
+         std::cout << "size of the cloud is small ignore...."  << std::endl;
+
+          return;
+}
         temp_cloud=*cloud_clusters[0];
         pcl::CentroidPoint<pcl::PointXYZ> centroid;
 

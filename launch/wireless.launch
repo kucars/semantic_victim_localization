@@ -1,0 +1,11 @@
+<launch>
+  <!-- Launch the grid map simple demo node -->
+
+<!-- Launch iris_commander to manager iris drone-->
+
+<node pkg="victim_localization" type="WirelessDetector" name="WirelessDetector" output="screen">
+</node>
+
+
+
+</launch>
