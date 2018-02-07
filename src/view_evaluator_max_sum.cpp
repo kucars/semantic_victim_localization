@@ -3,7 +3,7 @@
 view_evaluator_MaxSUM::view_evaluator_MaxSUM():
   view_evaluator_base(){}
 
-double view_evaluator_MaxSUM::calculateUtility(geometry_msgs::Pose p){
+double view_evaluator_MaxSUM::calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module){
 
   grid_map::GridMap temp_Map;
 
@@ -26,8 +26,8 @@ double view_evaluator_MaxSUM::calculateUtility(geometry_msgs::Pose p){
 }
   return Info_view;
 }
-void view_evaluator_MaxSUM::evaluate(){
-
+void view_evaluator_MaxSUM::evaluate()
+{
   view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
@@ -38,11 +38,11 @@ void view_evaluator_MaxSUM::evaluate(){
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-        double utility = calculateUtility(p);
+        double utility = calculateUtility(p,mapping_module_);
 
         if (utility>=0){
     info_utilities_.push_back(utility);
-}
+     }
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
         {

@@ -32,10 +32,10 @@ bool straightLine::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
  Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
  Eigen::Vector3d direction(end.position.x - origin[0], end.position.y - origin[1],
      end.position.z - origin[2]);
- if (direction.norm() > extensionRange_)
- {
-   direction = extensionRange_ * direction.normalized();
- }
+// if (direction.norm() > extensionRange_)
+// {
+//   direction = extensionRange_ * direction.normalized();
+// }
 
  volumetric_mapping::OctomapManager::CellStatus cellStatus;
  //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
@@ -47,7 +47,6 @@ bool straightLine::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
  if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)// || cellStatus == volumetric_mapping::OctomapManager::CellStatus::kUnknown)
  {
    return true;
-
    geometry_msgs::PoseStamped ps_;
    ps_.header.frame_id="world";
    ps_.header.stamp=ros::Time::now();

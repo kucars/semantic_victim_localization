@@ -9,7 +9,10 @@ class view_evaluator_ig_exp : public view_evaluator_base
 public:
   view_evaluator_ig_exp();
 
-   double calculateUtility(geometry_msgs::Pose p);
+   double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+   double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+   double calculateCombinedUtility(geometry_msgs::Pose p);
+
    std::string getMethodName();
    double w_dist_;
 };

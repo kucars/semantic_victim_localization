@@ -42,6 +42,7 @@ nh_private_(nhPrivate)
  ros::param::param("~topic_service_path2", topic_service_path2, std::string("/path2"));
  ros::param::param("~topic_service_command_status", topic_command_status, std::string("/command_status"));
  ros::param::param<std::string>("~base_frame", base_frame , "base_link");
+ ros::param::param<bool>("~enable_rotate", enable_rotate , true);
 
  localPosePub  = nh_.advertise<geometry_msgs::PoseStamped>(topic_ps, 5);
 
@@ -77,8 +78,10 @@ void iris_drone_commander::start(){
     break;
   case Command::ROTATE:
     std::cout << "execute_four_waypoints"<< std::endl;
-     //vehicle_->Evaluate4Points(start_x,start_y,start_z);
+    if (enable_rotate){
      vehicle_->rotateOnTheSpot();
+     vehicle_->Evaluate4Points(start_x,start_y,start_z);
+}
 
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true; // done

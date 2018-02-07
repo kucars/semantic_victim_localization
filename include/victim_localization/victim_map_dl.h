@@ -20,9 +20,6 @@ public:
   victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh_private);
   void Update();
   void runDetector();
-
-
-
 };
 
 #endif // VICTIM_MAP_DL_H

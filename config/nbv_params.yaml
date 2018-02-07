@@ -13,15 +13,15 @@ obj_bounds_x_max_: 1
 
 maximum_arena_width: 20
 maximum_arena_height: 20
-
+enable_rotate: true
 ############
 ## Sensor settings
 ############
 ## RGB_camera
 fov_horizontal: 55.0
 fov_vertical: 45.0
-depth_range_max: 7.0
-depth_range_min: 0.05
+depth_range_max: 5.0
+depth_range_min: 0.5
 RGB_image_x_resolution: 640.0
 RGB_image_y_resolution: 480.0
 RGB_image_x_offset: 320.5
@@ -38,13 +38,13 @@ thermal_image_x_offset: 79.5
 thermal_image_y_offset: 59.5
 
 ## Wireless Sensor
-victim_location_x: 0.9
-victim_location_y: 2.08
-offline_map_resol_wireless: 1.0
-detection_threshold: 0.7
-fov_horizontal_wireless: 50.0
-wireless_range_max: 7.0
-wireless_detection_error: 1.5
+#victim_location_x: 0.9
+#victim_location_y: 2.08
+#offline_map_resol_wireless: 1.0
+#detection_threshold: 0.7
+#fov_horizontal_wireless: 50.0
+#wireless_range_max: 7.0
+#wireless_detection_error: 1.5
 
 ############
 ## Vehicle settings
@@ -69,7 +69,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 0
+map_type: 3
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -90,14 +90,26 @@ Prob_Dc_H_for_thermal: 0.3
 Prob_Dc_Hc_for_thermal: 0.7
 
 #wireless map probabilities wireless
-Prob_D_H_for_wireless: 0.6
+Prob_D_H_for_wireless: 0.7
 Prob_D_Hc_for_wireless: 0.3
-Prob_Dc_H_for_wireless: 0.2
+Prob_Dc_H_for_wireless: 0.3
 Prob_Dc_Hc_for_wireless: 0.7
 
+#wireless detection params
+Number_of_sensors: 5
+Lamda: 0.3
+SNR: 15
+Number_of_samples: 100
+reference_distance: 1
+path_loss: 7
+distance_threshold: 4
+victim_location_x: 5.7 #0.869099
+victim_location_y: 2.5 #2.260930
+
+
 #combined map confidence values
-alpha: 0.6
-beta: 0.25
+alpha: 0.65
+beta: 0.2
 gama: 0.15
 
 ############
@@ -117,7 +129,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
-num_recieved_pointCloud: 5
+Number_of_recieved_pointCloud: 7
 publish_2D_map: true
 
 ############
@@ -154,18 +166,24 @@ thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 # 3: NN Adaptive Frontier
 
 
-view_generator_type: 0
-view_generator_nn_pos_res_x: 1.0
-view_generator_nn_pos_res_y: 1.0
-view_generator_nn_pos_res_z: 1.0
+view_generator_type: 1
+view_generator_nn_pos_res_x: 0.8
+view_generator_nn_pos_res_y: 0.8
+view_generator_nn_pos_res_z: 0.8
+
 view_generator_nn_pos_res_yaw: rad(pi/4)
 view_generator_nn_adaptive_scale_multiplier: 2.0
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 10
+view_generator_nn_adaptive_utility_threshold: 110
 adaptive_ig_max_iteration: 3
-frontier_reached_with_distance: 1
+frontier_reached_with_distance: 40
 use_inflated_obstacles: false
 frontier_yaw: rad(pi/4)
+
+#frontier_pointing_to_unkown_
+#0: point to unknown, 1: point everywhere , 2: point to unknown if above threshold
+frontier_pointing_to_unknown: 1
+frontier_pointing_to_unknown_threshold: 0.7
 
 ############
 ## View Selecter settings
@@ -179,7 +197,7 @@ frontier_yaw: rad(pi/4)
 # 6: exp-dist
 # 7: scaler with exp-dist
 
-view_evaluator_type: 6
+view_evaluator_type: 0
 
 
 ############
@@ -236,7 +254,7 @@ Frames:
 
     "2":  #Floating Sensor
         camera_optical_frame: "/floating_sensor/camera_depth_optical_frame"
-        camera_thermal_frame: "/floating_sensor/thermal_cam_optical_frame"
+        camera_thermal_frame: "/floating_sensor/camera_thermal_frame"
         base_frame: "/floating_sensor/base_link"
 
 
@@ -246,4 +264,4 @@ map_topic_DL: "victim_map/grid_map_DL"
 map_topic_thermal: "victim_map/grid_map_thermal"
 map_topic_combined: "victim_map/grid_map_combined"
 
-detection_enabled: false
+detection_enabled: true

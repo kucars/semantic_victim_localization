@@ -24,12 +24,13 @@ public:
   victim_detector_base();
   ~victim_detector_base();
 
+  vehicle_communicator *vehicle_comm_;
   virtual Status getDetectorStatus(){};
   virtual void performDetection(){};
 
   geometry_msgs::PoseStamped capture_ps;
   geometry_msgs::PoseStamped current_ps;
-  void SetCurrentSetpoint(geometry_msgs::Pose setpoint);
+  void SetVehicleCommunicator(vehicle_communicator *vehicle_comm);
   virtual ros::Time getCaptureTime(){};
 
 };

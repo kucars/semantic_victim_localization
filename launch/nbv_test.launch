@@ -3,10 +3,13 @@
 
     <arg name="tf_frame" default="world" />
     <arg name="mesh_resolution" default="1.0" />
-    <arg name="resolution" default="0.3" />
+    <arg name="resolution" default="0.2" />
     <arg name="visualize_max_z" default="5" />
-    <arg name="sensor_max_range" default="8.0" />
-    <arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
+    <arg name="sensor_max_range" default="9.0" />
+   <arg name="probability_hit" default="0.7" />   <!-- default value for pro_hit in octomap is 0.7 -->
+   <arg name="probability_miss" default="0.4" />  <!-- default value for pro_miss in octomap is 0.4 -->
+
+<arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
     <arg name="grid_map_visualizer" default="true"/>
     <arg name="debug" default="false"/>
 
@@ -16,10 +19,13 @@
        <param name="visualize_max_z" type="double" value="$(arg visualize_max_z)" />
        <param name="sensor_max_range" type="double" value="$(arg sensor_max_range)" />
        <param name="mesh_resolution" type="double" value="$(arg mesh_resolution)" />
-       <param name="map_publish_frequency" type="double" value="1.0" />
-       <rosparam command="load" file="$(arg param_file)" />
+       <param name="map_publish_frequency" type="double" value="5.0" />
+       <param name="probability_hit" type="double" value="$(arg probability_hit)" />
+       <param name="probability_miss" type="double" value="$(arg probability_miss)" />
+
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
+       <rosparam command="load" file="$(arg param_file)" />
 </node>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" unless="$(arg debug)">
@@ -29,9 +35,13 @@
        <param name="sensor_max_range" type="double" value="$(arg sensor_max_range)" />
        <param name="mesh_resolution" type="double" value="$(arg mesh_resolution)" />
        <param name="map_publish_frequency" type="double" value="1.0" />
-       <rosparam command="load" file="$(arg param_file)" />
+       <param name="probability_hit" type="double" value="$(arg probability_hit)" />
+       <param name="probability_miss" type="double" value="$(arg probability_miss)" />
+
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
+       <rosparam command="load" file="$(arg param_file)" />
+
 </node>
 
 
