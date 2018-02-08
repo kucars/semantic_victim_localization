@@ -27,7 +27,61 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
     ROS_INFO("test_NBZ: Begin!");
 }
 
+bool TestNBZ::CheckGazeboIsWorking()
+{
+  // wait until gazebo is ready...
+  std_srvs::Empty srv;
+  bool unpaused = ros::service::call("/gazebo/unpause_physics", srv);
+  unsigned int i = 0;
+  while (i <= 10 && !unpaused) {
+    ROS_INFO("Wait for 1 second before trying to unpause Gazebo again.");
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    unpaused = ros::service::call("/gazebo/unpause_physics", srv);
+    ++i;
+  }
+  if (!unpaused) {
+    ROS_FATAL("Could not wake up Gazebo.");
+    return 0;
+  } else {
+    ROS_INFO("Unpaused the Gazebo simulation.");
+    return 1;
+  }
+}
+
+void TestNBZ::SaveData()
+{
+  // save octomap
+  volumetric_msgs::SaveMap::Request request;
+  volumetric_msgs::SaveMap::Response respond;
+  std::string file_path="/home/abdulrahman/catkin_ws/src/victim_localization/Data/file";
+  Occlusion_Map_->m_octree->writeBinary(file_path);
+
+  // save generated path
+
+  ofstream myfile ("/home/abdulrahman/catkin_ws/src/victim_localization/Data/example.txt");
+  if (myfile.is_open())
+  {
+    for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
+        myfile << history_->selected_poses[i].position << " "  << history_->selected_poses[i].orientation;
+    }
+    myfile.close();
+  }
+  else cout << "Unable to open file";
+
+
+
+  const float minValue = -1.0;
+    const float maxValue = 1.0;
+
+    // Convert to image.
+  cv::Mat image;
+  GridMapCvConverter::toImage<unsigned char, 4>(Map_->map, Map_->layer_name, CV_8UC4, minValue, maxValue, image);
+
+
+}
+
 void TestNBZ::initVehicle(){
+
   int vehicle_type;
   ros::param::param<int>("~vehicle_type",vehicle_type,0);
   switch(vehicle_type)
@@ -501,6 +555,18 @@ void TestNBZ::runStateMachine()
 
        ros::spinOnce();
        ros::Rate(5).sleep();
+       SaveData();
+
+       timer.stop("NBV: Total Time");
+
+       // Dump time data
+       timer.dump();
+
+
+       // Clean up
+       std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
+       ros::shutdown();
+
      break;
      }
      ros::spinOnce();
@@ -520,7 +586,6 @@ void TestNBZ::runStateMachine()
 
 int main(int argc, char **argv)
 {
-  //Initiate ROS
   ros::init(argc, argv, "test_NBZ");
 
   ros::NodeHandle nh;
@@ -532,6 +597,8 @@ int main(int argc, char **argv)
 
   TestNBZ *test_;
   test_ = new TestNBZ(nh,nh_private);
+  if(!test_->CheckGazeboIsWorking()) return 0;
+
   test_->initVehicle();
   test_->initMap();
   test_->initOctomap();

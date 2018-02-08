@@ -69,7 +69,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 3
+map_type: 0
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5

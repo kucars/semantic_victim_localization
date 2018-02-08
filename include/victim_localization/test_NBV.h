@@ -1,6 +1,8 @@
 #ifndef TEST_FLIGHT_H
 #define TEST_FLIGHT_H
 
+#include <iostream>
+#include <fstream>
 #include <victim_localization/common.h>
 
 #include <victim_localization/victim_map_base.h>
@@ -41,6 +43,18 @@
 #include <victim_localization/victim_map_wireless_2.h>
 #include <victim_localization/victim_wireless_detector.h>
 
+#include "grid_map_cv/grid_map_cv.hpp"
+
+#include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_core/gtest_eigen.hpp>
+
+// gtest
+#include <gtest/gtest.h>
+
+// OpenCV
+#include <cv_bridge/cv_bridge.h>
+using namespace std;
+using namespace grid_map;
 
 
 namespace NBVState {
@@ -117,7 +131,8 @@ public:
   void initNavigation();
   void initViewGenerator();
   void initViewEvaluator();
-
+  bool CheckGazeboIsWorking();
+  void SaveData();
 
 
   void generateViewpoints();

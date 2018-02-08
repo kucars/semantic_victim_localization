@@ -20,7 +20,7 @@ def killProcessByName(scriptName):
 filenames = []
 # Get package path
 rospack = rospkg.RosPack()
-batchfolder = os.path.join(rospack.get_path('victim_localization'), 'batch')
+batchfolder = os.path.join(rospack.get_path('victim_localization'), 'config')
 
 # Get files in batch folder
 os.chdir( batchfolder )
@@ -40,17 +40,12 @@ for file in filenames:
   proc = subprocess.Popen(['rosrun victim_localization plot_iteration_info.py ' + file_no_ext],
               stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
 
-  # Run DL
-
-  proc1 = subprocess.Popen(['rosrun victim_localization victim_detection_ssd_keras.py ' + file_no_ext],
-              stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
-
   # Run NBV
 
-  os.system("roslaunch victim_detection nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
+  os.system("roslaunch victim_localization nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
 
 
-  os.system("roslaunch victim_detection vehicle_setup.launch)
+  #os.system("roslaunch victim_detection vehicle_setup.launch)
 
 
   # Copy results into folder for later analysis

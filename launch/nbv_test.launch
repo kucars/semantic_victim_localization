@@ -10,10 +10,14 @@
    <arg name="probability_miss" default="0.4" />  <!-- default value for pro_miss in octomap is 0.4 -->
 
 <arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
-    <arg name="grid_map_visualizer" default="true"/>
-    <arg name="debug" default="false"/>
+<arg name="grid_map_visualizer" default="true"/>
+<arg name="debug" default="false"/>
+<arg name="vision" default="true"/>
 
-<node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
+<include file="$(find victim_localization)/launch/vehicle_setup.launch"/>
+
+<!-- <node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" output="screen" if="$(arg vision)"/>
+ --><node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
        <param name="tf_frame" type="string" value="$(arg tf_frame)" />
        <param name="resolution" type="double" value="$(arg resolution)" />
        <param name="visualize_max_z" type="double" value="$(arg visualize_max_z)" />
