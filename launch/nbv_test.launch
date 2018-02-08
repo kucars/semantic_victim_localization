@@ -14,7 +14,7 @@
 <arg name="debug" default="false"/>
 <arg name="vision" default="true"/>
 
-<include file="$(find victim_localization)/launch/vehicle_setup.launch"/>
+<!--<include file="$(find victim_localization)/launch/vehicle_setup.launch"/>-->
 
 <!-- <node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" output="screen" if="$(arg vision)"/>
  --><node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >

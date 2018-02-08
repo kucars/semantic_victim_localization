@@ -245,24 +245,6 @@ target_link_libraries(test_NBV
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})
 
-#add_executable(WirelessDetector src/victim_wireless_detector.cpp
-#    include/RSSmodel2/RSSmodel2.cpp
-#    include/RSSmodel2/rt_nonfinite.cpp
-#    include/RSSmodel2/rtGetNaN.cpp
-#    include/RSSmodel2/rtGetInf.cpp
-#    include/RSSmodel2/RSSmodel2_terminate.cpp
-#    include/RSSmodel2/RSSmodel2_initialize.cpp
-#    include/RSSmodel2/RSSmodel2_emxutil.cpp
-#    include/RSSmodel2/RSSmodel2_emxAPI.cpp
-#    include/RSSmodel2/RSSmodel2_data.cpp
-#    include/RSSmodel2/RSSmodel2.cpp
-#    include/RSSmodel2/randn.cpp
-#    include/RSSmodel2/eml_rand_mt19937ar_stateful.cpp
-#    include/RSSmodel2/abs1.cpp
-#    )
-#add_dependencies(WirelessDetector ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(WirelessDetector ${catkin_LIBRARIES} )
-
 add_executable(thermalVictim src/victim_thermal_detector_node.cpp )
 add_dependencies(thermalVictim  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 target_link_libraries(thermalVictim ${catkin_LIBRARIES})
@@ -321,7 +303,6 @@ add_executable (vehicle_commander
     src/control/vehicle_control_iris.cpp
     src/control/vehicle_control_floating_sensor.cpp
     src/control/vehicle_control_iris_origin.cpp
-
     )
 
 add_dependencies(vehicle_commander ${catkin_EXPORTED_TARGETS})

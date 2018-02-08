@@ -169,7 +169,7 @@ view_generator_nn_pos_res_z: 0.8
 view_generator_nn_pos_res_yaw: rad(pi/4)
 view_generator_nn_adaptive_scale_multiplier: 2.0
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 110
+view_generator_nn_adaptive_utility_threshold: 50
 adaptive_ig_max_iteration: 3
 frontier_reached_with_distance: 40
 use_inflated_obstacles: false
