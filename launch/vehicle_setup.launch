@@ -3,6 +3,7 @@
 
     <!-- Vehicle settings -->
 <arg name="use_floating_sensor" default="true"/>
+<env name="GAZEBO_MODEL_PATH" value="$(find victim_localization)/urdf/victim_models"/>
 
 <arg name="Floating_sensor_model" default="$(find victim_localization)/urdf/floating_sensor/floating_sensor.sdf"/>
 <arg name="iris_model" default="$(find victim_localization)/urdf/iris/iris_with_sensors.sdf" />
