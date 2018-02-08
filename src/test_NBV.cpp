@@ -12,19 +12,19 @@ TestNBV::TestNBV(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
   nh_private(nh_private_),
   NBV_loop_rate(20)
 {
-    pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
-    // >>>>>>>>>>>>>>>>>
-    // Initialization
-    // >>>>>>>>>>>>>>>>>
-    state = NBVState::INITIALIZING;
+  pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
+  // >>>>>>>>>>>>>>>>>
+  // Initialization
+  // >>>>>>>>>>>>>>>>>
+  state = NBVState::INITIALIZING;
 
-    visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Final_path"));
-    visualTools->loadMarkerPub();
+  visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/Final_path"));
+  visualTools->loadMarkerPub();
 
-    visualTools->deleteAllMarkers();
-    visualTools->enableBatchPublishing();
+  visualTools->deleteAllMarkers();
+  visualTools->enableBatchPublishing();
 
-    ROS_INFO("test_NBV: Begin!");
+  ROS_INFO("test_NBV: Begin!");
 }
 
 bool TestNBV::CheckGazeboIsWorking()
@@ -52,14 +52,20 @@ void TestNBV::SaveData()
 {
   // ---- Save octomap ---
   ros::param::param<std::string>("~file_path",file_path, std::string("/home/abdulrahman/catkin_ws/src/victim_localization/Data/"));
-  Occlusion_Map_->m_octree->writeBinary(file_path);
+  Occlusion_Map_->m_octree->writeBinary(file_path+"environment");
 
   // --- Save generated path ---
   ofstream myfile (file_path+"PATH.txt");
   if (myfile.is_open())
   {
     for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
-        myfile << history_->selected_poses[i].position << " "  << history_->selected_poses[i].orientation;
+      myfile << history_->selected_poses[i].position.x << " "
+             << history_->selected_poses[i].position.y<< " "
+             << history_->selected_poses[i].position.z<< " "
+             << history_->selected_poses[i].orientation.x<< " "
+             << history_->selected_poses[i].orientation.y<< " "
+             << history_->selected_poses[i].orientation.z<< " "
+             << history_->selected_poses[i].orientation.w<< " ";
     }
     myfile.close();
   }
@@ -70,36 +76,36 @@ void TestNBV::SaveData()
 
   //----- Save Occupancy Map ----
   cv::Mat image;
-  GridMapCvConverter::toImage<unsigned char, 4>(Map_->map, Map_->layer_name, CV_8UC4, minValue, maxValue, image);
+  GridMapCvConverter::toImage<unsigned char, 4>(Map_->map, Map_->layer_name, CV_16UC4, minValue, maxValue, image);
   cv::imwrite(file_path+Map_->getlayer_name()+"_Occupancy",image);
 
- // In case the Fused_Map is used , then save its individual maps
+  // In case the Fused_Map is used , then save its individual maps
   if (Map_->Maptype==MAP::COMBINED)
   {
- GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::DL)->map,Map_->getMapLayer(MAP::DL)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
- cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"_Occupancy",image);
+    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::DL)->map,Map_->getMapLayer(MAP::DL)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"_Occupancy",image);
 
- GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::THERMAL)->map,Map_->getMapLayer(MAP::THERMAL)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
- cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"_Occupancy",image);
+    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::THERMAL)->map,Map_->getMapLayer(MAP::THERMAL)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"_Occupancy",image);
 
- GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::WIRELESS)->map,Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
- cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"_Occupancy",image);
+    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::WIRELESS)->map,Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"_Occupancy",image);
   }
 
   //---- Store Test Results ---
   ofstream Results (file_path+Map_->layer_name+"_Result.txt");
-  if (myfile.is_open())
+  if (Results.is_open())
   {
     for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
-        myfile << "time taken: " << (StartTimeForNBV-ros::Time::now()).toSec() << " "
-                  << "Total entropy: " << View_evaluate_->info_entropy_total_ << " "
-                     << "distance: " <<  View_evaluate_->info_distance_total_ << " "
-                     << "iteration: " << history_->iteration<< std::endl << " ";
+      Results << "time taken: " << (StartTimeForNBV-ros::Time::now()).toSec() << " "
+              << "Total entropy: " << View_evaluate_->info_entropy_total_ << " "
+              << "distance: " <<  View_evaluate_->info_distance_total_ << " "
+              << "iteration: " << history_->iteration<< std::endl << " ";
 
     }
-    myfile.close();
+    Results.close();
   }
-  else cout << "Unable to to TestResults file";
+  else cout << "Unable to to Results file";
 }
 
 void TestNBV::initVehicle(){
@@ -118,98 +124,98 @@ void TestNBV::initVehicle(){
   case 2:
     vehicle_ = new VehicleControlFloatingSensor();
     break;
-   }
+  }
 }
 
 void TestNBV::initMap(){
-    ros::param::param("~map_type", map_type, 0);
-    switch(map_type)
-    {
-    default:
-    case 0:
-      Map_ = new victim_map_DL(nh,nh_private);
-      break;
-    case 1:
-      Map_ = new victim_map_Thermal(nh,nh_private);
-      break;
-    case 2:
-      Map_ = new Victim_Map_Wireless(nh,nh_private);
-      break;
-    case 3:
-      Map_ = new victim_map_combined(nh,nh_private);
-      break;
-    }
+  ros::param::param("~map_type", map_type, 0);
+  switch(map_type)
+  {
+  default:
+  case 0:
+    Map_ = new victim_map_DL(nh,nh_private);
+    break;
+  case 1:
+    Map_ = new victim_map_Thermal(nh,nh_private);
+    break;
+  case 2:
+    Map_ = new Victim_Map_Wireless(nh,nh_private);
+    break;
+  case 3:
+    Map_ = new victim_map_combined(nh,nh_private);
+    break;
+  }
 }
 
 void TestNBV::initNavigation(){
 
-    ros::param::param("~nav_type", nav_type, 1);
-    switch(nav_type)
-    {
-    default:
-    case 0:
-     // navigation_ = new straightLine(nh,nh_private,manager_);
-     // break;
-    case 1:
-      navigation_ = new ReactivePathPlanner(nh,nh_private,manager_);
-      break;
-    }
-    navigation_->start();
+  ros::param::param("~nav_type", nav_type, 1);
+  switch(nav_type)
+  {
+  default:
+  case 0:
+    // navigation_ = new straightLine(nh,nh_private,manager_);
+    // break;
+  case 1:
+    navigation_ = new ReactivePathPlanner(nh,nh_private,manager_);
+    break;
+  }
+  navigation_->start();
 }
 
 void TestNBV::initViewGenerator(){
 
-    ros::param::param("~view_generator_type", view_generator_type, 0);
+  ros::param::param("~view_generator_type", view_generator_type, 0);
 
-    switch(view_generator_type)
-    {
-    default:
-    case 0:
-      view_generate_ = new view_generator_IG();
-      break;
-    case 1:
-      view_generate_ = new view_generator_ig_nn_adaptive();
-      break;
-    case 2:
-      view_generate_ = new view_generator_ig_frontier();
-      break;
-    case 3:
-      view_generate_ = new view_generator_ig_adaptive_frontier();
+  switch(view_generator_type)
+  {
+  default:
+  case 0:
+    view_generate_ = new view_generator_IG();
     break;
-    }
+  case 1:
+    view_generate_ = new view_generator_ig_nn_adaptive();
+    break;
+  case 2:
+    view_generate_ = new view_generator_ig_frontier();
+    break;
+  case 3:
+    view_generate_ = new view_generator_ig_adaptive_frontier();
+    break;
+  }
 }
 
 void TestNBV::initViewEvaluator(){
 
-    ros::param::param("~view_evaluator_type", view_evaluator_type, 5);
+  ros::param::param("~view_evaluator_type", view_evaluator_type, 5);
 
-    switch(view_evaluator_type)
-    {
-    default:
-    case 0:
-      View_evaluate_ = new view_evaluator_ig();
-      break;
-    case 1:
-      View_evaluate_ = new  view_evaluator_MaxSUM();
-      break;
-    case 2:
-      View_evaluate_ = new view_evaluator_MaxMax();
-      break;
-    case 3:
-      View_evaluate_ = new view_evaluator_MaxMIN();
-    case 4:
-      View_evaluate_ = new view_evaluator_MinNEIGH();
+  switch(view_evaluator_type)
+  {
+  default:
+  case 0:
+    View_evaluate_ = new view_evaluator_ig();
     break;
-    case 5:
-      View_evaluate_ = new view_evaluator_log_reward();
+  case 1:
+    View_evaluate_ = new  view_evaluator_MaxSUM();
     break;
-    case 6:
-      View_evaluate_ = new view_evaluator_ig_exp();
+  case 2:
+    View_evaluate_ = new view_evaluator_MaxMax();
     break;
-    case 7:
-      View_evaluate_ = new view_evaluator_ig_exp_max();
+  case 3:
+    View_evaluate_ = new view_evaluator_MaxMIN();
+  case 4:
+    View_evaluate_ = new view_evaluator_MinNEIGH();
     break;
-    }
+  case 5:
+    View_evaluate_ = new view_evaluator_log_reward();
+    break;
+  case 6:
+    View_evaluate_ = new view_evaluator_ig_exp();
+    break;
+  case 7:
+    View_evaluate_ = new view_evaluator_ig_exp_max();
+    break;
+  }
 }
 
 void TestNBV::initOctomap(){
@@ -252,56 +258,56 @@ void TestNBV::initParameters(){
 
 void TestNBV::updateHistory()
 {
-    history_->selected_poses.push_back(View_evaluate_->getTargetPose());
-    history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
-    history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
+  history_->selected_poses.push_back(View_evaluate_->getTargetPose());
+  history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
+  history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
 
-    history_->max_prob=Map_->curr_max_prob;
+  history_->max_prob=Map_->curr_max_prob;
 
-    history_->update();
+  history_->update();
 
-    // Publish information about this iteration
-      if (pub_iteration_info.getNumSubscribers() > 0)
-      {
-        victim_localization::IterationInfo iteration_msg;
-        iteration_msg.iteration        = history_->iteration;
-        iteration_msg.distance_total   = View_evaluate_->info_distance_total_;
-        iteration_msg.entropy_total    = View_evaluate_->info_entropy_total_;
+  // Publish information about this iteration
+  if (pub_iteration_info.getNumSubscribers() > 0)
+  {
+    victim_localization::IterationInfo iteration_msg;
+    iteration_msg.iteration        = history_->iteration;
+    iteration_msg.distance_total   = View_evaluate_->info_distance_total_;
+    iteration_msg.entropy_total    = View_evaluate_->info_entropy_total_;
 
-        iteration_msg.method_generation= view_generate_->getMethodName();
-        iteration_msg.method_selection = View_evaluate_->getMethodName();
-        iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
-        iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
-        iteration_msg.curr_max_prob  = Map_->curr_max_prob;
-        iteration_msg.curr_max_loc_x  =Map_->curr_max_loc[0];
-        iteration_msg.curr_max_loc_y  =Map_->curr_max_loc[1];
+    iteration_msg.method_generation= view_generate_->getMethodName();
+    iteration_msg.method_selection = View_evaluate_->getMethodName();
+    iteration_msg.selected_pose    = View_evaluate_->getTargetPose();
+    iteration_msg.selected_utility  =View_evaluate_->info_selected_utility_;
+    iteration_msg.curr_max_prob  = Map_->curr_max_prob;
+    iteration_msg.curr_max_loc_x  =Map_->curr_max_loc[0];
+    iteration_msg.curr_max_loc_y  =Map_->curr_max_loc[1];
 
-        iteration_msg.generator_type =view_generate_->generator_type;
+    iteration_msg.generator_type =view_generate_->generator_type;
 
-        iteration_msg.time_iteration   = timer.getLatestTime("[NBV)Loop]Iteration")/1000; // time in sec
+    iteration_msg.time_iteration   = timer.getLatestTime("[NBV)Loop]Iteration")/1000; // time in sec
 
-        if (Map_->Maptype==MAP::COMBINED){
-          iteration_msg.entropy_total_dl= View_evaluate_->info_dl_entropy_total_;
-          iteration_msg.entropy_total_thermal = View_evaluate_->info_thermal_entropy_total_;
-          iteration_msg.entropy_total_wireless = View_evaluate_->info_wireless_entropy_total_;
+    if (Map_->Maptype==MAP::COMBINED){
+      iteration_msg.entropy_total_dl= View_evaluate_->info_dl_entropy_total_;
+      iteration_msg.entropy_total_thermal = View_evaluate_->info_thermal_entropy_total_;
+      iteration_msg.entropy_total_wireless = View_evaluate_->info_wireless_entropy_total_;
 
-          iteration_msg.selected_utility_dl= View_evaluate_->info_dl_selected_utility_;
-          iteration_msg.selected_utility_thermal = View_evaluate_->info_thermal_selected_utility_;
-          iteration_msg.selected_utility_wireless = View_evaluate_->info_wireless_selected_utility_;
+      iteration_msg.selected_utility_dl= View_evaluate_->info_dl_selected_utility_;
+      iteration_msg.selected_utility_thermal = View_evaluate_->info_thermal_selected_utility_;
+      iteration_msg.selected_utility_wireless = View_evaluate_->info_wireless_selected_utility_;
 
-        }
-        else
-          {
-              iteration_msg.entropy_total_dl=0;
-              iteration_msg.entropy_total_thermal=0;
-              iteration_msg.entropy_total_wireless=0;
-              iteration_msg.selected_utility_dl=0;
-              iteration_msg.selected_utility_thermal=0;
-              iteration_msg.selected_utility_wireless=0;
-          }
+    }
+    else
+    {
+      iteration_msg.entropy_total_dl=0;
+      iteration_msg.entropy_total_thermal=0;
+      iteration_msg.entropy_total_wireless=0;
+      iteration_msg.selected_utility_dl=0;
+      iteration_msg.selected_utility_thermal=0;
+      iteration_msg.selected_utility_wireless=0;
+    }
 
-        pub_iteration_info.publish(iteration_msg);
-}
+    pub_iteration_info.publish(iteration_msg);
+  }
 }
 
 void TestNBV::evaluateViewpoints()
@@ -312,9 +318,9 @@ void TestNBV::evaluateViewpoints()
     return;
   }
 
-   std::cout << "[test_NBV] " << cc.green << "Evaluating viewpoints\n" << cc.reset;
+  std::cout << "[test_NBV] " << cc.green << "Evaluating viewpoints\n" << cc.reset;
 
-   // Evaluate viewpoints
+  // Evaluate viewpoints
   View_evaluate_->update_parameters();
   View_evaluate_->evaluate();
 
@@ -361,27 +367,27 @@ void TestNBV::navigate()
 
     if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
     {
-        ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
+      ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
     }
 
-  break;
+    break;
 
 
   case 1:  // move through path if reactive planner is used
 
-           // initially check for a straight line.
+    // initially check for a straight line.
 
-     if (!view_generate_->isCollide(View_evaluate_->getTargetPose()))
-     {
-         if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
-         {
-             ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
-         }
-       history_->black_listed_poses.clear();
-       break;
-     }
+    if (!view_generate_->isCollide(View_evaluate_->getTargetPose()))
+    {
+      if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
+      {
+        ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
+      }
+      history_->black_listed_poses.clear();
+      break;
+    }
 
-     // if straight line did not work then try the reactive planner
+    // if straight line did not work then try the reactive planner
 
     Occlusion_Map_->GetActiveOctomapSize(grid_size_x,grid_size_y);
     navigation_->SetDynamicGridSize(grid_size_x,grid_size_y,0);
@@ -399,7 +405,7 @@ void TestNBV::navigate()
       ROS_WARN("Unable to generate path, terminating....");
       if(view_generate_->generator_type==Generator::Frontier_Generator)
         history_->black_listed_poses.push_back(View_evaluate_->getTargetPose());
-       }
+    }
 
     view_generate_->visualTools->deleteAllMarkers();
     view_generate_->visualTools->trigger();
@@ -410,27 +416,27 @@ void TestNBV::navigate()
   case 2: // move to waypoint in a discretized Path
     double step_size=0.02;
     path_to_waypoint = navigation_->Path_discretizationtoPath(drone_communicator_->GetPose(),View_evaluate_->getTargetPose(),
-                                                  step_size);
+                                                              step_size);
 
     for (int i=0; i<path_to_waypoint.size() ; i++)
-    std::cout << path_to_waypoint[i]  << std::endl;
+      std::cout << path_to_waypoint[i]  << std::endl;
 
     if (!drone_communicator_->Execute_path(path_to_waypoint))
     {
-        ROS_WARN("Drone Communicator is unable to set path to waypoint, terminating....");
+      ROS_WARN("Drone Communicator is unable to set path to waypoint, terminating....");
     }
     break;
-}
+  }
   std::cout << "[test_NBV] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
 
   // wait for the drone commander node until it moves the drone to the viewpoint
   while ((ros::ok() && !drone_communicator_->GetStatus()))
-   {
-   ros::spinOnce();
-   ros::Rate(5).sleep();
-   }
-   std::cout << "[test_NBV] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
-   state = NBVState::NAVIGATION_COMPLETE;
+  {
+    ros::spinOnce();
+    ros::Rate(5).sleep();
+  }
+  std::cout << "[test_NBV] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
+  state = NBVState::NAVIGATION_COMPLETE;
 }
 
 void TestNBV::generateViewpoints()
@@ -440,7 +446,7 @@ void TestNBV::generateViewpoints()
     std::cout << "[test_NBV] " << cc.red << "ERROR: Attempt to generate viewpoints out of order\n" << cc.reset;
     return;
   }
-    std::cout << "[test_NBV] " << cc.green << "Generatring viewpoints\n" << cc.reset;
+  std::cout << "[test_NBV] " << cc.green << "Generatring viewpoints\n" << cc.reset;
 
   //Delete the Reactive Planner Visualziation Markers
   navigation_->reactivePlannerServer->visualTools->deleteAllMarkers();
@@ -449,7 +455,7 @@ void TestNBV::generateViewpoints()
   view_generate_->setCurrentPose(drone_communicator_->GetPose());
   view_generate_->setvictimmap(Map_->map,Map_->getlayer_name());
 
- // std::cout << "curretn pose: " << drone_communicator_->GetPose() <<" "<< std::endl;
+  // std::cout << "curretn pose: " << drone_communicator_->GetPose() <<" "<< std::endl;
   view_generate_->generateViews();
 
   if (view_generate_->generated_poses.size() == 0)
@@ -472,7 +478,7 @@ void TestNBV::UpdateMap()
     return;
   }
 
-   std::cout << "[test_NBV] " << cc.green << "Updateing [" << Map_->getlayer_name() << "]" << cc.reset;
+  std::cout << "[test_NBV] " << cc.green << "Updateing [" << Map_->getlayer_name() << "]" << cc.reset;
 
   Map_->setCurrentPose(drone_communicator_->GetPose());
 
@@ -487,104 +493,104 @@ void TestNBV::UpdateMap()
     state = NBVState::TERMINATION_MET;
     return;
   }
-    state = NBVState::UPDATE_MAP_COMPLETE;
+  state = NBVState::UPDATE_MAP_COMPLETE;
 }
 
 void TestNBV::runStateMachine()
 {
   ROS_INFO("test_NBV: Starting victim_localization node waiting for the drone to take off and rotate.");
- state = NBVState::STARTING_ROBOT;
+  state = NBVState::STARTING_ROBOT;
 
- timer.start("NBV: Total Time");
- StartTimeForNBV = ros::Time::now();
-   while (ros::ok())
-   {
-     switch(state)
-     {   
-     case NBVState::STARTING_ROBOT:
-     if (!drone_communicator_->GetStatus()){
-       break; // check if the drone is ready from drone commander node
-     }
-     Occlusion_Map_->Stop();
-     std::cout << "drone is ready\n";
-     state = NBVState::START_MAP_UPDATE;
-       break;
+  timer.start("NBV: Total Time");
+  StartTimeForNBV = ros::Time::now();
+  while (ros::ok())
+  {
+    switch(state)
+    {
+    case NBVState::STARTING_ROBOT:
+      if (!drone_communicator_->GetStatus()){
+        break; // check if the drone is ready from drone commander node
+      }
+      Occlusion_Map_->Stop();
+      std::cout << "drone is ready\n";
+      state = NBVState::START_MAP_UPDATE;
+      break;
 
-       case NBVState::START_MAP_UPDATE:
-       timer.start("[NBVLoop]Iteration");  // detect and update map
-       ros::Rate(1).sleep();
-       Occlusion_Map_->GetPointCloud();
-       while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; NBV_loop_rate.sleep();}
-       UpdateMap();
-       //if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
-       break;
+    case NBVState::START_MAP_UPDATE:
+      timer.start("[NBVLoop]Iteration");  // detect and update map
+      ros::Rate(1).sleep();
+      Occlusion_Map_->GetPointCloud();
+      while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; NBV_loop_rate.sleep();}
+      UpdateMap();
+      //if (state!=NBVState::TERMINATION_MET) state = NBVState::UPDATE_MAP_COMPLETE;
+      break;
 
-       case NBVState::UPDATE_MAP_COMPLETE:
-         state = NBVState::VIEWPOINT_GENERATION ;
-         generateViewpoints();
-       break;
+    case NBVState::UPDATE_MAP_COMPLETE:
+      state = NBVState::VIEWPOINT_GENERATION ;
+      generateViewpoints();
+      break;
 
-     case NBVState::VIEWPOINT_GENERATION_COMPLETE:
-       state = NBVState::VIEWPOINT_EVALUATION;
-       T1 = ros::Time::now();
-       evaluateViewpoints();
-        D= ros::Time::now()-T1;
-       std::cout << "time taken for Viewpoint evaluator is..." << D.toSec() <<std::endl;     break;
+    case NBVState::VIEWPOINT_GENERATION_COMPLETE:
+      state = NBVState::VIEWPOINT_EVALUATION;
+      T1 = ros::Time::now();
+      evaluateViewpoints();
+      D= ros::Time::now()-T1;
+      std::cout << "time taken for Viewpoint evaluator is..." << D.toSec() <<std::endl;     break;
 
-     break;
+      break;
 
-     case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
-       state = NBVState::NAVIGATION;
-       navigate();
-       break;
+    case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
+      state = NBVState::NAVIGATION;
+      navigate();
+      break;
 
-     case NBVState::NAVIGATION_COMPLETE:
-       updateHistory();
-       timer.stop("[NBVLoop]Iteration");
-       state = NBVState::START_MAP_UPDATE;
-       break;
+    case NBVState::NAVIGATION_COMPLETE:
+      updateHistory();
+      timer.stop("[NBVLoop]Iteration");
+      state = NBVState::START_MAP_UPDATE;
+      timer.stop("NBV: Total Time");
 
-     case NBVState::TERMINATION_MET:
-
-       for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
-       {
-         visualTools->publishLine(history_->selected_poses[i].position,history_->selected_poses[i+1].position, rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE);
-       }
-       for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
-       {
-         visualTools->publishArrow(history_->selected_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
-       }
-       visualTools->trigger();
-       Map_->publish_Map();
-
-       //ros::spinOnce();
-       //ros::Rate(5).sleep();
-       SaveData();
-
-       timer.stop("NBV: Total Time");
-
-       // Dump time data
-       timer.dump();
+      // Dump time data
+      timer.dump();
 
 
-       // Clean up
-       std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
-       ros::shutdown();
+      // Clean up
+      std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
+      ros::shutdown();
+      break;
 
-     break;
-     }
-     ros::spinOnce();
-     NBV_loop_rate.sleep();
+    case NBVState::TERMINATION_MET:
+
+      for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
+      {
+        visualTools->publishLine(history_->selected_poses[i].position,history_->selected_poses[i+1].position, rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE);
+      }
+      for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
+      {
+        visualTools->publishArrow(history_->selected_poses[i],rviz_visual_tools::GREEN,rviz_visual_tools::XXLARGE,0.5);
+      }
+      visualTools->trigger();
+      Map_->publish_Map();
+
+      //ros::spinOnce();
+      //ros::Rate(5).sleep();
+      SaveData();
+
+
+      break;
     }
-   timer.stop("NBV: Total Time");
+    ros::spinOnce();
+    NBV_loop_rate.sleep();
+  }
+  timer.stop("NBV: Total Time");
 
-   // Dump time data
-   timer.dump();
+  // Dump time data
+  timer.dump();
 
 
-   // Clean up
-   std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
-   ros::shutdown();
+  // Clean up
+  std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
+  ros::shutdown();
 }
 
 

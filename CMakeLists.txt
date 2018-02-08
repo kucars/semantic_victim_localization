@@ -92,7 +92,6 @@ add_service_files(
   path_action.srv
   path2_action.srv
   status_action.srv
-  pointcloud_capture.srv
 )
 
 generate_messages(
