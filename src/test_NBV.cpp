@@ -498,6 +498,7 @@ void TestNBZ::runStateMachine()
        }
        visualTools->trigger();
        Map_->publish_Map();
+
        ros::spinOnce();
        ros::Rate(5).sleep();
      break;
