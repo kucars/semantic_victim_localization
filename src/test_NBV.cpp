@@ -55,10 +55,11 @@ void TestNBV::SaveData()
   Occlusion_Map_->m_octree->writeBinary(file_path+"environment");
 
   // --- Save generated path ---
+  std::cout << "history first pose is..." << history_->selected_poses[0].position.x <<std::endl;
   ofstream myfile (file_path+"PATH.txt");
   if (myfile.is_open())
   {
-    for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
+    for(int i =0; i< (history_->selected_poses.size()) ;i+=1){
       myfile << history_->selected_poses[i].position.x << " "
              << history_->selected_poses[i].position.y<< " "
              << history_->selected_poses[i].position.z<< " "
@@ -71,49 +72,83 @@ void TestNBV::SaveData()
   }
   else cout << "Unable to open file";
 
-  const float minValue = 0.0;
-  const float maxValue = 1.0;
 
   //----- Save Occupancy Map ----
-  cv::Mat image;
-  GridMapCvConverter::toImage<unsigned char, 4>(Map_->map, Map_->layer_name, CV_16UC4, minValue, maxValue, image);
-  cv::imwrite(file_path+Map_->getlayer_name()+"_Occupancy",image);
+  // The occupancy map is initially upscaled to improve the image resolution
+ cv::Mat occupancyImage;
+ grid_map::GridMap gridMap;
+ double upscale_factor=32;
+ double upscale_resolution= Map_->map_resol/upscale_factor;
+ std::string mapName= "SaveOccupancy";
+ gridMap.setGeometry(Map_->map.getLength(),upscale_resolution);
+ gridMap.add(mapName,0);
+
+ occupancyImage= upscaleImage(Map_->map,Map_->layer_name,gridMap,mapName);
+ cv::imwrite(file_path+Map_->getlayer_name()+"Occupancy.jpeg",occupancyImage);
 
   // In case the Fused_Map is used , then save its individual maps
   if (Map_->Maptype==MAP::COMBINED)
   {
-    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::DL)->map,Map_->getMapLayer(MAP::DL)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"_Occupancy",image);
+    // Save DL MAP
+    gridMap[mapName].setZero();  // reset gridMap;
+    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::DL)->map,
+                                 Map_->getMapLayer(MAP::DL)->getlayer_name(),
+                                 gridMap,mapName);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
 
-    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::THERMAL)->map,Map_->getMapLayer(MAP::THERMAL)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"_Occupancy",image);
+    // Save THERMAL MAP
+    gridMap[mapName].setZero();  // reset gridMap;
+    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::THERMAL)->map,
+                                 Map_->getMapLayer(MAP::THERMAL)->getlayer_name(),
+                                 gridMap,mapName);
+    occupancyImage= upscaleImage(Map_->map,Map_->layer_name,gridMap,mapName);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
 
-    GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::WIRELESS)->map,Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(), CV_16UC4, minValue, maxValue, image);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"_Occupancy",image);
-  }
+    // Save WIRELESS MAP
+    gridMap[mapName].setZero();  // reset gridMap;
+    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::WIRELESS)->map,
+                                 Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(),
+                                 gridMap,mapName);
+    cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
+    }
 
   //---- Store Test Results ---
-  ofstream Results (file_path+Map_->layer_name+"_Result.txt");
+  ofstream Results (file_path+Map_->layer_name+"Result.txt");
   if (Results.is_open())
   {
-    for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
-      Results << "time taken: " << (StartTimeForNBV-ros::Time::now()).toSec() << " "
-              << "Total entropy: " << View_evaluate_->info_entropy_total_ << " "
-              << "distance: " <<  View_evaluate_->info_distance_total_ << " "
-              << "iteration: " << history_->iteration<< std::endl << " ";
-
-    }
-    Results.close();
-  }
+      Results << "time taken: " << (ros::Time::now()-StartTimeForNBV).toSec()<< "\n"
+              << "Total entropy: " << View_evaluate_->info_entropy_total_ << "\n"
+              << "distance: " <<  View_evaluate_->info_distance_total_ << "\n"
+              << "iteration: " << history_->iteration<< std::endl << "\n";
+      Results.close();
+   }
   else cout << "Unable to to Results file";
+}
+
+cv::Mat TestNBV::upscaleImage(grid_map::GridMap inputMap , std::string Input, grid_map::GridMap upscaledMap, std::string Output)
+{
+   cv::Mat image;
+   const float minValue = 0.0;
+   const float maxValue = 1.0;
+  Index index;
+  Position position;
+  for (grid_map::GridMapIterator iterator(upscaledMap);
+       !iterator.isPastEnd(); ++iterator)
+    {
+    index=*iterator;
+    upscaledMap.getPosition(index,position);
+    upscaledMap.atPosition(Output,position)=inputMap.atPosition(Input,position);
+    }
+
+  GridMapCvConverter::toImage<unsigned char, 4>(upscaledMap, Output, CV_8UC4, minValue, maxValue, image);
+   return image;
 }
 
 void TestNBV::initVehicle(){
 
   int vehicle_type;
   ros::param::param<int>("~vehicle_type",vehicle_type,0);
-  switch(vehicle_type)
-  {
+  switch(vehicle_type){
   default:
   case 0:
     vehicle_ = new VehicleControlIris();
@@ -549,14 +584,6 @@ void TestNBV::runStateMachine()
       timer.stop("[NBVLoop]Iteration");
       state = NBVState::START_MAP_UPDATE;
       timer.stop("NBV: Total Time");
-
-      // Dump time data
-      timer.dump();
-
-
-      // Clean up
-      std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
-      ros::shutdown();
       break;
 
     case NBVState::TERMINATION_MET:
@@ -575,8 +602,15 @@ void TestNBV::runStateMachine()
       //ros::spinOnce();
       //ros::Rate(5).sleep();
       SaveData();
+      timer.stop("NBV: Total Time");
+
+      // Dump time data
+      timer.dump();
 
 
+      // Clean up
+      std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
+      ros::shutdown();
       break;
     }
     ros::spinOnce();

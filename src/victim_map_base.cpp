@@ -41,7 +41,6 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   ros::param::param<std::string>("~camera_thermal_frame", camera_thermal_frame ,std::string("/floating_sensor/thermal_cam_optical_frame"));
 
   victimMapName="victim Map base";
-  std::cout <<"done with the base\n";
 }
 
 Victim_Map_Base::~Victim_Map_Base(){}

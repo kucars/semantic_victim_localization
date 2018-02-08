@@ -27,6 +27,9 @@
       <mesh>
       <uri>model://Xtion2/meshes/xtion_pro_camera.dae</uri>
       </mesh>
+      <box>
+         <size>0.073000 0.276000 0.072000</size>
+      </box>
       </geometry>
     </visual>
     <sensor name='floating_sensor_camera' type='depth'>
@@ -83,6 +86,9 @@
       <mesh>
          <uri>model://realsense_camera/meshes/realsense.dae</uri>
       </mesh>
+      <box>
+          <size>0.0078 0.130 0.0192</size>
+      </box>
       </geometry>
     </visual>
     <sensor name='thermal_cam_camera_sensor' type='camera'>

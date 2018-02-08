@@ -94,14 +94,14 @@ else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
   if (!isInsideBounds(p) ){
-   std::cout << "rejectedbyvalidity" << std::endl;
+  // std::cout << "rejectedbyvalidity" << std::endl;
     return false;
   }
 
 //if (generator_type!=Generator::Frontier_Generator)
 //{
   if (!isSafe(p)){
-    std::cout << "rejectedbySafety" << std::endl;
+ //   std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
 //}
@@ -117,7 +117,7 @@ if (manager_ == NULL) {
 
 if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
-    std::cout << "rejectedbycollision" << std::endl;
+    //std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
 

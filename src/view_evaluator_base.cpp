@@ -124,7 +124,7 @@ double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *
     }
   }
 
-  std::cout << "found information gain is.. " << IG_view << std::endl;
+  // std::cout << "found information gain is.. " << IG_view << std::endl;
   //if (IG_view_count!=0) IG_view=IG_view/IG_view_count;
   return IG_view;
 }

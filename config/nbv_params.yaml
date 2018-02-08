@@ -252,11 +252,4 @@ Frames:
         camera_thermal_frame: "/floating_sensor/camera_thermal_frame"
         base_frame: "/floating_sensor/base_link"
 
-
-topic_ssd_keras: "ssd_detction/box"
-topic_segmented_PointCloud: "ssd/segmented_PointCloud"
-map_topic_DL: "victim_map/grid_map_DL"
-map_topic_thermal: "victim_map/grid_map_thermal"
-map_topic_combined: "victim_map/grid_map_combined"
-
 detection_enabled: true

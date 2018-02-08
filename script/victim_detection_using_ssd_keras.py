@@ -91,15 +91,13 @@ class ssdKeras():
 
 
     def SSD_Detection_Server(self, req):
-        """ Runs the test on a video (or webcam)
-
+        """
         # Arguments
-
         conf_thresh: Threshold of confidence. Any boxes with lower confidence
                      are not visualized.
-
         """
-
+        if self.Image_Status!="Ready":
+            return
         vidw = 640.0 # change from cv2.cv.CV_CAP_PROP_FRAME_WIDTH
         vidh = 480.0 # change from cv2.cv.CV_CAP_PROP_FRAME_HEIGHT
         vidar = vidw/vidh

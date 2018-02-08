@@ -132,15 +132,18 @@ public:
   void initNavigation();
   void initViewGenerator();
   void initViewEvaluator();
-  bool CheckGazeboIsWorking();
-  void SaveData();
-
 
   void generateViewpoints();
   void evaluateViewpoints();
   void navigate();
   void UpdateMap();
   void updateHistory();
+
+  bool CheckGazeboIsWorking();
+  void SaveData();
+  cv::Mat upscaleImage(grid_map::GridMap inputMap , std::string Input,
+                       grid_map::GridMap upscaledMap, std::string Output);
+
 
   bool detection_enabled; //for debugging
 

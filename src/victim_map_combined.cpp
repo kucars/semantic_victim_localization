@@ -91,7 +91,7 @@ void victim_map_combined::Update()
         + gama*victim_map_wireless_->map.atPosition(victim_map_wireless_->getlayer_name(),position);
 
     if (map.atPosition(layer_name,position) >= victim_found_prob ) {
-      std::cout << "yes victim found...." << std::endl;
+      std::cout << "victim found...." << std::endl;
       map_status.victim_found=true;
       map.getPosition(index,map_status.victim_loc);
     }
