@@ -57,8 +57,6 @@ victim_map_combined::victim_map_combined(const ros::NodeHandle &nh,const ros::No
   victim_map_thermal_= new victim_map_Thermal(nh_,nh_private_);
   victim_map_wireless_= new Victim_Map_Wireless(nh_,nh_private_);
 
-  std::cout << "Quit debuginl..................." << victim_map_dl_->map.getResolution();
-
   victimMapName="victim fused map";
 }
 
@@ -104,46 +102,9 @@ void victim_map_combined::Update()
 
   std::cout<< "current max prob is..." << curr_max_prob << std::endl;
 
-  //ros::Duration elapsed_time= ros::Time::now()-time_1;
-  //ROS_INFO("Time taken to update is the combined map is: %f", elapsed_time.toSec());
-
-
-  //      if (data(index(0), index(1)) > 0.9 ) {
-  //        map_status.victim_found=true;
-  //        map.getPosition(index,map_status.victim_loc);
-  //        break;
-  //      }
-
-  //  grid_map::Matrix& data = map[this->getlayer_name()];
-  //  for (GridMapIterator iterator(map); !iterator.isPastEnd(); ++iterator) {
-  //      const Index index(*iterator);
-  //      if (data(index(0), index(1)) > 0.9 ) {
-  //        map_status.victim_found=true;
-  //        map.getPosition(index,map_status.victim_loc);
-  //        break;
-  //      }
-  //  }
-
-
-//  victim_map_Thermal_->Update();
-//  std::cout << " Done updating dl map\n";
-
-//  // update map
-//  Position position;
-//  Index index;
-
-//  for (grid_map::GridMapIterator iterator(map);
-//       !iterator.isPastEnd(); ++iterator) {
-
-//    index=*iterator;
-//    map.getPosition(index, position);
-
-//    map.atPosition(layer_name,position)= victim_map_Thermal_->map.atPosition(victim_map_Thermal_->getlayer_name(),position);
-//  }
   publish_Map();
   std::cout << " Done updating Combined map\n";
 
-  //ros::Rate(0.0001).sleep();
 }
 
 void victim_map_combined::setCurrentPose(geometry_msgs::Pose ps)
@@ -152,7 +113,6 @@ void victim_map_combined::setCurrentPose(geometry_msgs::Pose ps)
   victim_map_dl_->setCurrentPose(ps);
   victim_map_thermal_->setCurrentPose(ps);
   victim_map_wireless_->setCurrentPose(ps);
-  std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
 
 void victim_map_combined::setDroneCommunicator(vehicle_communicator *drone_comm_)
@@ -161,7 +121,6 @@ void victim_map_combined::setDroneCommunicator(vehicle_communicator *drone_comm_
   victim_map_dl_->setDroneCommunicator(drone_comm_);
   victim_map_thermal_->setDroneCommunicator(drone_comm_);
   victim_map_wireless_->setDroneCommunicator(drone_comm_);
-  std::cout << "combined_drone_comm is set in Combined Map" << std::endl;
 }
 
 void victim_map_combined::setOctomapManager(OctomapManager *manager)
@@ -184,8 +143,6 @@ void victim_map_combined::SetNavMap(nav_msgs::OccupancyGridPtr Nav_map)
   victim_map_dl_->raytracing_->SetNavMap(Nav_map);
   victim_map_thermal_->raytracing_->SetNavMap(Nav_map);
   victim_map_wireless_->raytracing_->SetNavMap(Nav_map);
-
- std::cout << "Nav_Map is set in Combined Map" << std::endl;
 }
 
 Victim_Map_Base* victim_map_combined::getMapLayer(int map_number)
@@ -201,7 +158,7 @@ Victim_Map_Base* victim_map_combined::getMapLayer(int map_number)
     return victim_map_wireless_;
     break;
   default:
-    std::cout << "received NONNNNNNNNNNN" << std::endl;
+    std::cout << "Map Layer Not Found" << std::endl;
     break;
   }
 }

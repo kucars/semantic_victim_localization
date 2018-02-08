@@ -91,8 +91,6 @@ std::vector<geometry_msgs::Pose>
      (Diff_x>=0) ? x_sign=1 : x_sign=-1;
      (Diff_y>=0) ? y_sign=1 : y_sign=-1;
 
-     std::cout << "After" <<  "diff_x: " << Diff_x << "diff_y: " << Diff_y << std::endl;
-
      geometry_msgs::Pose temp_pose=start;
 
      temp_pose.orientation= pose_conversion::getQuaternionFromYaw(path_angle);

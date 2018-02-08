@@ -119,7 +119,6 @@ void victim_map_DL::Update()
         if (is_detect_== true && P_prior>0.01 ) {
           double Detec_prob=(Prob_D_H* P_prior)/((Prob_D_H* P_prior)+(Prob_D_Hc* (1-P_prior)));
           map.atPosition(layer_name, position)= Detec_prob;
-          std::cout << cc.blue << "current_detection_probablitiy:" << Detec_prob << std::endl;
 
           //check if the victim is found
           if (Detec_prob>victim_found_prob) {

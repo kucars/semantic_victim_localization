@@ -38,12 +38,10 @@ bool straightLine::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)
 // }
 
  volumetric_mapping::OctomapManager::CellStatus cellStatus;
- //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
  cellStatus = manager_->getLineStatusBoundingBox(
        origin,
        direction + origin + direction.normalized() * dOvershoot_,
        boundingbox_);
- //std::cout << "status is: " << cellStatus << std::endl;
  if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)// || cellStatus == volumetric_mapping::OctomapManager::CellStatus::kUnknown)
  {
    return true;

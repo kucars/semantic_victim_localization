@@ -7,7 +7,7 @@
 #include <Eigen/Geometry>
 #include <eigen_conversions/eigen_msg.h>
 
-TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
+TestNBV::TestNBV(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
   nh(nh_),
   nh_private(nh_private_),
   NBV_loop_rate(20)
@@ -24,10 +24,10 @@ TestNBZ::TestNBZ(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ )
     visualTools->deleteAllMarkers();
     visualTools->enableBatchPublishing();
 
-    ROS_INFO("test_NBZ: Begin!");
+    ROS_INFO("test_NBV: Begin!");
 }
 
-bool TestNBZ::CheckGazeboIsWorking()
+bool TestNBV::CheckGazeboIsWorking()
 {
   // wait until gazebo is ready...
   std_srvs::Empty srv;
@@ -48,17 +48,14 @@ bool TestNBZ::CheckGazeboIsWorking()
   }
 }
 
-void TestNBZ::SaveData()
+void TestNBV::SaveData()
 {
-  // save octomap
-  volumetric_msgs::SaveMap::Request request;
-  volumetric_msgs::SaveMap::Response respond;
-  std::string file_path="/home/abdulrahman/catkin_ws/src/victim_localization/Data/file";
+  // ---- Save octomap ---
+  ros::param::param<std::string>("~file_path",file_path, std::string("/home/abdulrahman/catkin_ws/src/victim_localization/Data/"));
   Occlusion_Map_->m_octree->writeBinary(file_path);
 
-  // save generated path
-
-  ofstream myfile ("/home/abdulrahman/catkin_ws/src/victim_localization/Data/example.txt");
+  // --- Save generated path ---
+  ofstream myfile (file_path+"PATH.txt");
   if (myfile.is_open())
   {
     for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
@@ -68,19 +65,44 @@ void TestNBZ::SaveData()
   }
   else cout << "Unable to open file";
 
+  const float minValue = 0.0;
+  const float maxValue = 1.0;
 
-
-  const float minValue = -1.0;
-    const float maxValue = 1.0;
-
-    // Convert to image.
+  //----- Save Occupancy Map ----
   cv::Mat image;
   GridMapCvConverter::toImage<unsigned char, 4>(Map_->map, Map_->layer_name, CV_8UC4, minValue, maxValue, image);
+  cv::imwrite(file_path+Map_->getlayer_name()+"_Occupancy",image);
 
+ // In case the Fused_Map is used , then save its individual maps
+  if (Map_->Maptype==MAP::COMBINED)
+  {
+ GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::DL)->map,Map_->getMapLayer(MAP::DL)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
+ cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"_Occupancy",image);
 
+ GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::THERMAL)->map,Map_->getMapLayer(MAP::THERMAL)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
+ cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"_Occupancy",image);
+
+ GridMapCvConverter::toImage<unsigned char, 4>(Map_->getMapLayer(MAP::WIRELESS)->map,Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(), CV_8UC4, minValue, maxValue, image);
+ cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"_Occupancy",image);
+  }
+
+  //---- Store Test Results ---
+  ofstream Results (file_path+Map_->layer_name+"_Result.txt");
+  if (myfile.is_open())
+  {
+    for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1){
+        myfile << "time taken: " << (StartTimeForNBV-ros::Time::now()).toSec() << " "
+                  << "Total entropy: " << View_evaluate_->info_entropy_total_ << " "
+                     << "distance: " <<  View_evaluate_->info_distance_total_ << " "
+                     << "iteration: " << history_->iteration<< std::endl << " ";
+
+    }
+    myfile.close();
+  }
+  else cout << "Unable to to TestResults file";
 }
 
-void TestNBZ::initVehicle(){
+void TestNBV::initVehicle(){
 
   int vehicle_type;
   ros::param::param<int>("~vehicle_type",vehicle_type,0);
@@ -99,7 +121,7 @@ void TestNBZ::initVehicle(){
    }
 }
 
-void TestNBZ::initMap(){
+void TestNBV::initMap(){
     ros::param::param("~map_type", map_type, 0);
     switch(map_type)
     {
@@ -119,7 +141,7 @@ void TestNBZ::initMap(){
     }
 }
 
-void TestNBZ::initNavigation(){
+void TestNBV::initNavigation(){
 
     ros::param::param("~nav_type", nav_type, 1);
     switch(nav_type)
@@ -135,7 +157,7 @@ void TestNBZ::initNavigation(){
     navigation_->start();
 }
 
-void TestNBZ::initViewGenerator(){
+void TestNBV::initViewGenerator(){
 
     ros::param::param("~view_generator_type", view_generator_type, 0);
 
@@ -157,7 +179,7 @@ void TestNBZ::initViewGenerator(){
     }
 }
 
-void TestNBZ::initViewEvaluator(){
+void TestNBV::initViewEvaluator(){
 
     ros::param::param("~view_evaluator_type", view_evaluator_type, 5);
 
@@ -190,7 +212,7 @@ void TestNBZ::initViewEvaluator(){
     }
 }
 
-void TestNBZ::initOctomap(){
+void TestNBV::initOctomap(){
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
 
@@ -203,7 +225,7 @@ void TestNBZ::initOctomap(){
 }
 
 
-void TestNBZ::initParameters(){
+void TestNBV::initParameters(){
 
   ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
 
@@ -228,13 +250,11 @@ void TestNBZ::initParameters(){
   Map_->setOctomapManager(manager_);
 }
 
-void TestNBZ::updateHistory()
+void TestNBV::updateHistory()
 {
     history_->selected_poses.push_back(View_evaluate_->getTargetPose());
     history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
-    std::cout << "best utitlity is ...." << View_evaluate_->info_selected_utility_;
     history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
-    std::cout << "totla utitliy is ...." << View_evaluate_->info_entropy_total_;
 
     history_->max_prob=Map_->curr_max_prob;
 
@@ -258,7 +278,6 @@ void TestNBZ::updateHistory()
 
         iteration_msg.generator_type =view_generate_->generator_type;
 
-        //iteration_msg.utilities        = View_evaluate_->info_utilities_;
         iteration_msg.time_iteration   = timer.getLatestTime("[NBV)Loop]Iteration")/1000; // time in sec
 
         if (Map_->Maptype==MAP::COMBINED){
@@ -282,19 +301,18 @@ void TestNBZ::updateHistory()
           }
 
         pub_iteration_info.publish(iteration_msg);
-        Occlusion_Map_->Convert2DMaptoOccupancyGrid(ros::Time::now());
 }
 }
 
-void TestNBZ::evaluateViewpoints()
+void TestNBV::evaluateViewpoints()
 {
   if (state != NBVState::VIEWPOINT_EVALUATION)
   {
-    std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to evaluate viewpoints out of order\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "ERROR: Attempt to evaluate viewpoints out of order\n" << cc.reset;
     return;
   }
 
-   std::cout << "[test_NBZ] " << cc.green << "Evaluating viewpoints\n" << cc.reset;
+   std::cout << "[test_NBV] " << cc.green << "Evaluating viewpoints\n" << cc.reset;
 
    // Evaluate viewpoints
   View_evaluate_->update_parameters();
@@ -305,17 +323,17 @@ void TestNBZ::evaluateViewpoints()
   p_ = View_evaluate_->getTargetPose();
   if ( std::isnan(p_.position.x) )
   {
-    std::cout << "[test_NBZ] " << cc.red << "View evaluator determined all poses are invalid. Terminating.\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "View evaluator determined all poses are invalid. Terminating.\n" << cc.reset;
     state = NBVState::TERMINATION_MET;
     return;
   }
 
 
-  std::cout << "[test_NBZ] " << cc.green << "Done evaluating viewpoints\n" << cc.reset;
+  std::cout << "[test_NBV] " << cc.green << "Done evaluating viewpoints\n" << cc.reset;
   state = NBVState::VIEWPOINT_EVALUATION_COMPLETE;
 }
 
-void TestNBZ::navigate()
+void TestNBV::navigate()
 {
   std::string navigation_method;
   if (view_generate_->nav_type==0)
@@ -327,11 +345,11 @@ void TestNBZ::navigate()
 
   if (state != NBVState::NAVIGATION)
   {
-    std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to navigate to viewpoint out of order\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "ERROR: Attempt to navigate to viewpoint out of order\n" << cc.reset;
     return;
   }
 
-  std::cout << "[test_NBZ] " << cc.green << "Navigating to viewpoint using" << "[" << navigation_method << "]" << cc.reset;
+  std::cout << "[test_NBV] " << cc.green << "Navigating to viewpoint using" << "[" << navigation_method << "]" << cc.reset;
 
   path_to_waypoint.clear();
   navigation_->setCurrentPose(drone_communicator_->GetPose());
@@ -339,20 +357,14 @@ void TestNBZ::navigate()
   switch(view_generate_->nav_type)
   {
   default:
-  case 2: // move to waypoint if discrete strigntline is used
-    path_to_waypoint = navigation_->Path_discretizationtoPath(drone_communicator_->GetPose(),View_evaluate_->getTargetPose(),
-                                                  0.02);
+  case 0:  // move through fixed setpoint
 
-    std::cout << "desired pose is..." << View_evaluate_->getTargetPose() << std::endl;
-    std::cout << "generated path is of size ....." << path_to_waypoint.size() << std::endl;
-    for (int i=0; i<path_to_waypoint.size() ; i++)
-    std::cout << path_to_waypoint[i]  << std::endl;
-
-    if (!drone_communicator_->Execute_path(path_to_waypoint))
+    if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
     {
-        ROS_WARN("Drone Communicator is unable to set path to waypoint, terminating....");
+        ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
     }
-    break;
+
+  break;
 
 
   case 1:  // move through path if reactive planner is used
@@ -394,44 +406,43 @@ void TestNBZ::navigate()
     break;
 
 
-  case 0:  // move through fixed setpoint
 
-    if (!drone_communicator_->Execute_waypoint(View_evaluate_->getTargetPose()))
+  case 2: // move to waypoint in a discretized Path
+    double step_size=0.02;
+    path_to_waypoint = navigation_->Path_discretizationtoPath(drone_communicator_->GetPose(),View_evaluate_->getTargetPose(),
+                                                  step_size);
+
+    for (int i=0; i<path_to_waypoint.size() ; i++)
+    std::cout << path_to_waypoint[i]  << std::endl;
+
+    if (!drone_communicator_->Execute_path(path_to_waypoint))
     {
-        ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
+        ROS_WARN("Drone Communicator is unable to set path to waypoint, terminating....");
     }
+    break;
+}
+  std::cout << "[test_NBV] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
 
-  break;
-  }
-
- // ros::Time wait=ros::Time::now();
- // if (!drone_communicator_->GetStatus())
- // {
-  std::cout << "[test_NBZ] " << cc.green << "Waiting for Vehicle to reach Viewpoint\n" << cc.reset;
   // wait for the drone commander node until it moves the drone to the viewpoint
-// while ((ros::ok() && !drone_communicator_->GetStatus()) || ((ros::Time::now()-wait).toSec()<1.0))
   while ((ros::ok() && !drone_communicator_->GetStatus()))
    {
    ros::spinOnce();
    ros::Rate(5).sleep();
    }
-  // }
-
-   std::cout << "[test_NBZ] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
+   std::cout << "[test_NBV] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
    state = NBVState::NAVIGATION_COMPLETE;
 }
 
-void TestNBZ::generateViewpoints()
+void TestNBV::generateViewpoints()
 {
   if (state != NBVState::VIEWPOINT_GENERATION)
   {
-    std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to generate viewpoints out of order\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "ERROR: Attempt to generate viewpoints out of order\n" << cc.reset;
     return;
   }
+    std::cout << "[test_NBV] " << cc.green << "Generatring viewpoints\n" << cc.reset;
 
-
-    std::cout << "[test_NBZ] " << cc.green << "Generatring viewpoints\n" << cc.reset;
-
+  //Delete the Reactive Planner Visualziation Markers
   navigation_->reactivePlannerServer->visualTools->deleteAllMarkers();
   navigation_->reactivePlannerServer->visualTools->trigger();
 
@@ -443,7 +454,7 @@ void TestNBZ::generateViewpoints()
 
   if (view_generate_->generated_poses.size() == 0)
   {
-    std::cout << "[test_NBZ] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
     state = NBVState::UPDATE_MAP_COMPLETE;
   }
   else
@@ -453,21 +464,19 @@ void TestNBZ::generateViewpoints()
 }
 
 
-void TestNBZ::UpdateMap()
+void TestNBV::UpdateMap()
 {
   if (state != NBVState::START_MAP_UPDATE)
   {
-    std::cout << "[test_NBZ] " << cc.red << "ERROR: Attempt to update map out of order\n" << cc.reset;
+    std::cout << "[test_NBV] " << cc.red << "ERROR: Attempt to update map out of order\n" << cc.reset;
     return;
   }
 
-   std::cout << "[test_NBZ] " << cc.green << "Updateing [" << Map_->getlayer_name() << "]" << cc.reset;
+   std::cout << "[test_NBV] " << cc.green << "Updateing [" << Map_->getlayer_name() << "]" << cc.reset;
 
   Map_->setCurrentPose(drone_communicator_->GetPose());
 
   Map_->Update();
-
-  Occlusion_Map_->Convert2DMaptoOccupancyGrid(ros::Time::now());
 
   if (Map_->getMapResultStatus().victim_found)
   {
@@ -475,24 +484,19 @@ void TestNBZ::UpdateMap()
                  (Map_->getMapResultStatus().victim_loc)[0] << "," <<
                  (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
 
-    std::cout << "time taken: " << (t_start-ros::Time::now()).toSec() << std::endl;
-    std::cout << "entropy: " << View_evaluate_->info_entropy_total_ << std::endl;
-    std::cout << "distance: " <<  View_evaluate_->info_distance_total_ << std::endl;
-    std::cout << "iteration: " << history_->iteration<< std::endl;
-
     state = NBVState::TERMINATION_MET;
     return;
   }
     state = NBVState::UPDATE_MAP_COMPLETE;
 }
 
-void TestNBZ::runStateMachine()
+void TestNBV::runStateMachine()
 {
-  ROS_INFO("test_NBZ: Starting victim_localization node waiting for the drone to take off and rotate.");
+  ROS_INFO("test_NBV: Starting victim_localization node waiting for the drone to take off and rotate.");
  state = NBVState::STARTING_ROBOT;
 
  timer.start("NBV: Total Time");
- t_start = ros::Time::now();
+ StartTimeForNBV = ros::Time::now();
    while (ros::ok())
    {
      switch(state)
@@ -553,8 +557,8 @@ void TestNBZ::runStateMachine()
        visualTools->trigger();
        Map_->publish_Map();
 
-       ros::spinOnce();
-       ros::Rate(5).sleep();
+       //ros::spinOnce();
+       //ros::Rate(5).sleep();
        SaveData();
 
        timer.stop("NBV: Total Time");
@@ -586,17 +590,15 @@ void TestNBZ::runStateMachine()
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "test_NBZ");
+  ros::init(argc, argv, "test_NBV");
 
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
-  //tf::TransformListener tf;
-  //tf(ros::Duration(10));
 
-  //Create an object of class test_NBZ
+  //Create an object of class test_NBV
 
-  TestNBZ *test_;
-  test_ = new TestNBZ(nh,nh_private);
+  TestNBV *test_;
+  test_ = new TestNBV(nh,nh_private);
   if(!test_->CheckGazeboIsWorking()) return 0;
 
   test_->initVehicle();

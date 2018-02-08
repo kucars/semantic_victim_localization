@@ -10,9 +10,7 @@ VehicleControlBase::VehicleControlBase():
   ros::param::param("~linear_speed_threshold", linear_speed_threshold_, 0.1);   //before 0.05
   ros::param::param("~angular_speed_threshold", angular_speed_threshold_, 0.1);  //before 0.03
 
-  std::cout << "calling the ROSPARAM" << std::endl;
   this->SetVehicleROSParams();
-  std::cout << "done\n";
 }
 
 
@@ -70,8 +68,6 @@ double VehicleControlBase::getAngularDistance(geometry_msgs::Pose p1, geometry_m
   else if (yaw_diff < -M_PI)
     yaw_diff = yaw_diff + 2*M_PI;
 
-  //std::cout << yaw1 << " " << yaw2 <<std::endl;
-  //std::cout << "yaw_diff: " << yaw_diff <<std::endl;
   return yaw_diff;
 }
 
@@ -86,9 +82,6 @@ bool VehicleControlBase::isNear(double p1, double p2, double threshold_sensitivi
 
 bool VehicleControlBase::isNear(const geometry_msgs::Pose p_target, const geometry_msgs::Pose p_current, double threshold_sensitivity){
 
-  // std::cout << fabs(getAngularDistance(p_target, p_current)) << "< " <<  angular_threshold_*threshold_sensitivity << std::endl;
-  // std::cout << getDistance(p_target, p_current) << "< " <<  distance_threshold_*threshold_sensitivity << std::endl;
-  // std::cout << "theshold Dis: " << threshold_sensitivity << std::endl;
 
   if (
     getDistance(p_target, p_current) < distance_threshold_*threshold_sensitivity &&

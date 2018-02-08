@@ -124,9 +124,7 @@ void Raytracing::computeRaysAtPose(geometry_msgs::Pose p)
 
     // Create an octomap point to later cast a ray
     octomap::point3d p_ (temp[0], temp[1], temp[2]);
-    //std::cout << "for pose: "<< p << " finalpoints: "<< p_ <<std::endl;
-    //if (temp[2]>(current_pose_.position.z -0.5) && temp[2]<(current_pose_.position.z +0.5))
-     rays_far_plane_at_pose_.push_back(p_);
+    rays_far_plane_at_pose_.push_back(p_);
  }
  }
 
@@ -234,8 +232,6 @@ grid_map::GridMap Raytracing::Generate_2D_Safe_Plane(geometry_msgs::Pose p_, boo
    *
    */
 
-      // std::cout << "NEWRAY" << origin << std::endl;
-
       octomap::KeyRay ray;
 
       tree_->computeRayKeys( origin, endpoint, ray );
@@ -319,7 +315,6 @@ if (publish_ray_) {visualTools->trigger();}
     if (pub_temp_map.getNumSubscribers()>0)
       publish_Map(Pose_map);
 
-  //std::cout << "map size is: " << Pose_map.getLength()(0) << " " << Pose_map.getLength()(1) << std::endl;
   return Pose_map;
 }
 

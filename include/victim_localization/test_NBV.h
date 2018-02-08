@@ -75,7 +75,7 @@ enum State {
 }
 
 
-class TestNBZ
+class TestNBV
 {
 
   tf::TransformListener tf_;
@@ -86,7 +86,7 @@ public:
   TimeProfiler timer;
 
   rviz_visual_tools::RvizVisualToolsPtr visualTools;
-  ros::Time t_start;
+  ros::Time StartTimeForNBV;
 
 
   vehicle_communicator *drone_communicator_;
@@ -103,6 +103,7 @@ public:
   int nav_type;
   int view_generator_type;
   int view_evaluator_type;
+  std::string file_path; // Save Files path
 
   //debug
  ros::Time T1;
@@ -119,7 +120,7 @@ public:
   view_generator_IG *view_generate_;
   view_evaluator_base *View_evaluate_;
 
-  TestNBZ(const ros::NodeHandle &nh_, const ros::NodeHandle &nh_private_);
+  TestNBV(const ros::NodeHandle &nh_, const ros::NodeHandle &nh_private_);
   NBVState::State state;
   bool is_done_map_update;
   int waypointNum;
@@ -144,8 +145,6 @@ public:
   bool detection_enabled; //for debugging
 
   geometry_msgs::Pose p_;
-
-
 };
 
 

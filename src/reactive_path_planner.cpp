@@ -7,8 +7,6 @@ nh_private_(nh_private),
 manager_(manager),
 navigationBase()
 {
-  //clientPath_ = nh_private_.serviceClient<sspp::sspp_srv>("sspp_planner");
-
 }
 
 bool ReactivePathPlanner::GeneratePath(geometry_msgs::Pose end, nav_msgs::Path &Path)

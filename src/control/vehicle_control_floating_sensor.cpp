@@ -369,10 +369,6 @@ void VehicleControlFloatingSensor::updateTwist()
   twist_.linear.y = twist_.linear.y / time_to_target_;
   twist_.linear.z = twist_.linear.z / time_to_target_;
 
-  std::cout << "N" << norm << std::endl;
-  std::cout << "S" << speed_ << std::endl;
-  std::cout << twist_ << std::endl;
-  std::cout << speed_ << std::endl;
   time_to_target_=0.1;
 }
 

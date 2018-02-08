@@ -38,13 +38,15 @@ thermal_image_x_offset: 79.5
 thermal_image_y_offset: 59.5
 
 ## Wireless Sensor
-#victim_location_x: 0.9
-#victim_location_y: 2.08
-#offline_map_resol_wireless: 1.0
-#detection_threshold: 0.7
-#fov_horizontal_wireless: 50.0
-#wireless_range_max: 7.0
-#wireless_detection_error: 1.5
+Number_of_sensors: 5
+Lamda: 0.3
+SNR: 10
+Number_of_samples: 100
+reference_distance: 1
+path_loss: 7
+distance_threshold: 4
+victim_location_x: 5.7 #0.869099
+victim_location_y: 2.5 #2.260930
 
 ############
 ## Vehicle settings
@@ -95,17 +97,6 @@ Prob_D_Hc_for_wireless: 0.3
 Prob_Dc_H_for_wireless: 0.3
 Prob_Dc_Hc_for_wireless: 0.7
 
-#wireless detection params
-Number_of_sensors: 5
-Lamda: 0.3
-SNR: 15
-Number_of_samples: 100
-reference_distance: 1
-path_loss: 7
-distance_threshold: 4
-victim_location_x: 5.7 #0.869099
-victim_location_y: 2.5 #2.260930
-
 
 #combined map confidence values
 alpha: 0.65
@@ -135,8 +126,12 @@ publish_2D_map: true
 ############
 ## Navigation settings
 ############
-# 0: Straight Line between two points
-# 1: Reactive Planner
+# The Navigation is configued as
+# NN Generator --> straight line
+# NN Adaptive --> straight line if failed then Reactive Planner
+# Frontier --> straight line if failed then Reactive Planner
+# Adaptive Frontier --> straight line if failed then Reactive Planner
+
 nav_type: 1
 
 uav_fixed_height: 1.0

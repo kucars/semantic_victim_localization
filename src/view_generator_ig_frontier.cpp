@@ -9,7 +9,7 @@ Initialized_VictimNavMap(false)
   ros::param::param("~object_bounds_x_max", obj_bounds_x_max_, 0.5);
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
-  ros::param::param<int>("~frontier_pointing_to_unknown", pointing_to_unknown , 0);  // 0: point to unknown, 1: do not point to unkown , 2: point to unknown if above threshold
+  ros::param::param<int>("~frontier_pointing_to_unknown", pointing_to_unknown , 1);  // 0: point to unknown, 1: do not point to unkown , 2: point to unknown if above threshold
  ros::param::param<double>("~frontier_pointing_to_unknown_threshold", pointing_to_unknown_threshold , 0.7);
 
   frontier_yaw_res_=M_PI/4.0; // the code is tuned to work with this yaw resolution

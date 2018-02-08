@@ -48,30 +48,16 @@ void Volumetric_Map::callbackSetPointCloud(const sensor_msgs::PointCloud2::Const
     ROS_ERROR_THROTTLE(1, "Map not set up: No octomap available!");
 }
 
-
-
-  // static double last_pcl = ros::Time::now().toSec();
-  // if (last_pcl + pcl_throttle_ < ros::Time::now().toSec()) {
-  // std::cout << "recieved a massage" << std::endl;
   if (accept_pointCloud){
     ros::Time current=ros::Time::now();
     manager_->insertPointcloudWithTf(input_msg);
 
-    std::cout << "OCTOMAP IS UPDATED took>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << (ros::Time::now()-current).toSec() << std::endl;
     current=ros::Time::now();
     Convert2DMaptoOccupancyGrid(ros::Time::now());
-    std::cout << "Conversion took IS>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << (ros::Time::now()-current).toSec() << std::endl;
 
     count_pointCloud+=1;
     if (stop) { accept_pointCloud=false;stop=false;}
   }
-  //   last_pcl += pcl_throttle_;
-  //  }
-
-  // static double last_map2D= ros::Time::now().toSec();
-  // if (last_map2D + map2D_throttle_ < ros::Time::now().toSec()) {
-  // last_map2D += map2D_throttle_;
-  // }
 }
 void Volumetric_Map::Convert2DMaptoOccupancyGrid(const ros::Time &rostime)
 {

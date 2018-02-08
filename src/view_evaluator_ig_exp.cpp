@@ -10,8 +10,6 @@ double view_evaluator_ig_exp::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map
 {
   double IG = calculateIG(p, mapping_module);
   double dist = calculateDistance(p);
-
-  std::cout << "iam here....................................." << std::endl;
   return IG*exp(-dist*w_dist_);
 }
 
@@ -19,9 +17,6 @@ double view_evaluator_ig_exp::calculateWirelessUtility(geometry_msgs::Pose p, Vi
 {
   double IG = calculateWirelessIG(p,mapping_module);
   double dist = calculateDistance(p);
-
-  std::cout << "iam here..................................... wireless" << std::endl;
-
   return IG*exp(-dist*w_dist_);
 }
 

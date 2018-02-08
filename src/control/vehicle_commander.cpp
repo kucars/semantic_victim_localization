@@ -20,7 +20,6 @@ nh_private_(nhPrivate)
     break;
   }
 
-  std::cout << "Vehicle type............................... "<< vehicle_type << std::endl;
  command_status = false;
 
  // Parameters
@@ -77,7 +76,7 @@ void iris_drone_commander::start(){
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
     break;
   case Command::ROTATE:
-    std::cout << "execute_four_waypoints"<< std::endl;
+    std::cout << "Rotate_and_execute_four_waypoints"<< std::endl;
     if (enable_rotate){
      vehicle_->rotateOnTheSpot();
      vehicle_->Evaluate4Points(start_x,start_y,start_z);
@@ -85,7 +84,7 @@ void iris_drone_commander::start(){
 
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true; // done
-     std::cout << "done with the Four Point Evaluation" << std::endl;
+     std::cout << "done with the the Rotation" << std::endl;
     break;
 
   case Command::SEND_WAYPOINT:

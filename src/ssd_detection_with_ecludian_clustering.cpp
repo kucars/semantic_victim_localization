@@ -27,7 +27,6 @@ ros::param::param("~RGB_image_x_offset", image_x_offset, 320.5);
 ros::param::param("~RGB_image_y_offset", image_y_offset, 240.5);
 ros::param::param("~RGB_focal_length", RGB_FL,554.254691191187);//524.2422531097977);
 
-std::cout << "RGBFL...................................................................." << RGB_FL << std::endl;
 ros::param::param<std::string>("~camera_optical_frame", camera_optical_frame , "/floating_sensor/camera_depth_optical_frame");
 
 
@@ -89,8 +88,6 @@ void SSD_Detection_with_clustering::DetectionService(){
   box_.xmax=srv.response.xmax;  box_.xmin=srv.response.xmin;
   box_.ymax=srv.response.ymax;  box_.ymin=srv.response.ymin;
   box_.Class=srv.response.Class;
-
-  std::cout << "box_coordinate" << box_ << std::endl;
 
   current_ssd_detection= box_;
   capture_ps= current_ps;
