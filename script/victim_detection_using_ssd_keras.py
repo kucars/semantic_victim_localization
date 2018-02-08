@@ -20,7 +20,11 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 import sys
-sys.path.append('/home/abdulrahman/catkin_ws/src/victim_localization/resources/ssd_keras')
+import rospkg
+rospack  = rospkg.RosPack()
+pkg_path = rospack.get_path('victim_localization')
+
+sys.path.append(pkg_path + '/resources/ssd_keras')
 from ssd_utils import BBoxUtility
 from ssd import SSD300 as SSD
 
@@ -30,7 +34,7 @@ import time
 from victim_localization.msg import DL_msgs_box
 from victim_localization.msg import DL_msgs_boxes
 from victim_localization.srv import DL_box
-
+ 
 class ssdKeras():
     def __init__(self):
         self.node_name = "ssd_keras"
@@ -39,7 +43,7 @@ class ssdKeras():
         self.num_classes = len(self.class_names)
         self.input_shape = (300,300,3)
         self.model = SSD(self.input_shape,num_classes=self.num_classes)
-        self.model.load_weights('/home/abdulrahman/catkin_ws/src/victim_localization/resources/ssd_keras/weights_SSD300.hdf5')
+        self.model.load_weights(pkg_path + '/resources/ssd_keras/weights_SSD300.hdf5')
 
         self.bbox_util = BBoxUtility(self.num_classes)
         self.conf_thresh = 0.4
@@ -66,7 +70,7 @@ class ssdKeras():
         self.bridge = CvBridge() # Create the cv_bridge object
 
         self.Image_Status = "Not_Ready"
-        self.StartImage= cv2.imread('/home/abdulrahman/catkin_ws/src/victim_localization/resources/start.jpg')
+        self.StartImage= cv2.imread(pkg_path+ '/resources/start.jpg')
         self.to_draw=cv2.resize(self.StartImage, (640, 480))
 
         self.image_sub = rospy.Subscriber("/floating_sensor/camera/rgb/image_raw", Image, self.detect_image,queue_size=1)  # the appropriate callbacks
@@ -206,5 +210,5 @@ def main(args):
 
 
 if __name__ == '__main__':
-        main(sys.argv)
+    main(sys.argv)
 

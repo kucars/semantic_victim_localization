@@ -34,5 +34,5 @@
 #ignore specific folder
 script/plots/*
 resources/backup_files/*
-
+resources/ssd_keras/*.pyc
 *~
