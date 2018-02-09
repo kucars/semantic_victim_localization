@@ -62,12 +62,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
-      Topic: /projected_map
+      Topic: /DL/map_
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Class: rviz/TF
       Enabled: false
       Frame Timeout: 15
@@ -95,13 +95,13 @@ Visualization Manager:
       Marker Topic: /ViewPoints_visualisation
       Name: MarkerArray
       Namespaces:
-        {}
+        Arrow: true
       Queue Size: 100
       Value: true
     - Alpha: 1
       Class: rviz/RobotModel
       Collision Enabled: false
-      Enabled: true
+      Enabled: false
       Links:
         All Links Enabled: true
         Expand Joint Details: false
@@ -112,7 +112,7 @@ Visualization Manager:
       Robot Description: robot_description
       TF Prefix: ""
       Update Interval: 0
-      Value: true
+      Value: false
       Visual Enabled: true
     - Class: rviz/Axes
       Enabled: true
@@ -126,7 +126,7 @@ Visualization Manager:
       Marker Topic: /Rays
       Name: MarkerArray
       Namespaces:
-        {}
+        Line: true
       Queue Size: 100
       Value: true
     - Alpha: 0.699999988079071
@@ -243,7 +243,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.248252868652344
+      Distance: 14.005086898803711
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -257,10 +257,10 @@ Visualization Manager:
       Focal Shape Size: 0.05000000074505806
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9597969055175781
+      Pitch: 1.2147966623306274
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.3198355436325073
+      Yaw: 0.11983370035886765
     Saved: ~
 Window Geometry:
   Displays:

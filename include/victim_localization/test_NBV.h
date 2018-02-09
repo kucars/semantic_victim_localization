@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <ros/package.h>
 #include <victim_localization/common.h>
 
 #include <victim_localization/victim_map_base.h>
