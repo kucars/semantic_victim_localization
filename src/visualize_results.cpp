@@ -17,7 +17,6 @@ void visualizeResults::SetPathtoResults(std::string path)
 
 void visualizeResults::trigger()
 {
-
    std::string pathFile = resultPath+"/PATH.txt";
   //------Read Path poses-----
      const char * filename1 = pathFile.c_str();

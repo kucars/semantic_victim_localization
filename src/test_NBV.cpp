@@ -87,7 +87,6 @@ void TestNBV::initMap(){
 }
 
 void TestNBV::initNavigation(){
-
   ros::param::param("~nav_type", nav_type, 1);
   switch(nav_type)
   {
@@ -464,9 +463,8 @@ void TestNBV::UpdateMap()
   {
     std::cout << cc.magenta << "Victim Found at Location: " << "(x,y)=" << "(" <<
                  (Map_->getMapResultStatus().victim_loc)[0] << "," <<
-                 (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
+                 (Map_->getMapResultStatus().victim_loc)[1] << ")\n" << cc.reset;
 
-    return;
   }
   state = NBVState::UPDATE_MAP_COMPLETE;
 }
@@ -497,11 +495,12 @@ void TestNBV::runStateMachine()
       Occlusion_Map_->Stop();
       std::cout << "drone is ready\n";
       state = NBVState::START_MAP_UPDATE;
+      timer.start("NBV: Total Time");
+      StartTimeForNBV = ros::Time::now();
       break;
 
     case NBVState::START_MAP_UPDATE:
-      timer.start("NBV: Total Time");
-      StartTimeForNBV = ros::Time::now();
+
 
       timer.start("[NBVLoop]Iteration");  // detect and update map
       //ros::Rate(1).sleep();
