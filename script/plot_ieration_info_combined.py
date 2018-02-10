@@ -8,6 +8,7 @@ import signal
 import sys
 import csv
 import os
+import rospkg
 
 from matplotlib import pyplot
 
@@ -16,13 +17,16 @@ f, ax_plot = pyplot.subplots(4,4)
 # Define as dict so we can support values from multiple methods
 file_prefix = time.strftime("%Y-%m-%d_%H-%M-%S_", time.localtime())
 files_csv = {} #Array of open csv files
-dir_path = os.path.dirname(os.path.realpath(__file__)) # current directory path
+#dir_path = os.path.dirname(os.path.realpath(__file__)) # current directory path
+rospack  = rospkg.RosPack()
+dir_path = rospack.get_path('victim_localization')
+#dir_path = os.path.dirname(os.path.realpath(__file__)) # current directory path
 
 print (dir_path)
 
 iterations = {}
 distance = {}
-#distance_inc = {}
+distance_inc = {}
 entropy_total = {}
 entropy_total_dl = {}
 entropy_total_thermal = {}
@@ -147,7 +151,7 @@ def callback(data):
     # Create blank arrays
     iterations[method] = []
     distance[method] = []
-    #distance_inc[method] = []
+    distance_inc[method] = []
     entropy_total[method] = []
     entropy_total_dl[method] = []
     entropy_total_thermal[method] = []
@@ -166,7 +170,7 @@ def callback(data):
     selected_utility_wireless[method] = []
 
     # Open csv file in append mode
-    files_csv[method] = open(dir_path+"/plots/"+file_prefix + method + "combined" + ".csv", "a")
+    files_csv[method] = open(dir_path+"/Data/"+file_prefix + method + "combined" + ".csv", "a")
     csvwriter = csv.writer(files_csv[method], delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     csvwriter.writerow([
       'Iteration',
@@ -218,9 +222,9 @@ def callback(data):
     curr = entropy_total[method][-1]
     entropy_change = (curr - prev)/((curr + prev)/2) * 100
 
-    #distance_inc[method].append(distance[method][-1] - distance[method][-2])
-  #else:
-    #distance_inc[method].append(0)
+    distance_inc[method].append(distance[method][-1] - distance[method][-2])
+  else:
+    distance_inc[method].append(0)
 
   if (len(time_iteration[method]) > 1):
     time_iteration_total[method].append(time_iteration_total[method][-1]+time_iteration[method][-1])

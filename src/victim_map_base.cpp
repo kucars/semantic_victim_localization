@@ -18,7 +18,7 @@ Victim_Map_Base::Victim_Map_Base(const ros::NodeHandle &nh,const ros::NodeHandle
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
   ros::param::param<double>("~octomap_resol", octomap_resol , 0.3);
-  ros::param::param<double>("~victim_found_prob", victim_found_prob , 0.9);
+  ros::param::param<double>("~termination_victim_max_probability", victim_found_prob , 0.9);
   ros::param::param<int>("~raytracing_type", raytracing_type , 1); // 1: 3DRaytracing, 2: 2DRaytracing
 
   ros::param::param<bool>("~detection_enabled", detection_enabled , false); // added for debugging purpose
@@ -215,4 +215,9 @@ void Victim_Map_Base::setDroneCommunicator(vehicle_communicator *drone_comm_){
 void Victim_Map_Base::SetNavMap(nav_msgs::OccupancyGridPtr Nav_map)
 {
   raytracing_->SetNavMap(Nav_map);
+}
+
+ros::Duration Victim_Map_Base::getServiceConnectionTimeout()
+{
+  return ros::Duration(0);
 }

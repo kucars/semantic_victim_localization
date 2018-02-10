@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include  <signal.h>
 #include <ros/package.h>
 #include <victim_localization/common.h>
 
@@ -16,7 +17,7 @@
 #include <control/vehicle_control_iris_origin.h>
 #include <control/vehicle_communicator.h>
 #include <victim_localization/victim_detector_base.h>
-#include <ssd_keras/ssd_detection_with_ecludian_clustering.h>
+#include <ssd_keras/victim_vision_detector.h>
 #include <victim_localization/victim_thermal_detector.h>
 #include <victim_localization/view_evaluator_base.h>
 #include <victim_localization/view_evaluator_ig.h>
@@ -44,6 +45,10 @@
 #include <victim_localization/victim_map_wireless_2.h>
 #include <victim_localization/victim_wireless_detector.h>
 
+#include "victim_localization/termination_check_base.h"
+#include "victim_localization/termination_check_max_probability.h"
+#include "victim_localization/termination_check_max_iterations.h"
+
 #include "grid_map_cv/grid_map_cv.hpp"
 
 #include <grid_map_core/grid_map_core.hpp>
@@ -57,6 +62,7 @@
 using namespace std;
 using namespace grid_map;
 
+void sigIntHandler(int sig);
 
 namespace NBVState {
 enum State {
@@ -94,6 +100,7 @@ public:
   VehicleControlBase *vehicle_;
   Victim_Map_Base *Map_;
   nbv_history *history_;
+  TerminationCheckBase *termination_check_module_;
 
   volumetric_mapping::OctomapManager *manager_;
   Volumetric_Map *Occlusion_Map_;
@@ -104,11 +111,10 @@ public:
   int nav_type;
   int view_generator_type;
   int view_evaluator_type;
+  int termination_type;
   std::string file_path; // Save Files path
 
   //debug
- ros::Time T1;
- ros::Duration D;
   ros::Rate NBV_loop_rate;
 
   //Navigation
@@ -117,7 +123,6 @@ public:
   double grid_origin_x,grid_origin_y;
   std::vector<geometry_msgs::Pose> path_to_waypoint;
 
-
   view_generator_IG *view_generate_;
   view_evaluator_base *View_evaluate_;
 
@@ -125,6 +130,7 @@ public:
   NBVState::State state;
   bool is_done_map_update;
   int waypointNum;
+  bool InitializedService=true;
   void runStateMachine();
   void initVehicle();
   void initMap();
@@ -133,19 +139,19 @@ public:
   void initNavigation();
   void initViewGenerator();
   void initViewEvaluator();
+  void initTerminationCondition();
+  void initAllModules();
+
 
   void generateViewpoints();
   void evaluateViewpoints();
   void navigate();
   void UpdateMap();
   void updateHistory();
+  void terminationCheck();
+
 
   bool CheckGazeboIsWorking();
-  void SaveData();
-  cv::Mat upscaleImage(grid_map::GridMap inputMap , std::string Input,
-                       grid_map::GridMap upscaledMap, std::string Output);
-
-
   bool detection_enabled; //for debugging
 
   geometry_msgs::Pose p_;

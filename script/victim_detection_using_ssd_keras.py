@@ -34,7 +34,8 @@ import time
 from victim_localization.msg import DL_msgs_box
 from victim_localization.msg import DL_msgs_boxes
 from victim_localization.srv import DL_box
- 
+from os.path import expanduser
+
 class ssdKeras():
     def __init__(self):
         self.node_name = "ssd_keras"
@@ -78,7 +79,6 @@ class ssdKeras():
         self.box_coordinate_pub = rospy.Publisher("/ssd_detction/box", DL_msgs_boxes ,queue_size=5)  # the appropriate callbacks
         self.SSD_Serv = rospy.Service('SSD_Detection', DL_box, self.SSD_Detection_Server)
 
-
     def detect_image(self, ros_image):
 
     #### Use cv_bridge() to convert the ROS image to OpenCV format  ####
@@ -100,8 +100,8 @@ class ssdKeras():
         conf_thresh: Threshold of confidence. Any boxes with lower confidence
                      are not visualized.
         """
-        if self.Image_Status!="Ready":
-            return
+        #if self.Image_Status!="Ready":
+            #return
         vidw = 640.0 # change from cv2.cv.CV_CAP_PROP_FRAME_WIDTH
         vidh = 480.0 # change from cv2.cv.CV_CAP_PROP_FRAME_HEIGHT
         vidar = vidw/vidh

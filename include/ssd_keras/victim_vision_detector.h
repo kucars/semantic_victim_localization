@@ -66,10 +66,11 @@
 #include <victim_localization/victim_detector_base.h>
 
 
-class SSD_Detection_with_clustering : public victim_detector_base
+class victim_vision_detector : public victim_detector_base
 {
 public:
-  SSD_Detection_with_clustering();
+  victim_vision_detector();
+  ~victim_vision_detector();
   cv_bridge::CvImagePtr current_depth_image;
   victim_localization::DL_msgs_box current_ssd_detection;
   geometry_msgs::Point detected_point;
@@ -82,7 +83,9 @@ public:
   double image_y_offset;
   double RGB_FL;
   std::string camera_optical_frame;
-
+  bool ServiceCallFirstTime;
+  ros::Time Start_time;
+  ros::Duration Service_startTime;
 
 
   //added for ssd client
@@ -107,8 +110,7 @@ public:
   geometry_msgs::Point getClusterCentroid();
   void PublishSegmentedPointCloud(const pcl::PointCloud<pcl::PointXYZ> input_PointCloud);
   void performDetection();
-
-
+  ros::Duration GetConnectionTime();
 };
 
 #endif // SSD_DETECTION_H

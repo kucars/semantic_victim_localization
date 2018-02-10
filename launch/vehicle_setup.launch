@@ -9,7 +9,7 @@
 <arg name="iris_model" default="$(find victim_localization)/urdf/iris/iris_with_sensors.sdf" />
 <arg name="iris_model_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
 
-
+<!--find gazebo_worlds)/worlds/empty.world-->
 <arg name="world" default="$(find victim_localization)/world/TwoRoomWithHeatVictim.world"/>
 <arg name="headless" default="false"/>
 <arg name="gui" default="true"/>

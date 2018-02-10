@@ -16,8 +16,6 @@
 
 #include <victim_localization/victim_map_base.h>
 
-
-
 class victim_detector_base
 {
 public:
@@ -32,7 +30,8 @@ public:
   geometry_msgs::PoseStamped current_ps;
   void SetVehicleCommunicator(vehicle_communicator *vehicle_comm);
   virtual ros::Time getCaptureTime(){};
-
+  virtual ros::Duration GetConnectionTime(); // GetConnectionTime only use with
+                                                               //  DeepLeanring Detector to account for possible connection drop
 };
 
 #endif // VICTIM_DETECTOR_BASE_H

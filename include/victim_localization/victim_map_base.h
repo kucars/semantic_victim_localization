@@ -133,7 +133,7 @@ public:
   virtual void setVehicle(VehicleControlBase *vehicle);
   virtual void SetNavMap(nav_msgs::OccupancyGridPtr Nav_map);
   virtual void setCurrentPose(geometry_msgs::Pose ps);
-
+  virtual ros::Duration getServiceConnectionTimeout();
 };
 
 

@@ -13,7 +13,7 @@ obj_bounds_x_max_: 1
 
 maximum_arena_width: 20
 maximum_arena_height: 20
-enable_rotate: true
+
 ############
 ## Sensor settings
 ############
@@ -197,6 +197,15 @@ view_evaluator_type: 0
 
 ############
 ## Termination
+
+# 0: Max Probability
+# 1: Max Probability and if exceed maximum itereation threshold
+
+termination_type: 1
+
+termination_victim_max_probability: 0.9
+termination_iterations_max: 5
+
 ############
 victim_found_prob: 0.9
 
@@ -252,4 +261,6 @@ Frames:
         camera_thermal_frame: "/floating_sensor/camera_thermal_frame"
         base_frame: "/floating_sensor/base_link"
 
+#debugging
+enable_rotate: true
 detection_enabled: true

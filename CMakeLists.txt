@@ -205,9 +205,7 @@ add_executable (test_NBV
 
     src/victim_detector_base.cpp
     src/victim_thermal_detector.cpp
-    src/ssd_detection_with_ecludian_clustering.cpp
-
-    src/utilities/time_profiler.cpp
+    src/victim_vision_detector.cpp
 
     src/victim_wireless_detector.cpp
         include/RSSmodel2/RSSmodel2.cpp
@@ -225,6 +223,13 @@ add_executable (test_NBV
         include/RSSmodel2/abs1.cpp
 
     src/victim_map_wireless_2.cpp
+
+    src/utilities/time_profiler.cpp
+
+    src/termination_check_base.cpp
+    src/termination_check_max_iterations.cpp
+    src/termination_check_max_probability.cpp
+
     )
 add_dependencies(test_NBV ${catkin_EXPORTED_TARGETS})
 

@@ -12,3 +12,8 @@ void victim_detector_base::SetVehicleCommunicator(vehicle_communicator *vehicle_
 {
   vehicle_comm_=vehicle_comm;
 }
+
+ros::Duration victim_detector_base::GetConnectionTime()
+{
+  return ros::Duration(0);
+}

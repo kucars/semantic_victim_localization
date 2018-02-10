@@ -1,7 +1,8 @@
-#include <ssd_keras/ssd_detection_with_ecludian_clustering.h>
+#include <ssd_keras/victim_vision_detector.h>
 
-SSD_Detection_with_clustering::SSD_Detection_with_clustering():
-victim_detector_base()
+victim_vision_detector::victim_vision_detector():
+victim_detector_base(),
+ServiceCallFirstTime(true)
 {
 
 detection_Cluster_succeed=false;
@@ -36,7 +37,7 @@ loc_sub_  = new message_filters::Subscriber<geometry_msgs::PoseStamped>(nh_, top
 sync = new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(4), *depth_in_ ,*loc_sub_);
 
 // Callbacks
-sync->registerCallback(boost::bind(&SSD_Detection_with_clustering::CallBackData, this, _1, _2));
+sync->registerCallback(boost::bind(&victim_vision_detector::CallBackData, this, _1, _2));
 
 //publisher topics
 pub_segemented_human_pointcloud = nh_.advertise<sensor_msgs::PointCloud2>(topic_segmented_PointCloud, 4);
@@ -46,8 +47,10 @@ pub_setpoint = nh_.advertise<geometry_msgs::PoseStamped>(topic_Position, 10);
 client = nh_private.serviceClient<victim_localization::DL_box>("SSD_Detection");
 }
 
+victim_vision_detector::~victim_vision_detector(){}
 
-void SSD_Detection_with_clustering::CallBackData(const sensor_msgs::ImageConstPtr& input_depth,
+
+void victim_vision_detector::CallBackData(const sensor_msgs::ImageConstPtr& input_depth,
                                                  const geometry_msgs::PoseStamped::ConstPtr& loc)
 {
 
@@ -64,10 +67,13 @@ void SSD_Detection_with_clustering::CallBackData(const sensor_msgs::ImageConstPt
   current_ps= *loc;
   }
 
-void SSD_Detection_with_clustering::DetectionService(){
+void victim_vision_detector::DetectionService(){
 
   Detection_success=false;
   ros::Rate loop_rate(10);
+
+  if(ServiceCallFirstTime) Start_time=ros::Time::now();
+
   while (ros::ok() && !Detection_success)
   {
 
@@ -91,10 +97,19 @@ void SSD_Detection_with_clustering::DetectionService(){
 
   current_ssd_detection= box_;
   capture_ps= current_ps;
+  if(ServiceCallFirstTime)
+  {
+    Service_startTime=ros::Time::now()-Start_time;
+    ServiceCallFirstTime=false;
+  }
 }
 
+ros::Duration victim_vision_detector::GetConnectionTime()
+{
+  return Service_startTime;
+}
 
-void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code works with one human detection in the image, need to be
+void victim_vision_detector::FindClusterCentroid(){  //TOFIX:: this code works with one human detection in the image, need to be
                                                             // generatlized for multiple humans
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr depth_cloud (new pcl::PointCloud<pcl::PointXYZ>);
@@ -141,13 +156,6 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
          std::vector<int> indices;
          pcl::removeNaNFromPointCloud(*depth_cloud, *depth_cloud, indices);
 
-//         while(ros::ok())
-//         {
-//         ros::spinOnce();
-//         PublishSegmentedPointCloud(*depth_cloud);
-//         ros::Rate(1).sleep();
-//         }
-
    //  Create the filtering object: downsample the dataset using a leaf size of 1cm
       pcl::VoxelGrid<pcl::PointXYZ> vg;
       vg.setInputCloud (depth_cloud);
@@ -177,7 +185,6 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
           break;
         }
 
-
         // Extract the planar inliers from the input cloud
         pcl::ExtractIndices<pcl::PointXYZ> extract;
         extract.setInputCloud (filtered_cloud);
@@ -193,14 +200,11 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
         *filtered_cloud = *cloud_f;
       }
 
-
       std::cout << "filter_size is...." << filtered_cloud->points.size() << std::endl;
       if (!filtered_cloud->points.size()) {  // if filtered_cloud size is zero, we should try again with new input cloud data
         //detection_status="repeat";
         return;
           }
-
-
 
       // Creating the KdTree object for the search method of the extraction
       pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
@@ -214,7 +218,6 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
       ec.setSearchMethod (tree);
       ec.setInputCloud (filtered_cloud);
       ec.extract (cluster_indices);
-
 
 
     std::vector <pcl::PointCloud<pcl::PointXYZ>::Ptr, Eigen::aligned_allocator <pcl::PointCloud <pcl::PointXYZ>::Ptr > > cloud_clusters;
@@ -276,8 +279,8 @@ void SSD_Detection_with_clustering::FindClusterCentroid(){  //TOFIX:: this code 
         //PublishSegmentedPointCloud(*cloud_clusters[0]);
   }
 
-void SSD_Detection_with_clustering::PublishSegmentedPointCloud(const pcl::PointCloud<pcl::PointXYZ> input_PointCloud){
-
+void victim_vision_detector::PublishSegmentedPointCloud(const pcl::PointCloud<pcl::PointXYZ> input_PointCloud)
+{
    if (input_PointCloud.size()==0) return;
    sensor_msgs::PointCloud2 output_msg;
    pcl::toROSMsg(input_PointCloud, output_msg); 	//cloud of original (white) using original cloud
@@ -287,11 +290,11 @@ void SSD_Detection_with_clustering::PublishSegmentedPointCloud(const pcl::PointC
 }
 
 
-bool SSD_Detection_with_clustering::DetectionAvailable(){
+bool victim_vision_detector::DetectionAvailable(){
     return (current_ssd_detection.Class == "person");
 }
 
-Status SSD_Detection_with_clustering::getDetectorStatus()
+Status victim_vision_detector::getDetectorStatus()
 {
   Status status;
   status.victim_found = detection_Cluster_succeed;
@@ -303,7 +306,7 @@ Status SSD_Detection_with_clustering::getDetectorStatus()
 }
 
 
-void SSD_Detection_with_clustering::performDetection(){
+void victim_vision_detector::performDetection(){
   DetectionService();
   FindClusterCentroid();
 }

@@ -78,10 +78,14 @@ void iris_drone_commander::start(){
   case Command::ROTATE:
     std::cout << "Rotate_and_execute_four_waypoints"<< std::endl;
     if (enable_rotate){
+      std::cout << "error 100001" << std::endl;
      vehicle_->rotateOnTheSpot();
-     vehicle_->Evaluate4Points(start_x,start_y,start_z);
-}
+     std::cout << "error 200002" << std::endl;
 
+     vehicle_->Evaluate4Points(start_x,start_y,start_z);
+     std::cout << "error 300003" << std::endl;
+
+}
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;
      command_status = true; // done
      std::cout << "done with the the Rotation" << std::endl;
@@ -118,7 +122,7 @@ void iris_drone_commander::start(){
 
 void iris_drone_commander::Takeoff()
 {
-  ros::param::param<double>("~uav_pose_x" ,start_x, -2);
+  ros::param::param<double>("~uav_pose_x" ,start_x, -2.0);
   ros::param::param<double>("~uav_pose_y" , start_y, 0.0);
   ros::param::param<double>("~uav_pose_z" , start_z, 1.0);
   ros::param::param<double>("~uav_pose_yaw" , start_yaw, 3.14);

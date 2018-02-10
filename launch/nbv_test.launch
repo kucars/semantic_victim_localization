@@ -1,53 +1,24 @@
 <launch>
-  <!-- Launch the grid map simple demo node -->
+   <arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
+   <arg name="grid_map_visualizer" default="false"/>
+   <arg name="debug" default="false"/>
+   <arg name="enable_vision" default="true"/>
+   <arg name="enable_rviz" default="true"/>
+   <arg name="enable_graph" default="true"/>
 
-    <arg name="tf_frame" default="world" />
-    <arg name="mesh_resolution" default="1.0" />
-    <arg name="resolution" default="0.2" />
-    <arg name="visualize_max_z" default="5" />
-    <arg name="sensor_max_range" default="9.0" />
-   <arg name="probability_hit" default="0.7" />   <!-- default value for pro_hit in octomap is 0.7 -->
-   <arg name="probability_miss" default="0.4" />  <!-- default value for pro_miss in octomap is 0.4 -->
+<include file="$(find victim_localization)/launch/vehicle_setup.launch"/>
 
-<arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
-<arg name="grid_map_visualizer" default="true"/>
-<arg name="debug" default="false"/>
-<arg name="vision" default="true"/>
-
-<!--<include file="$(find victim_localization)/launch/vehicle_setup.launch"/>-->
-
-<!-- <node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" output="screen" if="$(arg vision)"/>
- --><node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
-       <param name="tf_frame" type="string" value="$(arg tf_frame)" />
-       <param name="resolution" type="double" value="$(arg resolution)" />
-       <param name="visualize_max_z" type="double" value="$(arg visualize_max_z)" />
-       <param name="sensor_max_range" type="double" value="$(arg sensor_max_range)" />
-       <param name="mesh_resolution" type="double" value="$(arg mesh_resolution)" />
-       <param name="map_publish_frequency" type="double" value="5.0" />
-       <param name="probability_hit" type="double" value="$(arg probability_hit)" />
-       <param name="probability_miss" type="double" value="$(arg probability_miss)" />
-
+<node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" required="true" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
        <rosparam command="load" file="$(arg param_file)" />
 </node>
 
-<node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" unless="$(arg debug)">
-       <param name="tf_frame" type="string" value="$(arg tf_frame)" />
-       <param name="resolution" type="double" value="$(arg resolution)" />
-       <param name="visualize_max_z" type="double" value="$(arg visualize_max_z)" />
-       <param name="sensor_max_range" type="double" value="$(arg sensor_max_range)" />
-       <param name="mesh_resolution" type="double" value="$(arg mesh_resolution)" />
-       <param name="map_publish_frequency" type="double" value="1.0" />
-       <param name="probability_hit" type="double" value="$(arg probability_hit)" />
-       <param name="probability_miss" type="double" value="$(arg probability_miss)" />
-
+<node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" required="true" unless="$(arg debug)">
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
        <rosparam command="load" file="$(arg param_file)" />
-
 </node>
-
 
 <!-- Launch iris_commander to manager iris drone-->
 
@@ -56,16 +27,14 @@
 </node>
 
 <!-- Launch the grid map visualizer -->
+
+<group if="$(arg grid_map_visualizer)">
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="DL">
 <rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_DL.yaml" />
 </node>
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="thermal" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_thermal.yaml" />
 </node>
-
-<group if="$(arg grid_map_visualizer)">
-
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="Combined" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_combined.yaml" />
 </node>
@@ -75,9 +44,6 @@
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="wireless" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_wireless.yaml" />
 </node>
-<node pkg="grid_map_visualization" type="grid_map_visualization" name="offline" output="screen">
-<rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_wireless_offline.yaml" />
-</node>
 <node pkg="grid_map_visualization" type="grid_map_visualization" name="test" output="screen">
 <rosparam command="load" file="$(find victim_localization)/config/grid_published_map/victim_Map_test.yaml" />
 </node>
@@ -86,7 +52,10 @@
 </node>
 </group>
 
-<!-- Launch RViz with the demo configuration -->
-<node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" />
+<node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" respawn="true" if="$(arg enable_vision)"/>
+
+<node pkg="victim_localization" type="plot_ieration_info_combined.py" name="plot_ieration_info_combined"  if="$(arg enable_graph)"/>
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/test_NBZ1.rviz" if="$(arg enable_rviz)" />
 
 </launch>

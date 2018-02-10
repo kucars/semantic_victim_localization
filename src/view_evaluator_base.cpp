@@ -376,7 +376,8 @@ std::string view_evaluator_base::getMethodName()
   return "IG";
 }
 
-bool view_evaluator_base::IsSamePosition(geometry_msgs::Pose p1,geometry_msgs::Pose p2){
+bool view_evaluator_base::IsSamePosition(geometry_msgs::Pose p1,geometry_msgs::Pose p2)
+{
  return !((p1.position.x-p2.position.x)+(p1.position.y-p2.position.y)+(p1.position.z-p2.position.z));
 }
 

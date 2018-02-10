@@ -6,12 +6,10 @@
     <namespace>floating_sensor</namespace>
   </plugin>
 
-<pose>0 0 0 0 0 0</pose>
-<static>true</static>
 
 <link name='rgb_link'>
 <gravity>false</gravity>
-    <pose frame=''>0 0 0 0 -0 0</pose>
+    <pose frame=''>0 0 0 0 0 0</pose>
     <collision name='base_link_fixed_joint_lump__cam_link_collision_1'>
       <pose frame=''>0 0 -0.05 0 0.261799 0</pose>
       <geometry>

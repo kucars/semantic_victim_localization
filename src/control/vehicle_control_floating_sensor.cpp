@@ -54,8 +54,8 @@ bool VehicleControlFloatingSensor::isSationary(double threshold_sensitivity)
 
 void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
 {
-  geometry_msgs::PoseStamped temp_target;
-  temp_target.pose = setpoint_;
+//  geometry_msgs::PoseStamped temp_target;
+ // temp_target.pose = setpoint_;
 
 //  //ros::Time wait=ros::Time::now();
 
@@ -72,8 +72,8 @@ void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
 
 //  return;
 
-  if (speed_ < 0)
-  {
+//  if (speed_ < 0)
+//  {
     // Teleport sensor instantly
     geometry_msgs::PoseStamped setpoint_stamped;
     setpoint_stamped.pose = setpoint_;
@@ -81,38 +81,34 @@ void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
     pub_pose.publish(setpoint_stamped);
 
     // Wait for sensor to reach destination
-    distance_threshold_ = 0.01;
     while (ros::ok() && !isNear(setpoint_, vehicle_current_pose_, 1) )
     {
-      std::cout << "iam hrer.." << std::endl;
       ros::Rate(100).sleep();
       ros::spinOnce();
     }
 
-    return;
-  }
+//    return;
+//  }
 
-  //Compute new velocities
-  updateTwist();
+//  //Compute new velocities
+//  //updateTwist();
 
-  std::cout << "iam hrer2.." << std::endl;
+//  double rate = 50;
+//  geometry_msgs::PoseStamped temp_target_;
+//  temp_target_.pose = vehicle_current_pose_;
 
-  double rate = 50;
-  geometry_msgs::PoseStamped temp_target_;
-  temp_target_.pose = vehicle_current_pose_;
+//  std::cout << "time to target...." << time_to_target_ << std::endl;
+//    for (int i=0; i<time_to_target_*rate; i++)
+//  {
+//    temp_target_.pose.position.x += twist_.linear.x/rate;
+//    temp_target_.pose.position.y += twist_.linear.y/rate;
+//    temp_target_.pose.position.z += twist_.linear.z/rate;
 
-  std::cout << "time to target...." << time_to_target_ << std::endl;
-    for (int i=0; i<time_to_target_*rate; i++)
-  {
-    temp_target_.pose.position.x += twist_.linear.x/rate;
-    temp_target_.pose.position.y += twist_.linear.y/rate;
-    temp_target_.pose.position.z += twist_.linear.z/rate;
+//    pub_pose.publish(temp_target_);
 
-    pub_pose.publish(temp_target_);
-
-    ros::Rate(rate).sleep();
-    ros::spinOnce();
-}
+//    ros::Rate(rate).sleep();
+//    ros::spinOnce();
+//}
   /*
   // Publish speed so vehicle will move
   pub_twist.publish(twist_);
@@ -130,9 +126,6 @@ void VehicleControlFloatingSensor::moveVehicle(double threshold_sensitivity)
   */
 
   // Done, publish setpoint to make sure we're in target location
-  geometry_msgs::PoseStamped setpoint_stamped;
-  setpoint_stamped.pose = setpoint_;
-
   pub_pose.publish(setpoint_stamped);
 }
 
@@ -247,9 +240,9 @@ void VehicleControlFloatingSensor::start()
 void VehicleControlFloatingSensor::Evaluate4Points(double x, double y, double z){
   geometry_msgs::Pose p;
 
-   x = vehicle_current_pose_.position.x;
-  y = vehicle_current_pose_.position.y;
-  z = vehicle_current_pose_.position.z;
+  std::cout << "x: "  << x << std::endl;
+  std::cout << "y: "  << y << std::endl;
+  std::cout << "z: "  << z << std::endl;
 
   ROS_INFO("Perfroming -- 4Points Evaluation");
 
@@ -290,6 +283,7 @@ void VehicleControlFloatingSensor::Evaluate4Points(double x, double y, double z)
   {
     setWaypoint(FourPoints[i]);
     std::cout << "drone start move...."   ;
+    std::cout <<FourPoints[i] << std::endl;
     moveVehicle(1);
     std::cout << "wating for the drone to move....";
     ros::Time lastTimeTurnTime=ros::Time::now();

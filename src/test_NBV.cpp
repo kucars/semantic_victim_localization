@@ -33,7 +33,7 @@ bool TestNBV::CheckGazeboIsWorking()
   std_srvs::Empty srv;
   bool unpaused = ros::service::call("/gazebo/unpause_physics", srv);
   unsigned int i = 0;
-  while (i <= 10 && !unpaused) {
+  while (i <= 20 && !unpaused) {
     ROS_INFO("Wait for 1 second before trying to unpause Gazebo again.");
     std::this_thread::sleep_for(std::chrono::seconds(1));
     unpaused = ros::service::call("/gazebo/unpause_physics", srv);
@@ -46,107 +46,6 @@ bool TestNBV::CheckGazeboIsWorking()
     ROS_INFO("Unpaused the Gazebo simulation.");
     return 1;
   }
-}
-
-void TestNBV::SaveData()
-{
-  std::string path = ros::package::getPath("victim_localization");
-  std::cout << path << std::endl;
-  // ---- Save octomap ---
-  std::string saveFolder;
-  ros::param::param<std::string>("~SaveDataFolder",saveFolder, std::string("Data"));
-  file_path=path + "/" + saveFolder+ "/";
-  Occlusion_Map_->m_octree->writeBinary(file_path+"environment");
-
-  // --- Save generated path ---
-  ofstream myfile (file_path+"PATH.txt");
-  if (myfile.is_open())
-  {
-    for(int i =0; i< (history_->selected_poses.size()) ;i+=1)
-    {
-      myfile << history_->selected_poses[i].position.x << " "
-             << history_->selected_poses[i].position.y<< " "
-             << history_->selected_poses[i].position.z<< " "
-             << history_->selected_poses[i].orientation.x<< " "
-             << history_->selected_poses[i].orientation.y<< " "
-             << history_->selected_poses[i].orientation.z<< " "
-             << history_->selected_poses[i].orientation.w<< " ";
-    }
-    myfile.close();
-  }
-  else
-    cout << "Unable to open PATH.txt file";
-
-  //----- Save Occupancy Map ----
-  // The occupancy map is initially upscaled to improve the image resolution
-  cv::Mat occupancyImage;
-  grid_map::GridMap gridMap;
-  double upscale_factor=32;
-  double upscale_resolution= Map_->map_resol/upscale_factor;
-  std::string mapName= "SaveOccupancy";
-  gridMap.setGeometry(Map_->map.getLength(),upscale_resolution);
-  gridMap.add(mapName,0);
-
-  occupancyImage= upscaleImage(Map_->map,Map_->layer_name,gridMap,mapName);
-  cv::imwrite(file_path+Map_->getlayer_name()+"Occupancy.jpeg",occupancyImage);
-
-  // In case the Fused_Map is used , then save its individual maps
-  if (Map_->Maptype==MAP::COMBINED)
-  {
-    // Save DL MAP
-    gridMap[mapName].setZero();  // reset gridMap;
-    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::DL)->map,
-                                 Map_->getMapLayer(MAP::DL)->getlayer_name(),
-                                 gridMap,mapName);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::DL)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
-
-    // Save THERMAL MAP
-    gridMap[mapName].setZero();  // reset gridMap;
-    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::THERMAL)->map,
-                                 Map_->getMapLayer(MAP::THERMAL)->getlayer_name(),
-                                 gridMap,mapName);
-    occupancyImage= upscaleImage(Map_->map,Map_->layer_name,gridMap,mapName);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
-
-    // Save WIRELESS MAP
-    gridMap[mapName].setZero();  // reset gridMap;
-    occupancyImage= upscaleImage(Map_->getMapLayer(MAP::WIRELESS)->map,
-                                 Map_->getMapLayer(MAP::WIRELESS)->getlayer_name(),
-                                 gridMap,mapName);
-    cv::imwrite(file_path+Map_->getMapLayer(MAP::WIRELESS)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
-  }
-
-  //---- Store Test Results ---
-  ofstream Results (file_path+Map_->layer_name+"Result.txt");
-  if (Results.is_open())
-  {
-    Results << "time taken: " << (ros::Time::now()-StartTimeForNBV).toSec()<< "\n"
-            << "Total entropy: " << View_evaluate_->info_entropy_total_ << "\n"
-            << "distance: " <<  View_evaluate_->info_distance_total_ << "\n"
-            << "iteration: " << history_->iteration<< std::endl << "\n";
-    Results.close();
-  }
-  else cout << "Unable to find Results file";
-}
-
-cv::Mat TestNBV::upscaleImage(grid_map::GridMap inputMap , std::string Input, grid_map::GridMap upscaledMap, std::string Output)
-{
-  cv::Mat image;
-  const float minValue = 0.0;  // minValue correspond to black, max value correspond to white
-  const float maxValue = 1.0;
-  Index index;
-  Position position;
-  for (grid_map::GridMapIterator iterator(upscaledMap);
-       !iterator.isPastEnd(); ++iterator)
-  {
-    index=*iterator;
-    upscaledMap.getPosition(index,position);
-    upscaledMap.atPosition(Output,position)=1-inputMap.atPosition(Input,position);
-  }
-
-  GridMapCvConverter::toImage<unsigned char, 4>(upscaledMap, Output, CV_8UC4, minValue, maxValue, image);
-
-  return image;
 }
 
 void TestNBV::initVehicle(){
@@ -258,39 +157,30 @@ void TestNBV::initViewEvaluator(){
   }
 }
 
+void TestNBV::initTerminationCondition(){
+
+  ros::param::param("~termination_type", termination_type, 1);
+
+  switch(termination_type)
+  {
+  default:
+  case 0:
+    termination_check_module_ = new TerminationCheckMaxProbability();
+    break;
+  case 1:
+    termination_check_module_ = new TerminationCheckMaxIterations();
+    break;
+  }
+}
+
+
 void TestNBV::initOctomap(){
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
 
   Occlusion_Map_ = new Volumetric_Map(manager_);
 
-  // tf failed some time at the start up.
-  tf::TransformListener tf_listener;
-  tf::StampedTransform transform;
-  std::string camera_link;
-  ros::param::param<std::string>("~camera_optical_frame",camera_link, "/front_cam_depth_optical_frame");
-  std::cout << "camera_link" << camera_link << std::endl;
-  std::cout << "Supress ERORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR" << std::endl;
-  while(true)
-  {
-    try
-    {
-      tf_listener.lookupTransform(camera_link, "/world", ros::Time(0), transform);
-      break; // Success, break out of the loop
-    }
-    catch (tf2::LookupException ex){
-      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
-      ros::Duration(0.1).sleep();
-    }
-    catch (tf2::ExtrapolationException ex){
-      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
-      ros::Duration(0.1).sleep();
-    }
-    catch (tf2::ConnectivityException ex){
-      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
-      ros::Duration(0.1).sleep();
-    }
-  }
+  Occlusion_Map_->CheckTFConnection(); // TF tend to fails at start up, check until success
 
   CostMapROS_ = new costmap_2d::Costmap2DROS ("costmap",tf_);
 
@@ -316,12 +206,26 @@ void TestNBV::initParameters(){
   // initialize vehicle communicator
   drone_communicator_ = new vehicle_communicator(nh,nh_private,manager_);
 
+  // pass vehicle communicator to Map Module
   Map_->setDroneCommunicator(drone_communicator_);
-
-
   Map_->SetNavMap(Occlusion_Map_->m_gridmap);
-
   Map_->setOctomapManager(manager_);
+
+  // pass params to termination_condition
+  termination_check_module_->setHistory(history_);
+  termination_check_module_->setViewEvaluator(View_evaluate_);
+}
+
+void TestNBV::initAllModules()
+{
+  initVehicle();
+  initMap();
+  initOctomap();
+  initNavigation();
+  initViewGenerator();
+  initViewEvaluator();
+  initTerminationCondition();
+  initParameters();
 }
 
 void TestNBV::updateHistory()
@@ -352,7 +256,13 @@ void TestNBV::updateHistory()
 
     iteration_msg.generator_type =view_generate_->generator_type;
 
-    iteration_msg.time_iteration   = timer.getLatestTime("[NBV)Loop]Iteration")/1000; // time in sec
+    if (InitializedService)
+    {
+    iteration_msg.time_iteration   = (timer.getLatestTime("[NBVLoop]Iteration")/1000)-Map_->getServiceConnectionTimeout().toSec(); // time in sec
+     InitializedService=false;
+    }
+    else
+    iteration_msg.time_iteration   = (timer.getLatestTime("[NBVLoop]Iteration")/1000); // time in sec
 
     if (Map_->Maptype==MAP::COMBINED){
       iteration_msg.entropy_total_dl= View_evaluate_->info_dl_entropy_total_;
@@ -364,7 +274,7 @@ void TestNBV::updateHistory()
       iteration_msg.selected_utility_wireless = View_evaluate_->info_wireless_selected_utility_;
 
     }
-    else
+    else  // if combined map is not used then assign the three map related data to zero
     {
       iteration_msg.entropy_total_dl=0;
       iteration_msg.entropy_total_thermal=0;
@@ -373,7 +283,6 @@ void TestNBV::updateHistory()
       iteration_msg.selected_utility_thermal=0;
       iteration_msg.selected_utility_wireless=0;
     }
-
     pub_iteration_info.publish(iteration_msg);
   }
 }
@@ -480,7 +389,6 @@ void TestNBV::navigate()
     break;
 
 
-
   case 2: // move to waypoint in a discretized Path
     double step_size=0.02;
     path_to_waypoint = navigation_->Path_discretizationtoPath(drone_communicator_->GetPose(),View_evaluate_->getTargetPose(),
@@ -558,10 +466,19 @@ void TestNBV::UpdateMap()
                  (Map_->getMapResultStatus().victim_loc)[0] << "," <<
                  (Map_->getMapResultStatus().victim_loc)[1] << ") terminating...\n" << cc.reset;
 
-    state = NBVState::TERMINATION_MET;
     return;
   }
   state = NBVState::UPDATE_MAP_COMPLETE;
+}
+
+void TestNBV::terminationCheck()
+{
+    std::cout << "[NBVLoop] " << cc.green << "Checking termination condition for iteration " << history_->iteration << "\n" << cc.reset;
+
+  if (termination_check_module_->isTerminated())
+    state = NBVState::TERMINATION_MET;
+  else
+    state = NBVState::START_MAP_UPDATE;
 }
 
 void TestNBV::runStateMachine()
@@ -586,7 +503,7 @@ void TestNBV::runStateMachine()
 
     case NBVState::START_MAP_UPDATE:
       timer.start("[NBVLoop]Iteration");  // detect and update map
-      ros::Rate(1).sleep();
+      //ros::Rate(1).sleep();
       Occlusion_Map_->GetPointCloud();
       while (!Occlusion_Map_->GetPointCloudDone()) {ros::spinOnce() ; NBV_loop_rate.sleep();}
       UpdateMap();
@@ -600,11 +517,7 @@ void TestNBV::runStateMachine()
 
     case NBVState::VIEWPOINT_GENERATION_COMPLETE:
       state = NBVState::VIEWPOINT_EVALUATION;
-      T1 = ros::Time::now();
       evaluateViewpoints();
-      D= ros::Time::now()-T1;
-      std::cout << "time taken for Viewpoint evaluator is..." << D.toSec() <<std::endl;     break;
-
       break;
 
     case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
@@ -613,16 +526,9 @@ void TestNBV::runStateMachine()
       break;
 
     case NBVState::NAVIGATION_COMPLETE:
-      updateHistory();
       timer.stop("[NBVLoop]Iteration");
-      state = NBVState::START_MAP_UPDATE;
-      timer.stop("NBV: Total Time");
-
-
-
-
-
-
+      updateHistory();
+      terminationCheck();
       break;
 
     case NBVState::TERMINATION_MET:
@@ -637,27 +543,29 @@ void TestNBV::runStateMachine()
       }
       visualTools->trigger();
       Map_->publish_Map();
-
-      //ros::spinOnce();
-      //ros::Rate(5).sleep();
-
-      SaveData();
       timer.stop("NBV: Total Time");
 
-      // Dump time data
+      //std::cout << "time Taken: Method1" <<   (timer.getLatestTime("NBV: Total Time")/1000.0) << std::endl;
+      //std::cout << "time Taken: Method2" <<   (ros::Time::now()-StartTimeForNBV).toSec() << std::endl;
+      ros::Duration TotalNBVTime;
+      TotalNBVTime.fromNSec(timer.getLatestTime("NBV: Total Time"));
+      ros::Duration Service_Startup_time = Map_->getServiceConnectionTimeout(); // this is added to account for the time due possible connection drop for the first time when connecting  NBV node and SSD service
+      termination_check_module_->setNBVTimeTaken(TotalNBVTime-Service_Startup_time);
+      termination_check_module_->SaveResults();
+
       timer.dump();
 
       // Clean up
       std::cout << "[NBV_test] " << cc.yellow << "Shutting down\n" << cc.reset;
       ros::shutdown();
+
+      //ros::spinOnce();
+      //ros::Rate(5).sleep();
       break;
-
-
     }
     ros::spinOnce();
     NBV_loop_rate.sleep();
   }
-  timer.stop("NBV: Total Time");
 
   // Dump time data
   timer.dump();
@@ -669,9 +577,17 @@ void TestNBV::runStateMachine()
 }
 
 
-int main(int argc, char **argv)
+void sigIntHandler(int sig)
 {
-  ros::init(argc, argv, "test_NBV");
+  std::cout << cc.yellow << "Handling SIGINT exception\n" << cc.reset;
+  // Forces ros::Rate::sleep() to end if it's stuck (for example, Gazebo isn't running)
+  ros::shutdown();
+}
+
+int main(int argc, char **argv)
+{  
+  ros::init(argc, argv, "test_NBV", ros::init_options::NoSigintHandler);
+  signal(SIGINT, sigIntHandler);
 
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
@@ -680,16 +596,16 @@ int main(int argc, char **argv)
 
   TestNBV *test_;
   test_ = new TestNBV(nh,nh_private);
+
+  if(!test_)
+  {
+    ROS_ERROR("Something is wrong");
+    return 0;
+  }
+
   if(!test_->CheckGazeboIsWorking()) return 0;
 
-  test_->initVehicle();
-  test_->initMap();
-  test_->initOctomap();
-  test_->initNavigation();
-  test_->initViewGenerator();
-  test_->initViewEvaluator();
-  test_->initParameters();
-
+  test_->initAllModules();
   test_->runStateMachine();
   return 0;
 }

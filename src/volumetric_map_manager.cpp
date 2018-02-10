@@ -390,6 +390,36 @@ bool Volumetric_Map::GetPointCloudDone()
   return false;
 }
 
+void Volumetric_Map::CheckTFConnection()
+{
+  // TF failed some time at the start up, check until it succeed.
+  tf::TransformListener tf_listener;
+  tf::StampedTransform transform;
+  std::string camera_link;
+  ros::param::param<std::string>("~camera_optical_frame",camera_link, "/front_cam_depth_optical_frame");
+  std::cout << "camera_link" << camera_link << std::endl;
+  while(true)
+  {
+    try
+    {
+      tf_listener.lookupTransform(camera_link, "/world", ros::Time(0), transform);
+      break; // Success, break out of the loop
+    }
+    catch (tf2::LookupException ex){
+      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
+      ros::Duration(0.1).sleep();
+    }
+    catch (tf2::ExtrapolationException ex){
+      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
+      ros::Duration(0.1).sleep();
+    }
+    catch (tf2::ConnectivityException ex){
+      ROS_INFO_THROTTLE(1,"[TEST_NBV] Waiting for Transformation %s",ex.what());
+      ros::Duration(0.1).sleep();
+    }
+  }
+}
+
 void Volumetric_Map::Stop()
 {
   stop=true;

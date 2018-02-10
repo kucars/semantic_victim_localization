@@ -6,7 +6,7 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
   Maptype=MAP::DL;
   setlayer_name(DL_layer_name);
 
-  detector_ = new SSD_Detection_with_clustering();
+  detector_ = new victim_vision_detector();
 
   ros::param::param<std::string>("~map_topic_DL", map_topic , "victim_map/grid_map_DL");
   ros::param::param<double>("~map_resol_DL", map_resol , 1.0);
@@ -167,6 +167,11 @@ void victim_map_DL::runDetector()
   status_temp.victim_loc=g;
    this->setDetectionResult(status_temp);
 }
+}
+
+ros::Duration victim_map_DL::getServiceConnectionTimeout()
+{
+  return detector_->GetConnectionTime();
 }
 
 

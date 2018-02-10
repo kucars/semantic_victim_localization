@@ -101,6 +101,8 @@ public:
   void GetPointCloud();
   void Stop();
   bool GetPointCloudDone();
+  void CheckTFConnection();
+
 
 protected:
   void callbackSetPointCloud(const sensor_msgs::PointCloud2::ConstPtr &input_msg);
