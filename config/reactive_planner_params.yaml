@@ -1,15 +1,6 @@
 ############
 ## reactive Planner settings
 ############
-tf_frame: "world"
-resolution: 0.2
-mesh_resolution: 1.0
-visualize_max_z: 5.0
-sensor_max_range: 9.0
-map_publish_frequency: 1.0
-probability_hit: 0.7
-probability_miss: 0.4
-#treat_unknown_as_occupied: false
 visualize_search_space: false
 debug: false
 sample_orientations: false

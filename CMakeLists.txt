@@ -245,6 +245,22 @@ target_link_libraries(test_NBV
     SSPathPlanner
 )
 
+add_executable(Visualizeresults
+    src/visualize_results.cpp
+    src/volumetric_map_manager.cpp
+    )
+target_link_libraries(Visualizeresults
+    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${CGAL_Core_LIBRARY}
+    ${rviz_visual_tools_LIBRARIES}
+    )
+add_dependencies(Visualizeresults  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+
 
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})

@@ -11,12 +11,14 @@
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" required="true" if="$(arg debug)" launch-prefix="gdb -ex run --args" >
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
        <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
+       <rosparam file="$(find victim_localization)/config/octomap_manager_params.yaml" command="load"/>
        <rosparam command="load" file="$(arg param_file)" />
 </node>
 
 <node pkg="victim_localization" type="test_NBV" name="test_NBV" output="screen" required="true" unless="$(arg debug)">
        <rosparam file="$(find victim_localization)/config/costmap_params.yaml" command="load" ns="costmap" />
-       <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load" ns=""/>
+       <rosparam file="$(find victim_localization)/config/reactive_planner_params.yaml" command="load"/>
+       <rosparam file="$(find victim_localization)/config/octomap_manager_params.yaml" command="load"/>
        <rosparam command="load" file="$(arg param_file)" />
 </node>
 
@@ -53,7 +55,6 @@
 </group>
 
 <node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" respawn="true" if="$(arg enable_vision)"/>
-
 
 <node pkg="victim_localization" type="plot_ieration_info_combined.py" name="plot_ieration_info_combined"  if="$(arg enable_graph)"/>
 

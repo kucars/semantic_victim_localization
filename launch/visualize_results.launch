@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<launch>
+
+<arg name="resultFolder" default="$(find victim_localization)/Data"/>
+
+<node pkg="victim_localization" type="Visualizeresults" name="Visualizeresults" output="screen">
+          <param name="resultFolder" type="string" value="$(arg resultFolder)" />
+          <rosparam file="$(find victim_localization)/config/octomap_manager_params.yaml" command="load"/>
+</node>
+
+<node name="rviz" pkg="rviz" type="rviz" args="-d $(find victim_localization)/rviz/visualize_results.rviz" />
+
+
+</launch>
