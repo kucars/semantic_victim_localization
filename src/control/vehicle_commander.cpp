@@ -78,12 +78,8 @@ void iris_drone_commander::start(){
   case Command::ROTATE:
     std::cout << "Rotate_and_execute_four_waypoints"<< std::endl;
     if (enable_rotate){
-      std::cout << "error 100001" << std::endl;
      vehicle_->rotateOnTheSpot();
-     std::cout << "error 200002" << std::endl;
-
      vehicle_->Evaluate4Points(start_x,start_y,start_z);
-     std::cout << "error 300003" << std::endl;
 
 }
      state = Command::HOVER_IF_NO_WAYPOINT_RECEIVED;

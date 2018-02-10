@@ -46,9 +46,13 @@ for file in filenames:
   if not os.path.exists(resultfolder):
     os.makedirs(resultfolder)
 
+    proc = subprocess.Popen(['rosrun victim_localization plot_ieration_info_combined.py' + file_no_ext],stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
+
+
   # Run NBV
   os.system("roslaunch victim_localization nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
 
+  killProcessByName("plot_ieration_info_combined.py")
   # move all generated results into folder for later analysis
   # also delete ros log to avoid been accumulated
   for the_file in os.listdir(resultFolder):

@@ -50,7 +50,7 @@ void TerminationCheckBase::SaveResults()
              << nbv_history_->selected_poses[i].orientation.x<< " "
              << nbv_history_->selected_poses[i].orientation.y<< " "
              << nbv_history_->selected_poses[i].orientation.z<< " "
-             << nbv_history_->selected_poses[i].orientation.w<< " ";
+             << nbv_history_->selected_poses[i].orientation.w<< "\n";
     }
     myfile.close();
   }

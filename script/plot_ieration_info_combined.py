@@ -45,8 +45,8 @@ selected_utility_wireless = {}
 
 def main():
   global file_prefix
-  if ( len(sys.argv) > 1):
-    file_prefix = sys.argv[1] + "_" + file_prefix
+  #if ( len(sys.argv) > 1):
+    #file_prefix = sys.argv[1] + "_" + file_prefix
 
   rospy.init_node('plot_iteration_info', anonymous=True)
   rospy.Subscriber("victim_localization/iteration_info", IterationInfo, callback)

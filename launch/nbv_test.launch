@@ -3,7 +3,7 @@
    <arg name="grid_map_visualizer" default="false"/>
    <arg name="debug" default="false"/>
    <arg name="enable_vision" default="true"/>
-   <arg name="enable_rviz" default="true"/>
+   <arg name="enable_rviz" default="false"/>
    <arg name="enable_graph" default="true"/>
 
 <include file="$(find victim_localization)/launch/vehicle_setup.launch"/>
@@ -53,6 +53,7 @@
 </group>
 
 <node pkg="victim_localization" type="victim_detection_using_ssd_keras.py" name="victim_detection_using_ssd_keras" respawn="true" if="$(arg enable_vision)"/>
+
 
 <node pkg="victim_localization" type="plot_ieration_info_combined.py" name="plot_ieration_info_combined"  if="$(arg enable_graph)"/>
 

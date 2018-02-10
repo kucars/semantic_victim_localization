@@ -486,8 +486,6 @@ void TestNBV::runStateMachine()
   ROS_INFO("test_NBV: Starting victim_localization node waiting for the drone to take off and rotate.");
   state = NBVState::STARTING_ROBOT;
 
-  timer.start("NBV: Total Time");
-  StartTimeForNBV = ros::Time::now();
   while (ros::ok())
   {
     switch(state)
@@ -502,6 +500,9 @@ void TestNBV::runStateMachine()
       break;
 
     case NBVState::START_MAP_UPDATE:
+      timer.start("NBV: Total Time");
+      StartTimeForNBV = ros::Time::now();
+
       timer.start("[NBVLoop]Iteration");  // detect and update map
       //ros::Rate(1).sleep();
       Occlusion_Map_->GetPointCloud();
@@ -548,8 +549,8 @@ void TestNBV::runStateMachine()
       //std::cout << "time Taken: Method1" <<   (timer.getLatestTime("NBV: Total Time")/1000.0) << std::endl;
       //std::cout << "time Taken: Method2" <<   (ros::Time::now()-StartTimeForNBV).toSec() << std::endl;
       ros::Duration TotalNBVTime;
-      TotalNBVTime.fromNSec(timer.getLatestTime("NBV: Total Time"));
-      ros::Duration Service_Startup_time = Map_->getServiceConnectionTimeout(); // this is added to account for the time due possible connection drop for the first time when connecting  NBV node and SSD service
+      TotalNBVTime.fromSec(timer.getLatestTime("NBV: Total Time")/1000.0);
+      ros::Duration Service_Startup_time = Map_->getServiceConnectionTimeout(); // this is added to account for the possible time loss due to connection drop for the first time when connecting  NBV node and SSD service
       termination_check_module_->setNBVTimeTaken(TotalNBVTime-Service_Startup_time);
       termination_check_module_->SaveResults();
 
