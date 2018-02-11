@@ -86,7 +86,6 @@ void TerminationCheckBase::SaveResults()
     occupancyImage= upscaleOccupancyImage(Map_->getMapLayer(MAP::THERMAL)->map,
                                  Map_->getMapLayer(MAP::THERMAL)->getlayer_name(),
                                  gridMap,mapName);
-    occupancyImage= upscaleOccupancyImage(Map_->map,Map_->layer_name,gridMap,mapName);
     cv::imwrite(file_path+Map_->getMapLayer(MAP::THERMAL)->getlayer_name()+"Occupancy.jpeg",occupancyImage);
 
     // Save WIRELESS MAP

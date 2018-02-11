@@ -16,6 +16,10 @@ resultFolder = pkg_path + '/Data'
 home = expanduser("~")
 roslogFolder = home +'/.ros/log'
 
+def clean_dir(location):
+    fileList = os.listdir(location)
+
+
 def killProcessByName(scriptName):
   process = subprocess.Popen(["ps", "-eo","pid,command"], stdout=subprocess.PIPE)
   output = process.communicate()[0]
@@ -48,7 +52,6 @@ for file in filenames:
 
     proc = subprocess.Popen(['rosrun victim_localization plot_ieration_info_combined.py' + file_no_ext],stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
 
-
   # Run NBV
   os.system("roslaunch victim_localization nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
 
@@ -65,11 +68,14 @@ for file in filenames:
 
   for the_file in os.listdir(roslogFolder):
       file_path = os.path.join(roslogFolder, the_file)
-      try:
-          if os.path.isfile(file_path):
-              os.unlink(file_path)
-          elif os.path.isdir(file_path): shutil.rmtree(file_path) # delete sub-folders
-      except Exception as e:
-          print(e)
+      if os.path.isfile(the_file):
+          os.chmod(the_file, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+          os.remove(os.path.join(roslogFolder, the_file))
+      elif os.path.islink(file_path):
+          os.unlink(file_path)
+      elif os.path.isdir(file_path):
+          if len(os.listdir(file_path)) > 0:
+              clean_dir(file_path)
+          shutil.rmtree(os.path.join(roslogFolder, file_path))
 
 os.system("killall -9 gazebo & killall -9 gzserver & killall -9 gzclient")

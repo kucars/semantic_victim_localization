@@ -10,7 +10,7 @@
 TestNBV::TestNBV(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
   nh(nh_),
   nh_private(nh_private_),
-  NBV_loop_rate(20)
+  NBV_loop_rate(20),
 {
   pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
   // >>>>>>>>>>>>>>>>>
@@ -436,7 +436,7 @@ void TestNBV::generateViewpoints()
   if (view_generate_->generated_poses.size() == 0)
   {
     std::cout << "[test_NBV] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
-    state = NBVState::UPDATE_MAP_COMPLETE;
+    state = NBVState::TERMINATION_MET;;
   }
   else
   {

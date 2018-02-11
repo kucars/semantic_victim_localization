@@ -3,7 +3,7 @@
 view_evaluator_ig_exp::view_evaluator_ig_exp():
   view_evaluator_base() //Call base class constructor
 {
-  ros::param::param<double>("~view_selecter_weight_distance", w_dist_, 1.0);
+  ros::param::param<double>("~view_evaluator_weight_distance", w_dist_, 1.0);
 }
 
 double view_evaluator_ig_exp::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)

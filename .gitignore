@@ -35,6 +35,7 @@
 script/plots/*
 resources/backup_files/*
 Data/*
+Proved_Results/*
 batch/*
 resources/ssd_keras/*.pyc
 *~
