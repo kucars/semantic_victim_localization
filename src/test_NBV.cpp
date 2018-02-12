@@ -10,7 +10,7 @@
 TestNBV::TestNBV(const ros::NodeHandle &nh_,const ros::NodeHandle &nh_private_ ):
   nh(nh_),
   nh_private(nh_private_),
-  NBV_loop_rate(20),
+  NBV_loop_rate(20)
 {
   pub_iteration_info = nh.advertise<victim_localization::IterationInfo>("victim_localization/iteration_info", 10);
   // >>>>>>>>>>>>>>>>>
@@ -378,9 +378,14 @@ void TestNBV::navigate()
     }
 
     else {
-      ROS_WARN("Unable to generate path, terminating....");
+      ROS_WARN("Unable to generate path");
       if(view_generate_->generator_type==Generator::Frontier_Generator)
         history_->black_listed_poses.push_back(View_evaluate_->getTargetPose());
+
+      if(view_generate_->generator_type==Generator::NN_Adaptive_Frontier_Generator){
+         history_->black_listed_poses.push_back(View_evaluate_->getTargetPose());
+          view_generate_->resetScaleFactor(); // this will switch back to Adaptive NN
+      }
     }
 
     view_generate_->visualTools->deleteAllMarkers();

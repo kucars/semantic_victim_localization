@@ -31,6 +31,7 @@ enum GeneratorType{
   NN_Generator,
   NN_Adaptive_Generator,
   Frontier_Generator,
+  NN_Adaptive_Frontier_Generator,
 };
 }
 
@@ -95,6 +96,7 @@ public:
   void generateViews(bool check);
   virtual void generateViews(); //viewpoints is  generated at current pose
   virtual std::string getMethodName();
+  virtual void resetScaleFactor(){};
 
  //visualize
  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);

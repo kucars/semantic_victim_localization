@@ -53,7 +53,7 @@ void view_generator_ig_adaptive_frontier::generateViews()
     {
       view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
       nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-      generator_type=Generator::NN_Adaptive_Generator;
+      generator_type=Generator::NN_Adaptive_Frontier_Generator;
       adaptive_iteration_=+1;
       std::cout << "[ViewGenerator]: " << cc.blue << "Perform NN Adaptive Generator\n" << cc.reset;
     }
@@ -93,6 +93,11 @@ bool view_generator_ig_adaptive_frontier::isStuckInLocalMinima()
     return true;
 
   return false;
+}
+
+void view_generator_ig_adaptive_frontier::resetScaleFactor()
+{
+    scale_factor_=1;
 }
 
 std::string view_generator_ig_adaptive_frontier::getMethodName()

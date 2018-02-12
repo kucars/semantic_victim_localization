@@ -1,7 +1,8 @@
 <?xml version="1.0" ?>
 <launch>
 
-    <!-- Vehicle settings -->
+    <!-- Vehicle settings --><env name="GAZEBO_MODEL_PATH" value="$(find victim_localization)/urdf/victim_models"/>
+
 <arg name="use_floating_sensor" default="true"/>
 <env name="GAZEBO_MODEL_PATH" value="$(find victim_localization)/urdf/victim_models"/>
 
@@ -62,7 +63,6 @@
     <arg name="paused" value="$(arg paused)" />
     </include>
 </group>
-
 
 <node pkg="tf" type="static_transform_publisher" name="world_to_map" args="0 0 0 0 0 0 /world /map 500"/>
 

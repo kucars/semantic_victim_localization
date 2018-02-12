@@ -58,6 +58,7 @@ private:
   bool visualizeSearchSpace = false;
   bool sampleOrientations = false;
   bool debug = false;
+  double tolerance_dist_to_goal;
   std::vector<std::pair<Eigen::Vector3d, double> > occupied_box_vector;
   public:
   ReactivePlannerServer(const ros::NodeHandle& nh_, const ros::NodeHandle& nh_private_, volumetric_mapping::OctomapManager * mapManager_);

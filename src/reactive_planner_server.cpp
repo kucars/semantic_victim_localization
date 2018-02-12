@@ -37,6 +37,8 @@ ReactivePlannerServer::ReactivePlannerServer(const ros::NodeHandle& nh_, const r
   visualTools->deleteAllMarkers();
   visualTools->enableBatchPublishing();
   ROS_INFO("Starting the reactive planning");
+
+  ros::param::param<double>("~tolerance_distance_to_goal",tolerance_dist_to_goal,1.0);
 }
 
 ReactivePlannerServer::~ReactivePlannerServer()
@@ -204,9 +206,30 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
   else
   {
     std::cout << "\nNo Path Found";
-    return false;
+
+    // try with 1 m distance to goal
+    double previous_distance_to_goal = distanceToGoal;
+    distanceToGoal = sqrt(pow((start.p.position.x-end.p.position.x),2)+pow((start.p.position.y-end.p.position.y),2)) -tolerance_dist_to_goal;
+    distanceHeuristic.setTolerance2Goal(distanceToGoal);
+    pathPlanner->setHeuristicFucntion(&distanceHeuristic);
+
+    path = pathPlanner->startSearch(start);
+    ros::Time timer_end = ros::Time::now();
+    std::cout << "\nPath Finding took:" << double(timer_end.toSec() - timer_restart.toSec()) << " secs";
+
+    if (path)
+    {
+      pathPlanner->printNodeList();
+    }
+
+    else {
+        std::cout << "\nFailed to Find Path with the new dist_to_goal";
+        return false;
   }
 
+    //return the original distance to goal
+    distanceToGoal=previous_distance_to_goal;
+}
 
   geometry_msgs::Point linePoint;
   std::vector<geometry_msgs::Point> pathSegments;

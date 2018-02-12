@@ -91,10 +91,10 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
     <state world_name='default'>
-      <sim_time>6459 607000000</sim_time>
-      <real_time>52 453645021</real_time>
-      <wall_time>1517363447 291476436</wall_time>
-      <iterations>51950</iterations>
+      <sim_time>6596 6000000</sim_time>
+      <real_time>137 68556761</real_time>
+      <wall_time>1518316065 26718480</wall_time>
+      <iterations>136399</iterations>
       <model name='asphalt_plane'>
         <pose frame=''>-0.00383 0.059474 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -105,11 +105,11 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='girl_brunette'>
-        <pose frame=''>0.869099 2.26093 0 1.57 -0 0</pose>
+      <model name='heat_victim_woman_red_signature'>
+        <pose frame=''>5.76395 2.4651 0 1.57 -0 0</pose>
         <scale>1 1 1</scale>
         <link name='defaultModel_0::custom_0'>
-          <pose frame=''>0.869099 2.26093 0 1.57 -0 0</pose>
+          <pose frame=''>5.76395 2.4651 0 1.57 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
@@ -195,7 +195,7 @@
     </state>
     <gui fullscreen='0'>
       <camera name='user_camera'>
-        <pose frame=''>-0.175437 -6.35563 16.7635 0 1.2058 1.60986</pose>
+        <pose frame=''>0.990713 -4.44352 23.9515 0 1.31379 1.56186</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
@@ -234,7 +234,7 @@
         <falloff>1</falloff>
       </spot>
     </light>
-    <model name='girl_brunette'>
+    <model name='heat_victim_woman_red_signature'>
       <static>1</static>
       <pose frame=''>1.53863 2.21182 0 1.57 -0 0</pose>
       <link name='defaultModel_0::custom_0'>
@@ -246,7 +246,7 @@
           <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
+              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -254,7 +254,7 @@
         <collision name='custom_0_collision'>
           <geometry>
             <mesh>
-              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
+              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>

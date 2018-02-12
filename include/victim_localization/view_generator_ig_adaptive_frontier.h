@@ -10,6 +10,8 @@ public:
 
   void generateViews(); //viewpoints is  generated at current pose
   std::string getMethodName();
+  void resetScaleFactor();
+
 
  //visualize
   double scale_factor_;
