@@ -71,7 +71,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 0
+map_type: 3
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -141,7 +141,7 @@ bounding_box_y: 0.2
 bounding_box_z: 0.2
 overshoot: 0.25
 
-
+tolerance_distance_to_goal: 2.0
 ############
 ## Detector Settings
 ############
@@ -169,9 +169,9 @@ view_generator_nn_pos_res_z: 0.8
 view_generator_nn_pos_res_yaw: rad(pi/4)
 view_generator_nn_adaptive_scale_multiplier: 2.0
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 200
+view_generator_nn_adaptive_utility_threshold: 50
 adaptive_ig_max_iteration: 3
-frontier_reached_with_distance: 40
+frontier_reached_with_distance: 5
 use_inflated_obstacles: false
 frontier_yaw: rad(pi/4)
 
