@@ -141,15 +141,16 @@ bool view_generator_ig_frontier::isFreeFrontiers(Index point){
     unsigned int mx,my;
     costmap_->worldToMap(p[0],p[1],mx,my);
     costmap_index=costmap_->getIndex(mx,my);
-    if (checkValidity(costmap_index))
-    {
+    //if (checkValidity(costmap_index))
+    //{
 //      if(!isSafe(pose_conversion::convertToGeometryMsgPose(p,1.0))){
 //        std::cout << "HasBeenRejectedbySafety" << std::endl;
 //        return false;
 //      }
-      return true;
-    }
-    return false;
+      //return true;
+   // }
+    //return false;
+    return true;
 
 //  if (victim_map.at(map_layer,point)>=0.5 ) return false;
 //  unsigned int mx,my;
@@ -283,12 +284,14 @@ void view_generator_ig_frontier::generateViews()
   generated_poses.clear();
   rejected_poses.clear();
 
+  nav_type = 1; // set navigation type as reactive planner for frontier_view_generator
+
   initial_poses=FindFrontiers();
 //for (int i=0; i<initial_poses.size(); i++) generated_poses.push_back(initial_poses[i]);
 
   for (int i=0; i<initial_poses.size(); i++)
   {
-    if (!isValidViewpoint(initial_poses[i]) || isPreviouslyRejected(initial_poses[i]))
+     if (!isValidViewpoint(initial_poses[i]) || isPreviouslyRejected(initial_poses[i]))
     {
       rejected_poses.push_back(initial_poses[i]);
     }
@@ -304,7 +307,6 @@ void view_generator_ig_frontier::generateViews()
 
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
 
-  nav_type = 1; // set navigation type as reactive planner for frontier_view_generator
 
   //ros::Rate(0.01).sleep();
 }

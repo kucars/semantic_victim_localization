@@ -8,7 +8,6 @@ do_adaptive_generation(true)
   ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 5);
   ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 3.0);
   ros::param::param<double>("~view_generator_nn_adaptive_scale_multiplier", scale_multiplier_, 2.0);
-
   generator_type=Generator::NN_Generator;
 }
 
@@ -32,8 +31,7 @@ bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
 
 void view_generator_ig_nn_adaptive::generateViews()
 {
-
-  if (isStuckInLocalMinima() && do_adaptive_generation)
+  if (isStuckInLocalMinima())
   {
     scale_factor_*= scale_multiplier_;
     std::cout << "[ViewGeneratorNNAdaptive]: " << cc.yellow << "Local minima detected. Increasing scale factor to " << scale_factor_ << "\n" << cc.reset;
@@ -42,7 +40,6 @@ void view_generator_ig_nn_adaptive::generateViews()
     {
       std::cout << "[ViewGeneratorNNAdaptive]: " << cc.red << "Warning: Scale factor very large: Resetting" << scale_factor_ << "\n" << cc.reset;
       scale_factor_ = 1;
-      do_adaptive_generation=false;
     }
   }
   else
@@ -72,9 +69,9 @@ void view_generator_ig_nn_adaptive::generateViews()
   // for scale_factor>1, generate viewpoint using adaptive grid
   else
   {
-    view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
-    nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-    generator_type=Generator::NN_Adaptive_Generator;
+      generator_type=Generator::NN_Adaptive_Generator;
+      nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
+      view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
   }
 
   // Return start and end  to normal

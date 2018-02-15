@@ -16,7 +16,6 @@ public:
 
    std::string getMethodName();
 
-
 };
 
 #endif // VIEW_EVALUATOR_IG_H

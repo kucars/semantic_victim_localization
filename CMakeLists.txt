@@ -180,6 +180,8 @@ add_executable (test_NBV
     src/view_evaluator_log_reward.cpp
     src/view_evaluator_ig_exp_max.cpp
     src/view_evaluator_ig_exp.cpp
+    src/view_evaluator_weighted.cpp
+    src/view_evaluator_weighted_max.cpp
 
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp

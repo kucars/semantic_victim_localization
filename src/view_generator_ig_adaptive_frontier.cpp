@@ -2,16 +2,13 @@
 
 view_generator_ig_adaptive_frontier::view_generator_ig_adaptive_frontier():
 view_generator_ig_frontier(),
-scale_factor_(1),
-adaptive_iteration_(0)
+scale_factor_(1)
 {
 generator_type=Generator::NN_Generator;
-
 ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 3);
 ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 5.0);
 ros::param::param<double>("~view_generator_nn_adaptive_scale_multiplier", scale_multiplier_, 2.0);
 }
-
 
 void view_generator_ig_adaptive_frontier::generateViews()
 {
@@ -41,20 +38,19 @@ void view_generator_ig_adaptive_frontier::generateViews()
     // for scale_factor=1, generate viewpoint using NN generator
     if (scale_factor_==1)
     {
-      view_generator_IG::generateViews(true);
-      nav_type = 0; // set navigation type as straight line for adaptive_nn_view_generator
       generator_type=Generator::NN_Generator;
-    adaptive_iteration_=0;
+      nav_type = 0; // set navigation type as straight line for adaptive_nn_view_generator
+      view_generator_IG::generateViews(true);
+
     std::cout << "[ViewGenerator]:" << cc.blue << "Perform NN Generator\n" << cc.reset;
     }
 
     // for scale_factor>1, generate viewpoint using adaptive grid
     else
     {
-      view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
+      generator_type=Generator::NN_Adaptive_Generator;
       nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-      generator_type=Generator::NN_Adaptive_Frontier_Generator;
-      adaptive_iteration_=+1;
+      view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
       std::cout << "[ViewGenerator]: " << cc.blue << "Perform NN Adaptive Generator\n" << cc.reset;
     }
 
@@ -63,16 +59,17 @@ void view_generator_ig_adaptive_frontier::generateViews()
       start_y_= backup_start_y_;
       end_x_ = backup_end_x_;
       end_y_=  backup_end_y_;
-     }
+    }
 
-  else {   // Use the Frontier Generator
+  else
+     {  // Use the Frontier Generator
     std::cout << "[ViewGenerator]: " << cc.green << "Perform Frontier Generator\n" << cc.reset;
-    view_generator_ig_frontier::generateViews();
+    generator_type=Generator::NN_Adaptive_Frontier_Generator;
     nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-    generator_type=Generator::Frontier_Generator;
+    view_generator_ig_frontier::generateViews();
       }
 
-  float utility = nbv_history_->getMaxUtility(minima_iterations_);
+   float utility = nbv_history_->getMaxUtility(minima_iterations_);
    std::cout << "maximum_entropy_change_is: " << utility << std::endl;
    std::cout << "minimum thershold is : " << minima_threshold_ << std::endl;
 }
@@ -100,6 +97,15 @@ void view_generator_ig_adaptive_frontier::resetScaleFactor()
     scale_factor_=1;
 }
 
+void view_generator_ig_adaptive_frontier::setSampleResolution(double resX, double resY)
+{
+    res_x_=resX;
+    res_y_=resY;
+    start_x_=-res_x_;
+    start_y_=-res_y_;
+    end_x_=res_x_;
+    end_y_=res_y_;
+}
 std::string view_generator_ig_adaptive_frontier::getMethodName()
 {
   return "NN Adaptive Frontier";

@@ -11,6 +11,7 @@ public:
   void generateViews(); //viewpoints is  generated at current pose
   std::string getMethodName();
   void resetScaleFactor();
+  void setSampleResolution(double resX, double resY);
 
 
  //visualize

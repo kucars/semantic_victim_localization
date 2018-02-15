@@ -153,6 +153,12 @@ void TestNBV::initViewEvaluator(){
   case 7:
     View_evaluate_ = new view_evaluator_ig_exp_max();
     break;
+  case 8:
+    View_evaluate_ = new view_evaluator_weighted();
+    break;
+  case 9:
+    View_evaluate_ = new view_evaluator_weighted_max();
+    break;
   }
 }
 
@@ -213,6 +219,7 @@ void TestNBV::initParameters(){
   // pass params to termination_condition
   termination_check_module_->setHistory(history_);
   termination_check_module_->setViewEvaluator(View_evaluate_);
+
 }
 
 void TestNBV::initAllModules()
@@ -307,6 +314,7 @@ void TestNBV::evaluateViewpoints()
   {
     std::cout << "[test_NBV] " << cc.red << "View evaluator determined all poses are invalid. Terminating.\n" << cc.reset;
     state = NBVState::TERMINATION_MET;
+   termination_check_module_->result_status="Terminated Due to No poses to be evaluated";
     return;
   }
 
@@ -385,9 +393,11 @@ void TestNBV::navigate()
       if(view_generate_->generator_type==Generator::NN_Adaptive_Frontier_Generator){
          history_->black_listed_poses.push_back(View_evaluate_->getTargetPose());
           view_generate_->resetScaleFactor(); // this will switch back to Adaptive NN
+          view_generate_->setSampleResolution(0.5,0.5); // lower the Resolution
       }
     }
 
+    std::cout << "DEBUG: Generator type is ..... " << view_generate_->generator_type << std::endl;
     view_generate_->visualTools->deleteAllMarkers();
     view_generate_->visualTools->trigger();
     break;
@@ -441,6 +451,7 @@ void TestNBV::generateViewpoints()
   if (view_generate_->generated_poses.size() == 0)
   {
     std::cout << "[test_NBV] " << cc.red << "View generator created no poses. Terminating.\n" << cc.reset;
+    termination_check_module_->result_status="Terminated Due to No poses to be generated";
     state = NBVState::TERMINATION_MET;;
   }
   else

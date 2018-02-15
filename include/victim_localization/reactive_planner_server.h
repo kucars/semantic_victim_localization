@@ -32,6 +32,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <sspp/sspp_srv.h>
 #include <nav_msgs/Path.h>
+#include <victim_localization/common.h>
 
 class ReactivePlannerServer
 {
@@ -58,7 +59,9 @@ private:
   bool visualizeSearchSpace = false;
   bool sampleOrientations = false;
   bool debug = false;
-  double tolerance_dist_to_goal;
+  double tolerance_dist_to_robot;
+  double dist_robot_to_goal;
+  bool enable_straight_line_check;
   std::vector<std::pair<Eigen::Vector3d, double> > occupied_box_vector;
   public:
   ReactivePlannerServer(const ros::NodeHandle& nh_, const ros::NodeHandle& nh_private_, volumetric_mapping::OctomapManager * mapManager_);

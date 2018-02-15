@@ -30,8 +30,8 @@ enum GeneratorType{
   NONE,
   NN_Generator,
   NN_Adaptive_Generator,
-  Frontier_Generator,
   NN_Adaptive_Frontier_Generator,
+  Frontier_Generator,
 };
 }
 
@@ -45,6 +45,7 @@ protected:
 
    double nav_bounds_x_max_, nav_bounds_y_max_, nav_bounds_z_max_;
    double nav_bounds_x_min_, nav_bounds_y_min_, nav_bounds_z_min_;
+   double dist_to_goal;
 
    double uav_fixed_height;
    double extensionRange_;
@@ -86,6 +87,7 @@ public:
   bool isSafe(geometry_msgs::Pose p);
   bool isCollide(geometry_msgs::Pose p);
   bool isValidViewpoint(geometry_msgs::Pose p , bool check_safety=true);
+  void FixCurrentLoc();
 
   //victim_map parameters
   grid_map::GridMap victim_map;
@@ -97,6 +99,8 @@ public:
   virtual void generateViews(); //viewpoints is  generated at current pose
   virtual std::string getMethodName();
   virtual void resetScaleFactor(){};
+  virtual void setSampleResolution(double resX, double resY){};
+
 
  //visualize
  virtual void visualize(std::vector<geometry_msgs::Pose> valid_poses, std::vector<geometry_msgs::Pose> invalid_poses, geometry_msgs::Pose selected_pose);

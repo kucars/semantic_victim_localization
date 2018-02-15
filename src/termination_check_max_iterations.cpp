@@ -9,7 +9,10 @@ TerminationCheckMaxIterations::TerminationCheckMaxIterations()
 bool TerminationCheckMaxIterations::isTerminated()
 {
   if (nbv_history_->iteration >= max_iterations_)
+  {
+      result_status="Terminated Due to Max Iteration";
     return true;
+  }
 
   if (nbv_history_->max_prob >= max_probablity)
   {

@@ -34,6 +34,8 @@ public:
   void setNBVTimeTaken(ros::Duration t);
   ros::Duration NBVDurationTaken;
   std::string saveFolder;
+  std::string result_status; // result_status
+
 
 protected:
   nbv_history* nbv_history_;

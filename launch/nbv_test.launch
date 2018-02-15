@@ -1,7 +1,7 @@
 <launch>
    <arg name="param_file" default="$(find victim_localization)/config/nbv_params.yaml" />
-   <arg name="grid_map_visualizer" default="false"/>
-   <arg name="debug" default="false"/>
+   <arg name="grid_map_visualizer" default="true"/>
+   <arg name="debug" default="true"/>
    <arg name="enable_vision" default="true"/>
    <arg name="enable_rviz" default="true"/>
    <arg name="enable_graph" default="true"/>

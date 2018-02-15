@@ -71,7 +71,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 3
+map_type: 0
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -161,7 +161,7 @@ thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 # 3: NN Adaptive Frontier
 
 
-view_generator_type: 3
+view_generator_type: 1
 view_generator_nn_pos_res_x: 0.8
 view_generator_nn_pos_res_y: 0.8
 view_generator_nn_pos_res_z: 0.8
@@ -169,7 +169,7 @@ view_generator_nn_pos_res_z: 0.8
 view_generator_nn_pos_res_yaw: rad(pi/4)
 view_generator_nn_adaptive_scale_multiplier: 2.0
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 50
+view_generator_nn_adaptive_utility_threshold: 500
 adaptive_ig_max_iteration: 3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: false
@@ -191,10 +191,17 @@ frontier_pointing_to_unknown_threshold: 0.7
 # 5: Reward Function (log)
 # 6: exp-dist
 # 7: scaler with exp-dist
+# 8: Weighted Mulit-Objective Utility
+# 9: Weighted Mulit-Objective Utility with Distance
+# 10: Weighted Max Mulit-Objective Utility
+# 11: Weighted Max Mulit-Objective Utility with Distance
 
-view_evaluator_type: 0
-view_evaluator_weight_distance: 0.1
-
+view_evaluator_type: 9
+view_evaluator_weight_distance: 0.2
+#proposed evaluator params
+exploration_weight: 1
+victim_finding_weight: 4
+distance_weight: 0.2
 
 ############
 ## Termination
@@ -205,7 +212,7 @@ view_evaluator_weight_distance: 0.1
 termination_type: 1
 
 termination_victim_max_probability: 0.9
-termination_iterations_max: 150
+termination_iterations_max: 50
 
 ############
 victim_found_prob: 0.9

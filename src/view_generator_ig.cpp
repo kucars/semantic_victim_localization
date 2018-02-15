@@ -33,6 +33,9 @@ view_generator_IG::view_generator_IG():
   ros::param::param("~bounding_box_z", boundingbox_z_, 0.5);
   ros::param::param("~overshoot", dOvershoot_, 0.25);
 
+  ros::param::param("~dist_to_goal", dist_to_goal, 1.5);
+
+
   if (!ros::param::get(ros::this_node::getName() + "/nav_type", nav_type)) {
     ROS_WARN( "navigation type is unknown for the view generator, default value is set to",
               std::string(ros::this_node::getName() + "/nav_type"));
@@ -84,15 +87,55 @@ bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 
   Eigen::Vector3d loc(p.position.x, p.position.y,p.position.z);
   Eigen::Vector3d box_size(0.5,0.5,0.5);
-if (generator_type!=Generator::NN_Adaptive_Generator){
+
+if (generator_type==Generator::NN_Adaptive_Frontier_Generator){    // cell status 0: free , 1: occupied , 2: unknown
+ if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;}
+else if (generator_type!=Generator::NN_Adaptive_Generator){
  if( manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;}
 else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
  return false;
-}   // Alternative: it is also possible to search the 2D occlusion map for a square of 1m x 1m
+}
+
+void view_generator_IG::FixCurrentLoc()
+{
+    double box_size=0.5;
+    geometry_msgs::Pose p=current_pose_;
+    bool lazy_eval=true;
+    octomap::KeySet free_cells;
+    double resl=manager_->getResolution();
+    double log_odds_value_min= manager_->octree_->getClampingThresMinLog();
+    double log_odds_value_max= manager_->octree_->getClampingThresMaxLog();
+
+    for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
+    for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
+    for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
+
+    const octomap::point3d p_point(i,j,k);
+    octomap::OcTreeKey key = manager_->octree_->coordToKey(p_point);
+      free_cells.insert(key);
+        }}}
+
+  // Mark free cells.
+  for (octomap::KeySet::iterator it = free_cells.begin(),
+       end = free_cells.end();
+       it != end; ++it) {
+    manager_->octree_->setNodeValue(*it, log_odds_value_min, lazy_eval);
+  }
+  manager_->octree_->updateInnerOccupancy();
+}
 
 
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
+    //check current loc is free.
+  Eigen::Vector3d box_size(0.5,0.5,0.5);
+  Eigen::Vector3d loc(current_pose_.position.x, current_pose_.position.y,current_pose_.position.z);
+
+  if (manager_->getCellStatusBoundingBox(loc,box_size)!=0)
+  {
+     FixCurrentLoc();
+  }
+
   if (!isInsideBounds(p) ){
   // std::cout << "rejectedbyvalidity" << std::endl;
     return false;
@@ -120,6 +163,15 @@ if (nav_type==0) // line collision checking only done for straight line navigati
     //std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
+
+if (nav_type==1) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+  if (sqrt(pow(p.position.x-current_pose_.position.x,2)+pow(p.position.y-current_pose_.position.y,2))<dist_to_goal)
+    {
+     std::cout << "condition met...." << std::endl;
+      if (isCollide(p)){
+    //std::cout << "rejectedbycollision" << std::endl;
+  return false;
+}}
 
 return true;
 }

@@ -4,6 +4,7 @@ TerminationCheckBase::TerminationCheckBase()
 {
   ros::param::param<int>("~termination_repeat_window_size", repeat_window_size_, 8);
   ros::param::param<std::string>("~SaveDataFolder",saveFolder, std::string("Data"));
+  result_status="Success";
 }
 
 bool TerminationCheckBase::isTerminated()
@@ -103,7 +104,8 @@ void TerminationCheckBase::SaveResults()
     Results << "time taken: " << NBVDurationTaken.toSec() << "\n"
             << "Total entropy: " << view_evaluator->info_entropy_total_ << "\n"
             << "distance: " <<  view_evaluator->info_distance_total_ << "\n"
-            << "iteration: " << nbv_history_->iteration<< std::endl << "\n";
+            << "iteration: " << nbv_history_->iteration << "\n"
+            << "Result Status: " << result_status << std::endl << "\n";
     Results.close();
   }
   else cout << "Unable to find Results file";

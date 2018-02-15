@@ -28,6 +28,9 @@
 #include "victim_localization/view_evaluator_log_reward.h"
 #include <victim_localization/view_evaluator_ig_exp.h>
 #include <victim_localization/view_evaluator_ig_exp_max.h>
+#include <victim_localization/view_evaluator_weighted.h>
+#include <victim_localization/view_evaluator_weighted_max.h>
+
 
 #include <victim_localization/view_generator_ig.h>
 #include <victim_localization/view_generator_ig_nn_adaptive.h>
@@ -53,6 +56,7 @@
 
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_core/gtest_eigen.hpp>
+
 
 // gtest
 #include <gtest/gtest.h>
@@ -112,7 +116,6 @@ public:
   int view_generator_type;
   int view_evaluator_type;
   int termination_type;
-  std::string file_path; // Save Files path
 
   //debug
   ros::Rate NBV_loop_rate;

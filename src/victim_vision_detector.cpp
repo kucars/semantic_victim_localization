@@ -157,12 +157,12 @@ void victim_vision_detector::FindClusterCentroid(){  //TOFIX:: this code works w
          pcl::removeNaNFromPointCloud(*depth_cloud, *depth_cloud, indices);
 
    //  Create the filtering object: downsample the dataset using a leaf size of 1cm
-      pcl::VoxelGrid<pcl::PointXYZ> vg;
-      vg.setInputCloud (depth_cloud);
-      vg.setLeafSize (0.01f, 0.01f, 0.01f);
-      vg.filter (*filtered_cloud);
+    //  pcl::VoxelGrid<pcl::PointXYZ> vg;
+    //  vg.setInputCloud (depth_cloud);
+    //  vg.setLeafSize (0.01f, 0.01f, 0.01f);
+   //   vg.filter (*filtered_cloud);
 
-
+      filtered_cloud = depth_cloud;
       // Create the segmentation object for the planar model and set all the parameters
       pcl::SACSegmentation<pcl::PointXYZ> seg;
       pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
@@ -275,7 +275,6 @@ void victim_vision_detector::FindClusterCentroid(){  //TOFIX:: this code works w
         detection_Cluster_succeed= true;
 
         //std::cout << detected_point << std::endl;
-
         //PublishSegmentedPointCloud(*cloud_clusters[0]);
   }
 

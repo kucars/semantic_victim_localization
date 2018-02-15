@@ -14,8 +14,6 @@ view_evaluator_base::view_evaluator_base():
   ros::param::param<double>("~maximum_arena_width", x_arena_max , 20);
   ros::param::param<double>("~maximum_arena_height", y_arena_max , 20);
   ros::param::param<double>("~distance_threshold", wireless_max_range , 20);
-  ros::param::param<double>("~alpha", wireless_max_range , 20);
-  ros::param::param<double>("~distance_threshold", wireless_max_range , 20);
   ros::param::param<double>("~alpha", alpha , 0.65);
   ros::param::param<double>("~beta", beta , 0.2);
   ros::param::param<double>("~gama", gama , 0.15);
@@ -162,9 +160,10 @@ void view_evaluator_base::evaluate(){
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
         double utility = calculateUtiltiy(p,mapping_module_);
 
-        if (utility>=0){
-    info_utilities_.push_back(utility);
-}
+        if (utility>=0)
+        {
+        info_utilities_.push_back(utility);
+        }
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
         {
@@ -253,32 +252,6 @@ info_dl_selected_utility_ = 0;
 info_thermal_selected_utility_ = 0;
 info_wireless_selected_utility_ = 0;
 
-// // evaluation for vision map only
-// for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
-// {
-//   geometry_msgs::Pose p = view_gen_->generated_poses[i];
-//   double utility = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::DL));
-//   if (utility > info_dl_selected_utility_)
-//     info_dl_selected_utility_ = utility;
-// }
-
-// // evaluation for thermal map only
-// for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
-// {
-//   geometry_msgs::Pose p = view_gen_->generated_poses[i];
-//   double utility = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::THERMAL));
-//   if (utility > info_thermal_selected_utility_)
-//     info_thermal_selected_utility_ = utility;
-// }
-
-// // evaluation for wireless map only
-// for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
-// {
-//   geometry_msgs::Pose p = view_gen_->generated_poses[i];
-//   double utility = calculateWirelessUtility(p,mapping_module_->getMapLayer(MAP::WIRELESS));
-//   if (utility > info_wireless_selected_utility_)
-//     info_wireless_selected_utility_ = utility;
-// }
 
  mapping_module_->raytracing_->Done();
  mapping_module_->getMapLayer(MAP::DL)->raytracing_->Done();
