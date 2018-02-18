@@ -1080,7 +1080,7 @@
       </attenuation>
       <cast_shadows>1</cast_shadows>
     </light>
-    <model name='heat_victim_woman_red_signature'>
+    <model name='girl-brunette'>
       <static>1</static>
       <pose frame=''>6.04675 -4.04949 0 1.57 -0 0</pose>
       <link name='defaultModel_0::custom_0'>
@@ -1092,7 +1092,7 @@
           <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1100,7 +1100,7 @@
         <collision name='custom_0_collision'>
           <geometry>
             <mesh>
-              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1307,7 +1307,7 @@
           <wrench>0 0 0 0 -0 0</wrench>
         </link>
       </model>
-      <model name='heat_victim_woman_red_signature'>
+      <model name='girl-brunette'>
         <pose frame=''>6.09185 -3.90531 0.062118 1.57159 2.3e-05 3.11217</pose>
         <scale>1 1 1</scale>
         <link name='defaultModel_0::custom_0'>
