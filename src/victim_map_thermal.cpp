@@ -41,7 +41,7 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
   ros::param::param<double>("~Prob_Dc_Hc_for_thermal", Prob_Dc_Hc , 0.7);
 
   // for debugging
-  ros::param::param("~detection_enabled", detection_enabled, false);//for debugging
+  ros::param::param("~detection_enabled", detection_enabled, false);  //for debugging
 
   switch(raytracing_type) {
   case 0:
@@ -64,7 +64,7 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
     break;
   }
 
-  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/2));
+  const_=max_depth_d/cos(DEG2RAD(HFOV_deg/4));
 
   // visualize the thermal detection vector
   visualize_thermal_ray.reset(new rviz_visual_tools::RvizVisualTools("world", "/thermal_vector"));
@@ -153,7 +153,8 @@ void victim_map_Thermal::Update(){
              map_status.victim_loc=position;
             }
           }
-          else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
+          //F
+          // else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
         }
         //not inside Ray
         else map.atPosition(layer_name, position)=(Prob_Dc_H* P_prior)/((Prob_Dc_H* P_prior)+(Prob_Dc_Hc* (1-P_prior)));
@@ -186,7 +187,8 @@ void victim_map_Thermal::Update(){
             map_status.victim_loc=position;
           }
         }
-        else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
+        //F
+        // else map.atPosition(layer_name, position)=(Prob_D_H* 0.5)/((Prob_D_H* 0.5)+(Prob_D_Hc*0.5));
 
         // //check current max probabilty
         // if (map.atPosition(layer_name, position)> curr_max_prob)

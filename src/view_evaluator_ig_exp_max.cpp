@@ -34,7 +34,6 @@ double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_M
     double current_prob=0;
     double IG_view=0;
 
-
     mapping_module->raytracing_->Initiate(false);
 
     temp_Map=mapping_module->raytracing_->Generate_2D_Safe_Plane(p,true,true);
@@ -45,15 +44,26 @@ double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_M
         mapping_module->map.getPosition(index, position);
         if(!temp_Map.isInside(position)) continue;
 
+        if(temp_Map.atPosition("temp", position)==0.5){
+            continue;
+        }
+
         if(temp_Map.atPosition("temp", position)==0){
             IG_view+=getCellEntropy(position,mapping_module);
+            current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
+
+            if (current_prob>max){
+                max=current_prob;
+            }
         }
+
+        if(temp_Map.atPosition("temp", position)==1){
         current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
-
-        if (current_prob>max){
-            max=current_prob;
+        if (current_prob!=0.5)
+            if (current_prob>max){
+                max=current_prob;
+            }
         }
-
     }
     return max*IG_view;
 }

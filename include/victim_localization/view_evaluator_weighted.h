@@ -14,6 +14,7 @@ public:
    void evaluate();
    void evaluateWireless();
    void evaluateCombined();
+   double f_;
 
 
    std::string getMethodName();

@@ -35,7 +35,7 @@
     <sensor name='floating_sensor_camera' type='depth'>
       <update_rate>20</update_rate>
       <camera name='__default__'>
-        <horizontal_fov>1.09607</horizontal_fov>
+       <horizontal_fov>1.74533</horizontal_fov><!--100 degree 1.74533 --> <!-- 110 1.91988 degrees -->
         <image>
           <format>R8G8B8</format>
           <width>640</width>
@@ -95,7 +95,7 @@
     <sensor name='thermal_cam_camera_sensor' type='camera'>
       <update_rate>20</update_rate>
       <camera name='__default__'>
-        <horizontal_fov>0.924771</horizontal_fov>
+         <horizontal_fov>1.047197</horizontal_fov> <!-- 60 degrees -->
         <image>
           <format>R8G8B8</format>
           <width>160</width>

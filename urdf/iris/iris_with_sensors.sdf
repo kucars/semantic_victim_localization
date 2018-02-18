@@ -169,11 +169,11 @@
       <sensor name='thermal_cam_camera_sensor' type='camera'>
         <update_rate>77</update_rate>
         <camera name='__default__'>
-          <horizontal_fov>0.924771</horizontal_fov>
+          <horizontal_fov>1.0472</horizontal_fov>
           <image>
             <format>R8G8B8</format>
-            <width>1228</width>
-            <height>1027</height>
+            <width>640</width>
+            <height>480</height>
           </image>
           <clip>
             <near>0.01</near>
@@ -195,7 +195,7 @@
       <sensor name='thermal_cam_camera_sensor' type='camera'>
         <update_rate>10</update_rate>
         <camera name='__default__'>
-          <horizontal_fov>0.924771</horizontal_fov>
+          <horizontal_fov>0.977384</horizontal_fov>
           <image>
             <format>R8G8B8</format>
             <width>160</width>

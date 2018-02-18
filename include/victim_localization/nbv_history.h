@@ -20,6 +20,9 @@ public:
    std::vector<float> time_per_iteration;
    std::vector<geometry_msgs::Pose> black_listed_poses;
    double max_prob;
+   double accumulated_utility;
+   bool PathPlannerUsed;
+
 
   nbv_history  *vision_nbv_history ;
   nbv_history  *thermal_nbv_history ;

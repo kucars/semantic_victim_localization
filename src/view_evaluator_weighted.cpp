@@ -9,6 +9,7 @@ view_evaluator_weighted::view_evaluator_weighted():
     ros::param::param<double>("~exploration_weight",exploration_weight,0.5);
     ros::param::param<double>("~victim_finding_weight",victim_finding_weight,0.5);
     ros::param::param<double>("~distance_weight",dist_weight,0.2);
+    ros::param::param<double>("~penality_factor",f_,2);
 }
 
 void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max)
@@ -25,16 +26,24 @@ void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_M
     for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEnd(); ++iterator) {
         Position position;
         Index index=*iterator;
+        current_prob=0;
         mapping_module->map.getPosition(index, position);
         if(!temp_Map.isInside(position)) continue;
+         if(temp_Map.atPosition("temp", position)==0.5) continue;
 
         if(temp_Map.atPosition("temp", position)==0){
             IG_view+=getCellEntropy(position,mapping_module);
+            current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
+            if (current_prob>max_view){
+                max_view=current_prob;
+            }
         }
+        if(temp_Map.atPosition("temp", position)==1){
         current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
-
-        if (current_prob>max_view){
-            max_view=current_prob;
+        if (current_prob!=0.5)
+            if (current_prob>max_view){
+                max_view=current_prob;
+            }
         }
     }
     IG= IG_view;
@@ -103,6 +112,7 @@ void view_evaluator_weighted::evaluate()
     double MaxIGinAllView=0;
     double MaxProbinAllView=0;
 
+     double MaxIGindex, MaxProbIndex;
 
     for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
@@ -117,12 +127,17 @@ void view_evaluator_weighted::evaluate()
             Info_poses.push_back(p);
 
             // keep track of max information IG across all views
-            if(MaxIGinAllView<ViewIG)
+            if(MaxIGinAllView<ViewIG){
                 MaxIGinAllView=ViewIG;
-
+                MaxIGindex=i;
+            }
             // keep track of max Prob in All views
-            if(MaxProbinAllView<ViewMax)
+            if(MaxProbinAllView<ViewMax){
                 MaxProbinAllView=ViewMax;
+                 MaxProbIndex=i;
+            }
+
+
     }
 
     // Normalized the IG view to 1
@@ -136,7 +151,7 @@ void view_evaluator_weighted::evaluate()
     for (int i=0; i<Info_View_utilities.size(); i++)
     {
         utility= (exploration_weight*Info_View_utilities[i])+
-                (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/Info_View_Max[i]));
+                (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i])));
 
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
@@ -158,6 +173,27 @@ void view_evaluator_weighted::evaluate()
     mapping_module_->raytracing_->Done();
 
     std::cout << "Map of resoltuion " << mapping_module_->map.getResolution() << std::endl;
+    std::cout << "exploration weight " << exploration_weight << std::endl;
+    std::cout << "victim_finding_weight " << victim_finding_weight << std::endl;
+    int i=MaxIGindex;
+    std::cout << "utility correspond to the exploration is " << (exploration_weight*Info_View_utilities[i])+
+                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
+
+    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
+
+     i=MaxProbIndex;
+
+    std::cout << "utility correspond to the victim is " << (exploration_weight*Info_View_utilities[i])+
+                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
+
+    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
+
+    std::cout << "utility correspond to the selected utility is " << info_selected_utility_ << std::endl;
+
+    std::cout << "reality...... max IG is" << MaxIGinAllView << "while max prob is " << MaxProbinAllView << std::endl;
+
+    std::cout << "Well well well , HFOV is " << mapping_module_->raytracing_->HFOV_deg <<std::endl;
+     ros::Rate(0.1).sleep();
 }
 
 

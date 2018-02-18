@@ -61,17 +61,17 @@ void view_generator_ig_nn_adaptive::generateViews()
   // for scale_factor=1, generate viewpoint using NN generator
   if (scale_factor_==1)
   {
-    view_generator_IG::generateViews(true);
     nav_type = 0; // set navigation type as straight line for adaptive_nn_view_generator
     generator_type=Generator::NN_Generator;
+    view_generator_IG::generateViews(true);
   }
 
   // for scale_factor>1, generate viewpoint using adaptive grid
   else
   {
       generator_type=Generator::NN_Adaptive_Generator;
-      nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-      view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
+      nav_type = 0; // set navigation type as reactive planner for adaptive_nn_view_generator
+      view_generator_IG::generateViews(true); // do not sample in the current pose to escape local minimum
   }
 
   // Return start and end  to normal

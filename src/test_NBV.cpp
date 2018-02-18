@@ -48,8 +48,8 @@ bool TestNBV::CheckGazeboIsWorking()
   }
 }
 
-void TestNBV::initVehicle(){
-
+void TestNBV::initVehicle()
+{
   int vehicle_type;
   ros::param::param<int>("~vehicle_type",vehicle_type,0);
   switch(vehicle_type){
@@ -86,7 +86,8 @@ void TestNBV::initMap(){
   }
 }
 
-void TestNBV::initNavigation(){
+void TestNBV::initNavigation()
+{
   ros::param::param("~nav_type", nav_type, 1);
   switch(nav_type)
   {
@@ -178,7 +179,6 @@ void TestNBV::initTerminationCondition(){
   }
 }
 
-
 void TestNBV::initOctomap(){
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
@@ -236,14 +236,16 @@ void TestNBV::initAllModules()
 
 void TestNBV::updateHistory()
 {
+  if (history_->PathPlannerUsed==false)
   history_->selected_poses.push_back(View_evaluate_->getTargetPose());
+
   history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
   history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
 
   history_->max_prob=Map_->curr_max_prob;
 
   history_->update();
-
+  history_->accumulated_utility+=View_evaluate_->info_selected_utility_;
   // Publish information about this iteration
   if (pub_iteration_info.getNumSubscribers() > 0)
   {
@@ -251,6 +253,7 @@ void TestNBV::updateHistory()
     iteration_msg.iteration        = history_->iteration;
     iteration_msg.distance_total   = View_evaluate_->info_distance_total_;
     iteration_msg.entropy_total    = View_evaluate_->info_entropy_total_;
+    iteration_msg.accumulated_utility    = history_->accumulated_utility;
 
     iteration_msg.method_generation= view_generate_->getMethodName();
     iteration_msg.method_selection = View_evaluate_->getMethodName();
@@ -354,6 +357,7 @@ void TestNBV::navigate()
       ROS_WARN("Drone Communicator is unable to set waypoint, terminating....");
     }
 
+    history_->PathPlannerUsed=false;
     break;
 
 
@@ -383,6 +387,8 @@ void TestNBV::navigate()
       printf("path Found...\n");
       drone_communicator_->Execute_path(path_to_waypoint);
       history_->black_listed_poses.clear();
+      history_->selected_poses.insert(history_->selected_poses.end(), path_to_waypoint.begin(),path_to_waypoint.end());
+      history_->PathPlannerUsed=true;
     }
 
     else {
@@ -400,8 +406,9 @@ void TestNBV::navigate()
     std::cout << "DEBUG: Generator type is ..... " << view_generate_->generator_type << std::endl;
     view_generate_->visualTools->deleteAllMarkers();
     view_generate_->visualTools->trigger();
-    break;
 
+
+    break;
 
   case 2: // move to waypoint in a discretized Path
     double step_size=0.02;

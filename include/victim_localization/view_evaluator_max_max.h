@@ -13,6 +13,8 @@ public:
    double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
 
    std::string getMethodName();
+   void getAbsoluteMax(Victim_Map_Base *mapping_module, double &absolute_prob);
+
 
 private:
   double max_belief;

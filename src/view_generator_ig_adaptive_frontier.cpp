@@ -49,8 +49,8 @@ void view_generator_ig_adaptive_frontier::generateViews()
     else
     {
       generator_type=Generator::NN_Adaptive_Generator;
-      nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
-      view_generator_IG::generateViews(false); // do not sample in the current pose to escape local minimum
+      nav_type = 0; // set navigation type as reactive planner for adaptive_nn_view_generator
+      view_generator_IG::generateViews(true); // do not sample in the current pose to escape local minimum
       std::cout << "[ViewGenerator]: " << cc.blue << "Perform NN Adaptive Generator\n" << cc.reset;
     }
 

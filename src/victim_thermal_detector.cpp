@@ -25,7 +25,6 @@ victim_detector_base()
   pub_detection_ = it.advertise("image_detection1", 10);
 }
 
-
 victim_thermal_detector::~victim_thermal_detector(){}
 
 void victim_thermal_detector::imageCallback(const sensor_msgs::ImageConstPtr& img,

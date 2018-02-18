@@ -1,8 +1,7 @@
 <?xml version="1.0" ?>
 <launch>
 
-<arg name="resultFolder" default="$(find victim_localization)/Data"/>
-
+<arg name="resultFolder" default="$(find victim_localization)/Finalized_Results/NN-Wireless/NNEntropy"/>
 <node pkg="victim_localization" type="Visualizeresults" name="Visualizeresults" output="screen">
           <param name="resultFolder" type="string" value="$(arg resultFolder)" />
           <rosparam file="$(find victim_localization)/config/octomap_manager_params.yaml" command="load"/>

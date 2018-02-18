@@ -47,6 +47,7 @@ view_generator_IG::view_generator_IG():
   end_y_=res_y_;
 
   ros::NodeHandle nh_;
+  nav_type = 0; // set navigation type as straight line for NN_view_generator
   visualTools.reset(new rviz_visual_tools::RvizVisualTools("world", "/ViewPoints_visualisation"));
   visualTools->loadMarkerPub();
 
@@ -68,29 +69,12 @@ bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
 
 bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 {
-//  double resl= manager_->getResolution();
-//  double box_size= obj_bounds_x_max_;
-//  double Occupied_threshold= 0.8;
-
-//  // check that the box (of size 1m^3) around the sampled point has not occlusion
-
-//  for (double i=p.position.x - (box_size/2) ; i< p.position.x + (box_size/2) ; i=i+resl){
-//    for (double j=p.position.y - (box_size/2) ; j< p.position.y + (box_size/2) ; j=j+resl){
-//      for (double k=p.position.z - (box_size/2) ; k< p.position.z + (box_size/2) ; k=k+resl){
-//         if (manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))!=1) continue; // if the cell is not free , return false
-//         std::cout << manager_->getCellStatusPoint(Eigen::Vector3d (i,j,k))<< std::endl;
-//         return false;
-//      }
-//    }
-//  }
-//  return true;
-
   Eigen::Vector3d loc(p.position.x, p.position.y,p.position.z);
   Eigen::Vector3d box_size(0.5,0.5,0.5);
 
 if (generator_type==Generator::NN_Adaptive_Frontier_Generator){    // cell status 0: free , 1: occupied , 2: unknown
  if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;}
-else if (generator_type!=Generator::NN_Adaptive_Generator){
+else if (generator_type==Generator::NN_Adaptive_Generator){
  if( manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;}
 else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
  return false;
@@ -144,7 +128,7 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safe
 //if (generator_type!=Generator::Frontier_Generator)
 //{
   if (!isSafe(p)){
- //   std::cout << "rejectedbySafety" << std::endl;
+   //std::cout << "rejectedbySafety" << std::endl;
     return false;
   }
 //}
@@ -158,13 +142,14 @@ if (manager_ == NULL) {
     return false;
   }
 
-if (nav_type==0) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+if (nav_type==0){ // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (isCollide(p)){
-    //std::cout << "rejectedbycollision" << std::endl;
+   // std::cout << "rejectedbycollision" << std::endl;
   return false;
 }
+}
 
-if (nav_type==1) // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+if (nav_type==1){ // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
   if (sqrt(pow(p.position.x-current_pose_.position.x,2)+pow(p.position.y-current_pose_.position.y,2))<dist_to_goal)
     {
      std::cout << "condition met...." << std::endl;
@@ -173,6 +158,12 @@ if (nav_type==1) // line collision checking only done for straight line navigati
   return false;
 }}
 
+  if (isCollide(p)){
+//std::cout << "rejectedbycollision" << std::endl;
+return false;
+
+}
+}
 return true;
 }
 
@@ -186,16 +177,12 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
   Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
   Eigen::Vector3d direction(p.position.x - origin[0], p.position.y - origin[1],
       p.position.z - origin[2]);
-  if (direction.norm() > extensionRange_)
-  {
-    direction = extensionRange_ * direction.normalized();
-  }
 
   volumetric_mapping::OctomapManager::CellStatus cellStatus;
   //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
   cellStatus = manager_->getLineStatusBoundingBox(
         origin,
-        direction + origin + direction.normalized() * dOvershoot_,
+        direction + origin ,
         boundingbox_);
   //std::cout << "status is: " << cellStatus << std::endl;
   if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)
@@ -323,8 +310,6 @@ void view_generator_IG::generateViews(bool generate_at_current_location)
   }
 
   std::cout << "[ViewGenerator] Generated " << generated_poses.size() << " poses (" << rejected_poses.size() << " rejected)" << std::endl;
-
-  nav_type = 0; // set navigation type as straight line for NN_view_generator
 
 }
 

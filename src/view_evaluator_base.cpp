@@ -56,9 +56,11 @@ void view_evaluator_base::update_parameters()
 
   // calculate entropy total for the combined or a specific type of map
   grid_map::Matrix& data = mapping_module_->map[mapping_module_->layer_name];
-  for (GridMapIterator iterator(mapping_module_->map); !iterator.isPastEnd(); ++iterator) {
+  for (GridMapIterator iterator(mapping_module_->map); !iterator.isPastEnd(); ++iterator)
+  {
       const Index index(*iterator);
-      info_entropy_total_+=data(index(0), index(1));
+      double prob=data(index(0),index(1));
+      info_entropy_total_+=- prob*log(prob) - (1-prob)*log(1-prob);
   }
 
   std::cout << "totla MAP info is:" << info_entropy_total_ << std::endl;
@@ -71,7 +73,8 @@ void view_evaluator_base::update_parameters()
   grid_map::Matrix& data_DL = mapping_module_->getMapLayer(MAP::DL)->map[mapping_module_->getMapLayer(MAP::DL)->layer_name];
   for (GridMapIterator iterator(mapping_module_->getMapLayer(MAP::DL)->map); !iterator.isPastEnd(); ++iterator) {
       const Index index(*iterator);
-      info_dl_entropy_total_+=data_DL(index(0), index(1));
+      double prob=data_DL(index(0),index(1));
+      info_dl_entropy_total_+=- prob*log(prob) - (1-prob)*log(1-prob);
   }
   std::cout << "totla dl info is:" << info_dl_entropy_total_ << std::endl;
   std::cout << "DL resolution is:" << mapping_module_->getMapLayer(MAP::DL)->map.getResolution() << std::endl;
@@ -81,7 +84,8 @@ void view_evaluator_base::update_parameters()
   grid_map::Matrix& data_thermal = mapping_module_->getMapLayer(MAP::THERMAL)->map[mapping_module_->getMapLayer(MAP::THERMAL)->layer_name];
   for (GridMapIterator iterator(mapping_module_->getMapLayer(MAP::THERMAL)->map); !iterator.isPastEnd(); ++iterator) {
       const Index index(*iterator);
-      info_thermal_entropy_total_+=data_thermal(index(0), index(1));
+      double prob=data_thermal(index(0),index(1));
+      info_thermal_entropy_total_+=- prob*log(prob) - (1-prob)*log(1-prob);
   }
 
   std::cout << "totla thermal info is:" << info_thermal_entropy_total_ << std::endl;
@@ -92,12 +96,11 @@ void view_evaluator_base::update_parameters()
   grid_map::Matrix& data_combined = mapping_module_->getMapLayer(MAP::WIRELESS)->map[mapping_module_->getMapLayer(MAP::WIRELESS)->layer_name];
   for (GridMapIterator iterator(mapping_module_->getMapLayer(MAP::WIRELESS)->map); !iterator.isPastEnd(); ++iterator) {
       const Index index(*iterator);
-      info_wireless_entropy_total_+=data_combined(index(0), index(1));
+      double prob=data_combined(index(0),index(1));
+      info_wireless_entropy_total_+=- prob*log(prob) - (1-prob)*log(1-prob);
   }
-
   std::cout << "totla wireless info is:" << info_wireless_entropy_total_ << std::endl;
   std::cout << "wireless resoluiton is:" << mapping_module_->getMapLayer(MAP::WIRELESS)->map.getResolution() << std::endl;
-
 }
 
 double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module){

@@ -18,7 +18,8 @@ maximum_arena_height: 20
 ## Sensor settings
 ############
 ## RGB_camera
-fov_horizontal: 55.0
+
+fov_horizontal: 100 # the value of fov is double ( 50 * 2) = 56
 fov_vertical: 45.0
 depth_range_max: 5.0
 depth_range_min: 0.5
@@ -26,12 +27,12 @@ RGB_image_x_resolution: 640.0
 RGB_image_y_resolution: 480.0
 RGB_image_x_offset: 320.5
 RGB_image_y_offset: 240.5
-RGB_focal_length: 524.2422531097977
+RGB_focal_length: 268.5116780299728
 
 ## thermal_camera
-fov_horizontal_thermal_cam: 52.98
+fov_horizontal_thermal_cam: 60
 fov_vertical_thermal_cam: 39.74
-thermal_range_max: 10
+thermal_range_max: 5
 thermal_image_x_resolution: 160.0
 thermal_image_y_resolution: 120.0
 thermal_image_x_offset: 79.5
@@ -45,8 +46,8 @@ Number_of_samples: 100
 reference_distance: 1
 path_loss: 7
 distance_threshold: 4
-victim_location_x: 5.7 #0.869099
-victim_location_y: 2.5 #2.260930
+victim_location_x: 6.09 #0.869099
+victim_location_y: -3.905 #2.260930
 
 ############
 ## Vehicle settings
@@ -58,8 +59,8 @@ vehicle_type: 2
 
 
 ## UAV Start Pose
-uav_pose_x: -2.0
-uav_pose_y: 0.0
+uav_pose_x: 0.127
+uav_pose_y: -2.690
 uav_pose_z: 1.0
 uav_pose_yaw: 0.0
 
@@ -71,7 +72,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 0
+map_type: 1
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -120,7 +121,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
-Number_of_recieved_pointCloud: 7
+Number_of_recieved_pointCloud: 4
 publish_2D_map: true
 
 ############
@@ -151,7 +152,6 @@ min_Dist_Between_Blobs: 40.0
 thermal_min_Area_Victim: 40.0 #if profiling was skipped, load a preexisting map?
 
 
-
 ############
 ## View Generation settings
 ############
@@ -167,9 +167,9 @@ view_generator_nn_pos_res_y: 0.8
 view_generator_nn_pos_res_z: 0.8
 
 view_generator_nn_pos_res_yaw: rad(pi/4)
-view_generator_nn_adaptive_scale_multiplier: 2.0
+view_generator_nn_adaptive_scale_multiplier: 1.5
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 500
+view_generator_nn_adaptive_utility_threshold: 50
 adaptive_ig_max_iteration: 3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: false
@@ -196,11 +196,11 @@ frontier_pointing_to_unknown_threshold: 0.7
 # 10: Weighted Max Mulit-Objective Utility
 # 11: Weighted Max Mulit-Objective Utility with Distance
 
-view_evaluator_type: 9
+view_evaluator_type: 7
 view_evaluator_weight_distance: 0.2
 #proposed evaluator params
 exploration_weight: 1
-victim_finding_weight: 4
+victim_finding_weight: 2
 distance_weight: 0.2
 
 ############
@@ -212,7 +212,7 @@ distance_weight: 0.2
 termination_type: 1
 
 termination_victim_max_probability: 0.9
-termination_iterations_max: 50
+termination_iterations_max: 100
 
 ############
 victim_found_prob: 0.9

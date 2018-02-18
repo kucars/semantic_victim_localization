@@ -2,7 +2,9 @@
 
 nbv_history::nbv_history():
  iteration(0),
- max_prob(0)
+ max_prob(0),
+ accumulated_utility(0),
+ PathPlannerUsed(false)
 {
 
 }

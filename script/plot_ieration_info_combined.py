@@ -41,6 +41,7 @@ selected_utility = {}
 selected_utility_dl = {}
 selected_utility_thermal = {}
 selected_utility_wireless = {}
+accumulated_utility = {}
 
 
 def main():
@@ -157,6 +158,8 @@ def callback(data):
     entropy_total_thermal[method] = []
     entropy_total_wireless[method] = []
 
+    accumulated_utility[method] = []
+
     time_iteration[method] = []
     time_iteration_total[method] = []
     generator_type[method] = []
@@ -190,6 +193,7 @@ def callback(data):
       'Current Max Victim Prob',
       'Current Max Victim loc X',
       'Current Max Victim loc Y',
+      'Accumulated Utility',
       ])
 
   # Iterations went back in time. Indicates start of new NBV loop. Exit program
@@ -215,6 +219,7 @@ def callback(data):
   selected_utility_dl[method].append(data.selected_utility_dl)
   selected_utility_thermal[method].append(data.selected_utility_thermal)
   selected_utility_wireless[method].append(data.selected_utility_wireless)
+  accumulated_utility[method].append(data.accumulated_utility)
 
   entropy_change = '';
   if (len(entropy_total[method]) > 1):
@@ -251,6 +256,7 @@ def callback(data):
     data.curr_max_prob,
     data.curr_max_loc_x,
     data.curr_max_loc_y,
+    data.accumulated_utility,
     ]
     )
 

@@ -16,6 +16,9 @@ resultFolder = pkg_path + '/Data'
 home = expanduser("~")
 roslogFolder = home +'/.ros/log'
 
+global methods
+
+
 def clean_dir(location):
     fileList = os.listdir(location)
 
@@ -38,44 +41,49 @@ batchfolder = os.path.join(rospack.get_path('victim_localization'), 'batch')
 
 # Get files in batch folder
 os.chdir( batchfolder )
-for file in sorted( glob.glob("*.yaml") ):
-  filenames.append( file )
-  print(file)
+for name in os.listdir("."):
+    if os.path.isdir(name):
+        folder_method = os.path.join(batchfolder,name)
+        os.chdir( folder_method )
+        for file in sorted( glob.glob("*.yaml") ):
+            filepath = os.path.join(folder_method,file)
+            file_no_ext = os.path.splitext(file)[0]
+            resultfolder = os.path.join(folder_method, file_no_ext)
+            if not os.path.exists(resultfolder):
+                os.makedirs(resultfolder)
+            proc = subprocess.Popen(['rosrun victim_localization plot_ieration_info_combined.py' + file_no_ext],stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
 
-for file in filenames:
-  filepath = os.path.join(batchfolder,file)
-  file_no_ext = os.path.splitext(file)[0]
+            # Run NBV
+            os.system("roslaunch victim_localization nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
 
-  resultfolder = os.path.join(batchfolder, file_no_ext)
-  if not os.path.exists(resultfolder):
-    os.makedirs(resultfolder)
+            killProcessByName("plot_ieration_info_combined.py")
+ 
+ # move all generated results into folder for later analysis
+ # also delete ros log to avoid been accumulated
+            for the_file in os.listdir(resultFolder):
+                file_path = os.path.join(resultFolder, the_file)
+                try:
+                  if os.path.isfile(file_path):
+                     shutil.move(file_path,resultfolder)
+                except Exception as e:
+                     print(e)
+        
+            for the_file in os.listdir(roslogFolder):
+                file_path = os.path.join(roslogFolder, the_file)
+                if os.path.isfile(the_file):
+                     os.chmod(the_file, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                     os.remove(os.path.join(roslogFolder, the_file))
+                elif os.path.islink(file_path):
+                     os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                     if len(os.listdir(file_path)) > 0:
+                         clean_dir(file_path)
+                     shutil.rmtree(os.path.join(roslogFolder, file_path))
 
-    proc = subprocess.Popen(['rosrun victim_localization plot_ieration_info_combined.py' + file_no_ext],stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid)
+        os.system("killall -9 gazebo & killall -9 gzserver & killall -9 gzclient")
 
-  # Run NBV
-  os.system("roslaunch victim_localization nbv_test.launch debug:=false batch:=true param_file:=" + filepath)
+        os.chdir(batchfolder) # Return to method folder
+        
+        
 
-  killProcessByName("plot_ieration_info_combined.py")
-  # move all generated results into folder for later analysis
-  # also delete ros log to avoid been accumulated
-  for the_file in os.listdir(resultFolder):
-      file_path = os.path.join(resultFolder, the_file)
-      try:
-          if os.path.isfile(file_path):
-              shutil.move(file_path,resultfolder)
-      except Exception as e:
-          print(e)
 
-  for the_file in os.listdir(roslogFolder):
-      file_path = os.path.join(roslogFolder, the_file)
-      if os.path.isfile(the_file):
-          os.chmod(the_file, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-          os.remove(os.path.join(roslogFolder, the_file))
-      elif os.path.islink(file_path):
-          os.unlink(file_path)
-      elif os.path.isdir(file_path):
-          if len(os.listdir(file_path)) > 0:
-              clean_dir(file_path)
-          shutil.rmtree(os.path.join(roslogFolder, file_path))
-
-os.system("killall -9 gazebo & killall -9 gzserver & killall -9 gzclient")

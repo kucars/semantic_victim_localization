@@ -132,10 +132,11 @@ void Raytracing2D::update()
 
 double Raytracing2D::compute2DRelativeRays()
 {
+
   rays_far_plane_.clear();
   double deg2rad = M_PI/180;
-  double min_x = -range_max_ * tan(HFOV_deg/2 * deg2rad);
-  double max_x =  range_max_ * tan(HFOV_deg/2 * deg2rad);
+  double min_x = -range_max_ * tan((HFOV_deg/2) * deg2rad);  //temp fix
+  double max_x =  range_max_ * tan((HFOV_deg/2) * deg2rad);
 
   double x_step = manager_->getResolution();
 
