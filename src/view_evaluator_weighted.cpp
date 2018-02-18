@@ -106,7 +106,6 @@ void view_evaluator_weighted::evaluate()
     info_utilities_.clear();
 
 
-
     selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
     double MaxIGinAllView=0;
@@ -156,7 +155,7 @@ void view_evaluator_weighted::evaluate()
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
         {
-            info_selected_utility_ = utility;
+            info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
         }
     }
@@ -172,28 +171,27 @@ void view_evaluator_weighted::evaluate()
     info_distance_total_ += calculateDistance(selected_pose_);
     mapping_module_->raytracing_->Done();
 
-    std::cout << "Map of resoltuion " << mapping_module_->map.getResolution() << std::endl;
-    std::cout << "exploration weight " << exploration_weight << std::endl;
-    std::cout << "victim_finding_weight " << victim_finding_weight << std::endl;
-    int i=MaxIGindex;
-    std::cout << "utility correspond to the exploration is " << (exploration_weight*Info_View_utilities[i])+
-                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
+//    std::cout << "Map of resoltuion " << mapping_module_->map.getResolution() << std::endl;
+//    std::cout << "exploration weight " << exploration_weight << std::endl;
+//    std::cout << "victim_finding_weight " << victim_finding_weight << std::endl;
+//    int i=MaxIGindex;
+//    std::cout << "utility correspond to the exploration is " << (exploration_weight*Info_View_utilities[i])+
+//                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
 
-    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
+//    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
 
-     i=MaxProbIndex;
+//     i=MaxProbIndex;
 
-    std::cout << "utility correspond to the victim is " << (exploration_weight*Info_View_utilities[i])+
-                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
+//    std::cout << "utility correspond to the victim is " << (exploration_weight*Info_View_utilities[i])+
+//                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i]))) << std::endl;
 
-    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
+//    std::cout << "corresponing IG and MAXXXXXX:" << Info_View_utilities[i] << " " << Info_View_Max[i] << std::endl;
 
-    std::cout << "utility correspond to the selected utility is " << info_selected_utility_ << std::endl;
+//    std::cout << "utility correspond to the selected utility is " << info_selected_utility_ << std::endl;
 
-    std::cout << "reality...... max IG is" << MaxIGinAllView << "while max prob is " << MaxProbinAllView << std::endl;
+//    std::cout << "reality...... max IG is" << MaxIGinAllView << "while max prob is " << MaxProbinAllView << std::endl;
 
-    std::cout << "Well well well , HFOV is " << mapping_module_->raytracing_->HFOV_deg <<std::endl;
-     ros::Rate(0.1).sleep();
+//    std::cout << "Well well well , HFOV is " << mapping_module_->raytracing_->HFOV_deg <<std::endl;
 }
 
 
@@ -267,7 +265,7 @@ void view_evaluator_weighted::evaluateWireless()
         // First Select Pose that maximize the Utility
         if (utility >= info_selected_utility_)
         {
-            info_selected_utility_ = utility;
+            info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
         }
 
@@ -395,7 +393,7 @@ void view_evaluator_weighted::evaluateCombined()
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
         if (utility > info_selected_utility_)
         {
-            info_selected_utility_ = utility;
+            info_selected_utility_ = alpha*Info_View_utilities_DL[i]+beta*Info_View_utilities_Thermal[i]+gama*Info_View_utilities_Wireless[i];
             selected_pose_ = Info_poses[i];
         }
     }

@@ -121,7 +121,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
-Number_of_recieved_pointCloud: 4
+Number_of_recieved_pointCloud: 3
 publish_2D_map: true
 
 ############

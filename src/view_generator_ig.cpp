@@ -158,11 +158,9 @@ if (nav_type==1){ // line collision checking only done for straight line navigat
   return false;
 }}
 
-  if (isCollide(p)){
-//std::cout << "rejectedbycollision" << std::endl;
-return false;
 
-}
+
+
 }
 return true;
 }

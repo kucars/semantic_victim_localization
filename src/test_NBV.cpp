@@ -179,7 +179,8 @@ void TestNBV::initTerminationCondition(){
   }
 }
 
-void TestNBV::initOctomap(){
+void TestNBV::initOctomap()
+{
 
   manager_ = new volumetric_mapping::OctomapManager(nh, nh_private);
 
@@ -429,8 +430,9 @@ void TestNBV::navigate()
   // wait for the drone commander node until it moves the drone to the viewpoint
   while ((ros::ok() && !drone_communicator_->GetStatus()))
   {
-    ros::spinOnce();
-    ros::Rate(5).sleep();
+    ROS_INFO("Waiting for the drone to reach target");
+   // ros::spinOnce();
+   // ros::Rate(5).sleep();
   }
   std::cout << "[test_NBV] " << cc.green << "Done Navigating to viewpoint\n" << cc.reset;
   state = NBVState::NAVIGATION_COMPLETE;
@@ -524,7 +526,6 @@ void TestNBV::runStateMachine()
 
     case NBVState::START_MAP_UPDATE:
 
-
       timer.start("[NBVLoop]Iteration");  // detect and update map
       //ros::Rate(1).sleep();
       Occlusion_Map_->GetPointCloud();
@@ -535,17 +536,26 @@ void TestNBV::runStateMachine()
 
     case NBVState::UPDATE_MAP_COMPLETE:
       state = NBVState::VIEWPOINT_GENERATION ;
+      timer.start("GenerationTime");
       generateViewpoints();
+      timer.stop("GenerationTime");
+      std::cout << "Time needed by the Generator is " << timer.getLatestTime("GenerationTime")/1000;
       break;
 
     case NBVState::VIEWPOINT_GENERATION_COMPLETE:
       state = NBVState::VIEWPOINT_EVALUATION;
+      timer.start("EvaluationTime");
       evaluateViewpoints();
+      timer.start("EvaluationTime");
+      std::cout << "Time needed by the Evaluator is " << timer.getLatestTime("EvaluationTime")/1000;
       break;
 
     case NBVState::VIEWPOINT_EVALUATION_COMPLETE:
+
       state = NBVState::NAVIGATION;
+      timer.start("NavigationTime");
       navigate();
+      std::cout << "Time needed by the Navigation is " << timer.getLatestTime("Navigation")/1000;
       break;
 
     case NBVState::NAVIGATION_COMPLETE:

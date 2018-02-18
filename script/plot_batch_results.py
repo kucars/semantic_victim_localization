@@ -16,7 +16,7 @@ rcParams['figure.figsize'] = 13, 10
 from matplotlib import pyplot
 
 rospack  = rospkg.RosPack()
-dir = rospack.get_path('victim_localization')+ '/batch'
+dir = '/home/abdulrahman/catkin_ws/src/victim_localization/NNFinalResut'
 methods = {}
 #skip_coverage = False
 
