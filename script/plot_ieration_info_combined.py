@@ -22,6 +22,9 @@ rospack  = rospkg.RosPack()
 dir_path = rospack.get_path('victim_localization')
 #dir_path = os.path.dirname(os.path.realpath(__file__)) # current directory path
 
+if not os.path.exists(dir_path + '/Data'):
+    os.makedirs(dir_path + '/Data')
+    
 print (dir_path)
 
 iterations = {}
