@@ -23,10 +23,15 @@ bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
     return true;
 
   // Find max entropy change in the past few iterations
-  float utility = nbv_history_->getMaxUtility(minima_iterations_);
+  //float utility = nbv_history_->getMaxUtility(minima_iterations_);
   // std::cout << "maximum_entropy_change_is: " << utility << std::endl;
-  if (utility < minima_threshold_)
-    return true;
+  //if (utility < minima_threshold_)
+    //return true;
+
+  std::cout << "entropy_max" << std::endl;
+
+  if(nbv_history_->getMaxEntropyChange(3,entropy_max))
+   return true;
 
   return false;
 }

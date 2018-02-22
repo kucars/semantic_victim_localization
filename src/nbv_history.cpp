@@ -40,38 +40,27 @@ double nbv_history::getMaxUtility(int N_iterations)
   return max_utility;
 }
 
-double nbv_history::getMaxUtility(int N_iterations)
+
+bool nbv_history::getMaxEntropyChange(int N_iterations, double threshold_)
 {
   if (N_iterations > iteration)
     return std::numeric_limits<double>::quiet_NaN();
+
+
+   std::vector<double> EntropyStatus;
+   EntropyStatus.insert(EntropyStatus.end(),entropy_diff.begin(),entropy_diff.end());
 
 
   // Get max entropy difference per voxel in the past "N_iterations"
   double max_utility = -std::numeric_limits<float>::infinity();
   for (int i=0; i<N_iterations; i++)
   {
-    float utility = selected_utility[iteration-i];
-    if (utility > max_utility)
-      max_utility = utility;
-  }
+      std::cout << "last entropy value" << EntropyStatus.back()  << std::endl;
+      std::cout << "entropy thresolod" << threshold_ << std::endl;
 
-  return max_utility;
-}
-
-bool nbv_history::getMaxEntropyChange(int N_iterations)
-{
-  if (N_iterations > iteration)
-    return std::numeric_limits<double>::quiet_NaN();
-   std::vector EntropyStatus;
-   EntropyStatus= entropy_diff;
-
-
-  // Get max entropy difference per voxel in the past "N_iterations"
-  double max_utility = -std::numeric_limits<float>::infinity();
-  for (int i=0; i<N_iterations; i++)
-  {
-    if (EntropyStatus.pop_back() > max_entropy)
+    if (fabs(EntropyStatus.back()) > threshold_)
       return true;
+    EntropyStatus.pop_back();
   }
 
   return false;

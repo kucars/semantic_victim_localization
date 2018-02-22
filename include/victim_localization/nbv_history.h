@@ -22,6 +22,7 @@ public:
    double max_prob;
    double accumulated_utility;
    bool PathPlannerUsed;
+   bool getMaxEntropyChange(int N_iterations, double threshold_);
 
 
   nbv_history  *vision_nbv_history ;
