@@ -8,6 +8,8 @@ do_adaptive_generation(true)
   ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 5);
   ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 3.0);
   ros::param::param<double>("~view_generator_nn_adaptive_scale_multiplier", scale_multiplier_, 2.0);
+  ros::param::param<double>("~view_generator_nn_adaptive_entropy_max", entropy_max, 0.1);
+
   generator_type=Generator::NN_Generator;
 }
 
@@ -36,7 +38,7 @@ void view_generator_ig_nn_adaptive::generateViews()
     scale_factor_*= scale_multiplier_;
     std::cout << "[ViewGeneratorNNAdaptive]: " << cc.yellow << "Local minima detected. Increasing scale factor to " << scale_factor_ << "\n" << cc.reset;
 
-    if (scale_factor_ > 8)
+    if (scale_factor_ > 4)
     {
       std::cout << "[ViewGeneratorNNAdaptive]: " << cc.red << "Warning: Scale factor very large: Resetting" << scale_factor_ << "\n" << cc.reset;
       scale_factor_ = 1;

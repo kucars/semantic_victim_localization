@@ -39,6 +39,8 @@ public:
   void setMappingModule(Victim_Map_Base* m);
   void update_parameters();
   virtual void evaluate();
+  double getFOVMAXEntropy(double Num, Victim_Map_Base *mapping_module);
+
 
    void setCameraSettings(double fov_h, double fov_v, double r_max, double r_min);
 

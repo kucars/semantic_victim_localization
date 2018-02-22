@@ -15,6 +15,7 @@ public:
    void evaluateWireless();
    void evaluateCombined();
    double f_;
+   bool use_dist;
 
 
    std::string getMethodName();
@@ -27,6 +28,7 @@ public:
    double exploration_weight;
    double victim_finding_weight;
    double dist_weight;
+   double Info_View_utilities_mehtod;
 
 
    // For combine Map

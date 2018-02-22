@@ -32,6 +32,11 @@ double view_evaluator_base::getCellEntropy(Position cell_, Victim_Map_Base *mapp
   return - p*log(p) - (1-p)*log(1-p);
 }
 
+double view_evaluator_base::getFOVMAXEntropy(double Num, Victim_Map_Base *mapping_module)
+{
+  return Num*(- 0.5*log(0.5) - (1-0.5)*log(1-0.5));
+}
+
 void view_evaluator_base::setViewGenerator(view_generator_IG* v)
 {
   view_gen_ = v;

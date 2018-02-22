@@ -30,6 +30,8 @@
 #include <victim_localization/view_evaluator_ig_exp_max.h>
 #include <victim_localization/view_evaluator_weighted.h>
 #include <victim_localization/view_evaluator_weighted_max.h>
+#include "victim_localization/view_evaluator_fieldofview.h"
+#include "victim_localization/view_evaluator_sum.h"
 
 
 #include <victim_localization/view_generator_ig.h>

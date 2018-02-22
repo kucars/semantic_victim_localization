@@ -1667,7 +1667,7 @@
           <pose frame=''>0 0 0 0 -0 0</pose>
           <geometry>
             <mesh>
-              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1675,7 +1675,7 @@
         <collision name='custom_0_collision'>
           <geometry>
             <mesh>
-              <uri>model://heat_victim_woman_red_signature/girl-brunette-dae/girl-brunette.dae</uri>
+              <uri>model://girl_brunette/girl_brunette/girl_brunette.dae</uri>
               <scale>1 1 1</scale>
             </mesh>
           </geometry>
@@ -1694,7 +1694,7 @@
             </friction>
           </surface>
         </collision>
-      </link>
+      </link>```````
       <allow_auto_disable>1</allow_auto_disable>
     </model>
     <state world_name='default'>

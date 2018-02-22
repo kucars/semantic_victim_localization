@@ -8,6 +8,7 @@ generator_type=Generator::NN_Generator;
 ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 3);
 ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 5.0);
 ros::param::param<double>("~view_generator_nn_adaptive_scale_multiplier", scale_multiplier_, 2.0);
+
 }
 
 void view_generator_ig_adaptive_frontier::generateViews()

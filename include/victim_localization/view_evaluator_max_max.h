@@ -9,11 +9,20 @@ class view_evaluator_MaxMax : public view_evaluator_base
 public:
   view_evaluator_MaxMax();
 
-  double calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-   double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+
+   double GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
+   double GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
+   double GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
+   void evaluate();
+   void evaluateCombined();
+   void evaluateWireless();
+
 
    std::string getMethodName();
-   void getAbsoluteMax(Victim_Map_Base *mapping_module, double &absolute_prob);
+   std::vector<double> Info_View_max;
+   std::vector<double> Info_View_max_count;
+   std::vector<double>  Info_WirelessDiection;
+   std::vector<geometry_msgs::Pose> Info_poses;
 
 
 private:

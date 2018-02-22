@@ -19,6 +19,7 @@ private:
   bool isStuckInLocalMinima();
   bool IsPreviouslyCheckedSamples(double i_x,double i_y);
   bool do_adaptive_generation;
+  double entropy_max;
 
 
 };

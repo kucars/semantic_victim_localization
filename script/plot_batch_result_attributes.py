@@ -15,12 +15,12 @@ rcParams['figure.figsize'] = 13, 10
 from matplotlib import pyplot
 
 #rospack  = rospkg.RosPack()
-dir = '/home/abdulrahman/catkin_ws/src/victim_localization/Results'
+dir = '/home/abdulrahman/catkin_ws/src/victim_localization/PLOT2'
 methods = {}
 
 #define Utility name in a dic
-Utility = {"Entropy" : "Utility1= $Entropy$", "ExpDist":"Utility2= $Entropy*e^{(- \lambda*d)}$", "MAX" : "Utility3= $argmax(P)*Entropy*e^{(- \lambda*d)}$"
-           ,"NNWW1" : "Utility4= $(U_{exp}+U_{victim})*e^{(- \lambda*d)}$" ,  "NNWW3" : "Utility5= $(U_{exp}+2*U_{victim})*e^{(- \lambda*d)}$" ,  "NNWW2" : "Utility6= $(U_{exp}+2*U_{victim})$"}
+Utility = {"Entropy" : "Utility1= $Entropy$", "ExpDist":"Utility2= $argmax(max)*Entropy*e^{(- \lambda*d)}$", "MAX" : "Utility3= $argmax(N_{max})$"
+           ,"SUM" : "Utility4= $sum{p}$" ,  "NNWW3" : "Utility5= $(U_{exp}+2*U_{victim})*e^{(- \lambda*d)}$" ,  "NNWW2" : "Utility6= $(U_{exp}+2*U_{victim})$"}
 
 #skip_coverage = False
 
@@ -149,6 +149,8 @@ def main():
           run_stats.method_name=Utility["NNW1"]
         elif "NNWW1" in name:
           run_stats.method_name=Utility["NNWW1"]
+        elif "NNWW2" in name:
+          run_stats.method_name=Utility["NNWW2"]
         elif "NNWWNOEXP" in name:
           run_stats.method_name=Utility["NNWWNOEXP"]
         else:

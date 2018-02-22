@@ -135,13 +135,13 @@ void TestNBV::initViewEvaluator(){
     View_evaluate_ = new view_evaluator_ig();
     break;
   case 1:
-    View_evaluate_ = new  view_evaluator_MaxSUM();
+    View_evaluate_ = new  view_evaluator_sum();
     break;
   case 2:
     View_evaluate_ = new view_evaluator_MaxMax();
     break;
   case 3:
-    View_evaluate_ = new view_evaluator_MaxMIN();
+    View_evaluate_ = new view_evaluator_FOV();
   case 4:
     View_evaluate_ = new view_evaluator_MinNEIGH();
     break;
@@ -430,7 +430,7 @@ void TestNBV::navigate()
   // wait for the drone commander node until it moves the drone to the viewpoint
   while ((ros::ok() && !drone_communicator_->GetStatus()))
   {
-    ROS_INFO("Waiting for the drone to reach target");
+    //ROS_INFO("Waiting for the drone to reach target");
    // ros::spinOnce();
    // ros::Rate(5).sleep();
   }

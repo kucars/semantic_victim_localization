@@ -9,6 +9,8 @@ view_evaluator_weighted_max::view_evaluator_weighted_max():
     ros::param::param<double>("~exploration_weight",exploration_weight,0.5);
     ros::param::param<double>("~victim_finding_weight",victim_finding_weight,0.5);
     ros::param::param<double>("~distance_weight",dist_weight,0.2);
+    ros::param::param<double>("~distance_threshold", wireless_max_range , 4.0);
+
 }
 
 void view_evaluator_weighted_max::calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max)

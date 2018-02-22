@@ -19,7 +19,7 @@ maximum_arena_height: 20
 ############
 ## RGB_camera
 
-fov_horizontal: 100 # the value of fov is double ( 50 * 2) = 56
+fov_horizontal: 60 # the value of fov is double ( 50 * 2) = 56
 fov_vertical: 45.0
 depth_range_max: 5.0
 depth_range_min: 0.5
@@ -46,8 +46,8 @@ Number_of_samples: 100
 reference_distance: 1
 path_loss: 7
 distance_threshold: 4
-victim_location_x: 6.09 #0.869099
-victim_location_y: -3.905 #2.260930
+victim_location_x: 6.5 #0.869099
+victim_location_y: -5.4 #2.260930
 
 ############
 ## Vehicle settings
@@ -59,8 +59,8 @@ vehicle_type: 2
 
 
 ## UAV Start Pose
-uav_pose_x: 0.127
-uav_pose_y: -2.690
+uav_pose_x: -4.12
+uav_pose_y: -3.58
 uav_pose_z: 1.0
 uav_pose_yaw: 0.0
 
@@ -72,7 +72,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 1
+map_type: 3
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -121,7 +121,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
-Number_of_recieved_pointCloud: 3
+Number_of_recieved_pointCloud: 1
 publish_2D_map: true
 
 ############
@@ -167,9 +167,9 @@ view_generator_nn_pos_res_y: 0.8
 view_generator_nn_pos_res_z: 0.8
 
 view_generator_nn_pos_res_yaw: rad(pi/4)
-view_generator_nn_adaptive_scale_multiplier: 1.5
+view_generator_nn_adaptive_scale_multiplier: 2
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 50
+view_generator_nn_adaptive_utility_threshold: 500
 adaptive_ig_max_iteration: 3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: false
@@ -196,7 +196,7 @@ frontier_pointing_to_unknown_threshold: 0.7
 # 10: Weighted Max Mulit-Objective Utility
 # 11: Weighted Max Mulit-Objective Utility with Distance
 
-view_evaluator_type: 7
+view_evaluator_type: 8
 view_evaluator_weight_distance: 0.2
 #proposed evaluator params
 exploration_weight: 1

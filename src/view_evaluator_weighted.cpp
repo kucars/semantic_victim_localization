@@ -1,3 +1,5 @@
+
+
 #include <victim_localization/view_evaluator_weighted.h>
 
 view_evaluator_weighted::view_evaluator_weighted():
@@ -10,6 +12,7 @@ view_evaluator_weighted::view_evaluator_weighted():
     ros::param::param<double>("~victim_finding_weight",victim_finding_weight,0.5);
     ros::param::param<double>("~distance_weight",dist_weight,0.2);
     ros::param::param<double>("~penality_factor",f_,2);
+    ros::param::param<double>("~distance_threshold", wireless_max_range , 7.0);
 }
 
 void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max)
@@ -18,6 +21,7 @@ void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_M
     double max_view=0;
     double current_prob=0;
     double IG_view=0;
+    double count=0;
 
     mapping_module->raytracing_->Initiate(false);
 
@@ -27,26 +31,32 @@ void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_M
         Position position;
         Index index=*iterator;
         current_prob=0;
+
         mapping_module->map.getPosition(index, position);
         if(!temp_Map.isInside(position)) continue;
          if(temp_Map.atPosition("temp", position)==0.5) continue;
 
+        current_prob= mapping_module->map.at(mapping_module->getlayer_name(),index);
+
         if(temp_Map.atPosition("temp", position)==0){
-            IG_view+=getCellEntropy(position,mapping_module);
-            current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
+           IG_view+=getCellEntropy(position,mapping_module);
+           count++;
+
             if (current_prob>max_view){
                 max_view=current_prob;
             }
         }
+
         if(temp_Map.atPosition("temp", position)==1){
-        current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
-        if (current_prob!=0.5)
+        if (current_prob>0.5)
             if (current_prob>max_view){
                 max_view=current_prob;
             }
         }
     }
-    IG= IG_view;
+
+
+    IG= IG_view;//(count*(- 0.5*log(0.5) - (1-0.5)*log(1-0.5)));
     Max=max_view;
 }
 
@@ -55,6 +65,7 @@ void view_evaluator_weighted::calculateWirelessIGwithMax(geometry_msgs::Pose p, 
     double IG_view=0;
     double max_view=0;
     double current_prob;
+    double count=0;
 
     Position center(p.position.x,p.position.y);
     double radius = wireless_max_range;
@@ -69,9 +80,10 @@ void view_evaluator_weighted::calculateWirelessIGwithMax(geometry_msgs::Pose p, 
         current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
         if (current_prob>max_view){
             max_view=current_prob;
+            count++;
         }
     }
-    IG= IG_view;
+    IG= IG_view;//(count*(- 0.5*log(0.5) - (1-0.5)*log(1-0.5)));
     Max=max_view;
 }
 
@@ -103,6 +115,7 @@ void view_evaluator_weighted::evaluate()
     view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
     info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
+    Info_View_utilities_mehtod=0;
     info_utilities_.clear();
 
 
@@ -135,8 +148,6 @@ void view_evaluator_weighted::evaluate()
                 MaxProbinAllView=ViewMax;
                  MaxProbIndex=i;
             }
-
-
     }
 
     // Normalized the IG view to 1
@@ -152,9 +163,13 @@ void view_evaluator_weighted::evaluate()
         utility= (exploration_weight*Info_View_utilities[i])+
                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/(Info_View_Max[i])));
 
+        // utility=utility*exp(-dist_weight*calculateDistance(Info_poses[i]));
+
+
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
-        if (utility > info_selected_utility_)
+        if (utility > Info_View_utilities_mehtod)
         {
+            Info_View_utilities_mehtod = utility;
             info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
         }
@@ -191,7 +206,6 @@ void view_evaluator_weighted::evaluate()
 
 //    std::cout << "reality...... max IG is" << MaxIGinAllView << "while max prob is " << MaxProbinAllView << std::endl;
 
-//    std::cout << "Well well well , HFOV is " << mapping_module_->raytracing_->HFOV_deg <<std::endl;
 }
 
 
@@ -200,6 +214,7 @@ void view_evaluator_weighted::evaluateWireless()
     view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
     info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
+    Info_View_utilities_mehtod=0;
     info_selected_direction_=0;
     info_utilities_.clear();
 
@@ -263,14 +278,15 @@ void view_evaluator_weighted::evaluateWireless()
                 (victim_finding_weight*exp((Info_View_Max[i]-MaxProbinAllView)/Info_View_Max[i]));
 
         // First Select Pose that maximize the Utility
-        if (utility >= info_selected_utility_)
+        if (utility >= Info_View_utilities_mehtod)
         {
+            Info_View_utilities_mehtod=utility;
             info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
         }
 
         // Second select the best exploration direction for the wireless best selected pose
-        if (!(utility-info_selected_utility_))
+        if (!(utility-Info_View_utilities_mehtod))
             if (Info_WirelessDiection[i]>info_selected_direction_)
             {
                 info_selected_direction_ = Info_WirelessDiection[i];
@@ -295,9 +311,12 @@ void view_evaluator_weighted::evaluateWireless()
 
 void view_evaluator_weighted::evaluateCombined()
 {
+  std::cout << cc.green << "params, alpha beta gama" << alpha << " " << beta << " " << gama << " " << " " << victim_finding_weight << cc.reset << std::endl;
+
     view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
     info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
+    Info_View_utilities_mehtod=0;
     info_utilities_.clear();
 
 
@@ -327,13 +346,13 @@ void view_evaluator_weighted::evaluateCombined()
 
         calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::DL),ViewIGDL,ViewMaxDL);
         calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::THERMAL),ViewIGThermal,ViewMaxThermal);
-        calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::WIRELESS),ViewIGWireless,ViewMaxWireless);
-
+        calculateWirelessIGwithMax(p,mapping_module_->getMapLayer(MAP::WIRELESS),ViewIGWireless,ViewMaxWireless);
 
 
         Info_View_utilities_DL.push_back(ViewIGDL);
         Info_View_utilities_Thermal.push_back(ViewIGThermal);
         Info_View_utilities_Wireless.push_back(ViewIGWireless);
+
 
         Info_View_Max_DL.push_back(ViewMaxDL);
         Info_View_Max_Thermal.push_back(ViewMaxThermal);
@@ -361,9 +380,17 @@ void view_evaluator_weighted::evaluateCombined()
     // Normalized the IG view to 1
     for (int i=0; i<Info_View_utilities_DL.size(); i++)
     {
-        Info_View_utilities_DL[i]=Info_View_utilities_DL[i]/MaxIGinAllDLView;
-        Info_View_utilities_Thermal[i]=Info_View_utilities_Thermal[i]/MaxIGinAllThermalView;
-        Info_View_utilities_Wireless[i]=Info_View_utilities_Wireless[i]/MaxIGinAllWirelessView;
+        //double vision_info=Info_View_utilities_DL[i];
+        //double thermal_info=Info_View_utilities_Thermal[i];
+        //double wireless_info= Info_View_utilities_Wireless[i];
+
+       // Info_View_utilities_DL[i]=Info_View_utilities_DL[i]/(vision_info+thermal_info+wireless_info);
+       // Info_View_utilities_Thermal[i]=Info_View_utilities_Thermal[i]/(vision_info+thermal_info+wireless_info);
+       // Info_View_utilities_Wireless[i]=Info_View_utilities_Wireless[i]/(vision_info+thermal_info+wireless_info);
+
+       Info_View_utilities_DL[i]=Info_View_utilities_DL[i]/(MaxIGinAllDLView);
+       Info_View_utilities_Thermal[i]=Info_View_utilities_Thermal[i]/(MaxIGinAllThermalView);
+       Info_View_utilities_Wireless[i]=Info_View_utilities_Wireless[i]/(MaxIGinAllWirelessView);
     }
 
     // Utiltiy ( A Weighted Summation is taken from Entropy (Exploration Objective) &
@@ -388,11 +415,14 @@ void view_evaluator_weighted::evaluateCombined()
         utility_Wireless= (exploration_weight*Info_View_utilities_Wireless[i])+
                 (victim_finding_weight*exp((Info_View_Max_Wireless[i]-MaxProbinAllWirelessView)/Info_View_Max_Wireless[i]));
 
-        utility=alpha*utility_DL+beta*utility_Thermal+gama*utility_Wireless;
+        utility=((alpha*utility_DL)+(beta*utility_Thermal)+(gama*utility_Wireless))/(alpha+beta+gama);
+
+       // utility=utility*exp(-dist_weight*calculateDistance(Info_poses[i]));
 
         // Ignore invalid utility values (may arise if we rejected pose based on IG requirements)
-        if (utility > info_selected_utility_)
+        if (utility > Info_View_utilities_mehtod)
         {
+            Info_View_utilities_mehtod=utility;
             info_selected_utility_ = alpha*Info_View_utilities_DL[i]+beta*Info_View_utilities_Thermal[i]+gama*Info_View_utilities_Wireless[i];
             selected_pose_ = Info_poses[i];
         }
@@ -418,6 +448,8 @@ std::string view_evaluator_weighted::getMethodName()
 {
     return "Weighted_Multiobjective_Utility";
 }
+
+
 
 
 

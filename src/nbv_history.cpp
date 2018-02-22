@@ -40,6 +40,43 @@ double nbv_history::getMaxUtility(int N_iterations)
   return max_utility;
 }
 
+double nbv_history::getMaxUtility(int N_iterations)
+{
+  if (N_iterations > iteration)
+    return std::numeric_limits<double>::quiet_NaN();
+
+
+  // Get max entropy difference per voxel in the past "N_iterations"
+  double max_utility = -std::numeric_limits<float>::infinity();
+  for (int i=0; i<N_iterations; i++)
+  {
+    float utility = selected_utility[iteration-i];
+    if (utility > max_utility)
+      max_utility = utility;
+  }
+
+  return max_utility;
+}
+
+bool nbv_history::getMaxEntropyChange(int N_iterations)
+{
+  if (N_iterations > iteration)
+    return std::numeric_limits<double>::quiet_NaN();
+   std::vector EntropyStatus;
+   EntropyStatus= entropy_diff;
+
+
+  // Get max entropy difference per voxel in the past "N_iterations"
+  double max_utility = -std::numeric_limits<float>::infinity();
+  for (int i=0; i<N_iterations; i++)
+  {
+    if (EntropyStatus.pop_back() > max_entropy)
+      return true;
+  }
+
+  return false;
+}
+
 bool nbv_history::isRepeatingMotions(int window_size)
 {
   // Checks if the last 4 moves are repeated, indicating a local minima
