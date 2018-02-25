@@ -11,7 +11,7 @@
 <arg name="iris_model_urdf" default="$(find victim_localization)/urdf/iris/iris_with_sensors.urdf" />
 
 <!--find gazebo_worlds)/worlds/empty.world-->
-<arg name="world" default="$(find victim_localization)/world/SimulatedWorld.world"/>
+<arg name="world" default="$(find victim_localization)/world/Sample_Fin.world"/>
 <arg name="headless" default="false"/>
 <arg name="gui" default="true"/>
 <arg name="debug" default="false"/>
@@ -19,8 +19,8 @@
 <arg name="paused" default="false"/>
 
     <!-- Starting position -->
-    <arg name="vehicle_starting_x" value="-8.8"/>
-    <arg name="vehicle_starting_y" value="3.57"/>
+    <arg name="vehicle_starting_x" value="-5.45"/>
+    <arg name="vehicle_starting_y" value="0.99"/>
     <arg name="vehicle_starting_z" value="1.0"/>
     <arg name="vehicle_starting_Y" value="0"/>
 

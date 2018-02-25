@@ -244,34 +244,34 @@ void VehicleControlFloatingSensor::Evaluate4Points(double x, double y, double z)
 
   // generate four points
   std::vector <geometry_msgs::Pose> FourPoints;
-  p.position.x= x+1;
+  p.position.x= x+0.5;
   p.position.y= y;
   p.position.z = z;
   p.orientation= pose_conversion::getQuaternionFromYaw(M_PI);
   FourPoints.push_back(p);
-  p.position.x= x+1;
+  p.position.x= x+0.5;
   p.position.y= y;
   p.position.z = z;
   p.orientation= pose_conversion::getQuaternionFromYaw((M_PI/2));
   FourPoints.push_back(p);
   p.position.x= x;
-  p.position.y= y-1;
+  p.position.y= y-0.5;
   p.orientation = pose_conversion::getQuaternionFromYaw((M_PI/2));
   FourPoints.push_back(p);
   p.position.x= x;
-  p.position.y= y-1;
+  p.position.y= y-0.5;
   p.orientation = pose_conversion::getQuaternionFromYaw(0);
   FourPoints.push_back(p);
-  p.position.x= x-1;
+  p.position.x= x-0.5;
   p.position.y= y;
   p.orientation = pose_conversion::getQuaternionFromYaw(0);
   FourPoints.push_back(p);
-  p.position.x= x-1;
+  p.position.x= x-0.5;
   p.position.y= y;
   p.orientation = pose_conversion::getQuaternionFromYaw((-M_PI/2));
   FourPoints.push_back(p);
   p.position.x= x;
-  p.position.y= y+1;
+  p.position.y= y+0.5;
   p.orientation = pose_conversion::getQuaternionFromYaw((-M_PI/2));
   FourPoints.push_back(p);
 

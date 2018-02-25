@@ -134,7 +134,7 @@ bool ReactivePlannerServer::PathGeneration(geometry_msgs::Pose start_, geometry_
     visualTools->publishSphere(end.p, rviz_visual_tools::ORANGE, 0.3,"end_pose");
     visualTools->trigger();
 
-    double robotH = 0.3, robotW = 0.3, narrowestPath = 0.5;
+    double robotH = 0.2, robotW = 0.4, narrowestPath = 0.5;
     //narrowestPath = 0.987;
 
     robotCenter.x = 0.0f;
