@@ -46,8 +46,8 @@ Number_of_samples: 100
 reference_distance: 1
 path_loss: 7
 distance_threshold: 4
-victim_location_x: 6.5 #0.869099
-victim_location_y: -5.4 #2.260930
+victim_location_x: 10.04 #0.869099
+victim_location_y: 4.82 #2.260930
 
 ############
 ## Vehicle settings
@@ -59,10 +59,11 @@ vehicle_type: 2
 
 
 ## UAV Start Pose
-uav_pose_x: -4.12
-uav_pose_y: -3.58
+uav_pose_x: -8.8
+uav_pose_y: 3.57
 uav_pose_z: 1.0
 uav_pose_yaw: 0.0
+
 
 ############
 ## Mapping settings
@@ -72,7 +73,7 @@ uav_pose_yaw: 0.0
 # 2: wireless victim map
 # 3: fused victim map
 
-map_type: 3
+map_type: 1
 
 map_resol_thermal: 0.2
 map_resol_DL: 0.5
@@ -121,7 +122,7 @@ octomap_resol: 0.2
 
 minmum_z_for_2D_map: 0.8
 maximum_z_for_2D_map: 1.2
-Number_of_recieved_pointCloud: 8
+Number_of_recieved_pointCloud: 2
 publish_2D_map: true
 
 ############
@@ -169,11 +170,18 @@ view_generator_nn_pos_res_z: 0.8
 view_generator_nn_pos_res_yaw: rad(pi/4)
 view_generator_nn_adaptive_scale_multiplier: 2
 view_generator_nn_adaptive_local_minima_threshold: 0.005
-view_generator_nn_adaptive_utility_threshold: 500
+view_generator_nn_adaptive_utility_threshold: 50
+view_generator_nn_adaptive_entropy_max: 0.1
 adaptive_ig_max_iteration: 3
 frontier_reached_with_distance: 5
 use_inflated_obstacles: false
 frontier_yaw: rad(pi/4)
+
+
+#proposed adaptive switch condition
+view_generator_nn_adaptive_new_cell_percentage_N: 3
+view_generator_nn_adaptive_new_cell_percentage: 0.1
+view_generator_nn_adaptive_new_cell_percentage_respawn: 0.7
 
 #frontier_pointing_to_unkown_
 #0: point to unknown, 1: point everywhere , 2: point to unknown if above threshold

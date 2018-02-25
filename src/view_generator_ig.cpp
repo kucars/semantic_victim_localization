@@ -177,17 +177,19 @@ bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
   // Check for collision of new connection plus some overshoot distance.
   boundingbox_[0]=0.4;
   boundingbox_[1]=0.4;
-  boundingbox_[2]=0.4;
+  boundingbox_[2]=0.3;
 
   Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
+  Eigen::Vector3d end(p.position.x, p.position.y, p.position.z);
+  /*
   Eigen::Vector3d direction(p.position.x - origin[0], p.position.y - origin[1],
-      p.position.z - origin[2]);
+      p.position.z - origin[2]);*/
 
   volumetric_mapping::OctomapManager::CellStatus cellStatus;
   //std::cout << "Pose: "<< p << " NewPose: " << direction + origin + direction.normalized() * dOvershoot_ << std::endl;
   cellStatus = manager_->getLineStatusBoundingBox(
         origin,
-        direction + origin ,
+        end,
         boundingbox_);
   //std::cout << "status is: " << cellStatus << std::endl;
   if (cellStatus == volumetric_mapping::OctomapManager::CellStatus::kFree)
