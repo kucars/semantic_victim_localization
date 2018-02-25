@@ -7,7 +7,7 @@ sample_orientations: false
 orientation_sampling_res: 90.0
 tree_progress_display_freq: -1
 debug_delay: 0.0
-dist_to_goal: 1.0
+dist_to_goal: 0.8
 connection_rad: 0.7
 grid_resolution: 0.5
 grid_size_x: 20.0

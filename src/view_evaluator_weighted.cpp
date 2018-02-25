@@ -15,13 +15,14 @@ view_evaluator_weighted::view_evaluator_weighted():
     ros::param::param<double>("~distance_threshold", wireless_max_range , 7.0);
 }
 
-void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max)
+void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max, double &new_cell_percentage)
 {
     grid_map::GridMap temp_Map;
     double max_view=0;
     double current_prob=0;
-    double IG_view=0;
+    double IG_view=0;    
     double count=0;
+    double new_cell_count=0;
 
     mapping_module->raytracing_->Initiate(false);
 
@@ -37,6 +38,8 @@ void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_M
          if(temp_Map.atPosition("temp", position)==0.5) continue;
 
         current_prob= mapping_module->map.at(mapping_module->getlayer_name(),index);
+
+        if (current_prob==0.5) new_cell_count++;
 
         if(temp_Map.atPosition("temp", position)==0){
            IG_view+=getCellEntropy(position,mapping_module);
@@ -54,18 +57,18 @@ void view_evaluator_weighted::calculateIGwithMax(geometry_msgs::Pose p, Victim_M
             }
         }
     }
-
-
     IG= IG_view;//(count*(- 0.5*log(0.5) - (1-0.5)*log(1-0.5)));
     Max=max_view;
+    new_cell_percentage=new_cell_count/count;
 }
 
-void view_evaluator_weighted::calculateWirelessIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max)
+void view_evaluator_weighted::calculateWirelessIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max, double &new_cell_percentage)
 {
     double IG_view=0;
     double max_view=0;
     double current_prob;
     double count=0;
+    double new_cell_count=0;
 
     Position center(p.position.x,p.position.y);
     double radius = wireless_max_range;
@@ -82,9 +85,12 @@ void view_evaluator_weighted::calculateWirelessIGwithMax(geometry_msgs::Pose p, 
             max_view=current_prob;
             count++;
         }
+
+        if (current_prob==0.5) new_cell_count++;
     }
     IG= IG_view;//(count*(- 0.5*log(0.5) - (1-0.5)*log(1-0.5)));
     Max=max_view;
+    new_cell_percentage=new_cell_count/count;
 }
 
 void view_evaluator_weighted::evaluate()
@@ -99,6 +105,8 @@ void view_evaluator_weighted::evaluate()
     Info_View_Max_DL.clear();
     Info_View_Max_Thermal.clear();
     Info_View_Max_Wireless.clear();
+    Info_New_cellsPercentage.clear();
+
 
     if (mapping_module_->Maptype==MAP::WIRELESS)   // if the map is Wireless then use wireless evaluator
     {
@@ -118,6 +126,9 @@ void view_evaluator_weighted::evaluate()
     Info_View_utilities_mehtod=0;
     info_utilities_.clear();
 
+    info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+    double new_cell_percentage;
+
 
     selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
@@ -132,11 +143,12 @@ void view_evaluator_weighted::evaluate()
         double ViewIG=0;
         double ViewMax=-std::numeric_limits<float>::infinity();
 
-        calculateIGwithMax(p,mapping_module_,ViewIG,ViewMax);
+        calculateIGwithMax(p,mapping_module_,ViewIG,ViewMax,new_cell_percentage);
 
             Info_View_utilities.push_back(ViewIG);
             Info_View_Max.push_back(ViewMax);
             Info_poses.push_back(p);
+            Info_New_cellsPercentage.push_back(new_cell_percentage);
 
             // keep track of max information IG across all views
             if(MaxIGinAllView<ViewIG){
@@ -172,6 +184,7 @@ void view_evaluator_weighted::evaluate()
             Info_View_utilities_mehtod = utility;
             info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
+            info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
         }
     }
 
@@ -218,6 +231,12 @@ void view_evaluator_weighted::evaluateWireless()
     info_selected_direction_=0;
     info_utilities_.clear();
 
+    info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+    double new_cell_percentage=1;
+    double new_cells_direction=0;
+
+
+
     selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
     double MaxIGinAllView=0;
@@ -228,18 +247,20 @@ void view_evaluator_weighted::evaluateWireless()
         geometry_msgs::Pose p = view_gen_->generated_poses[i];
         double ViewIG=0;
         double ViewMax=-std::numeric_limits<float>::infinity();
-        double utility_direction = calculateIG(p,mapping_module_);
+        double utility_direction = calculateIG(p,mapping_module_,new_cells_direction);
 
         if (i==0)
         {
-            calculateWirelessIGwithMax(p,mapping_module_,ViewIG,ViewMax);
+            new_cell_percentage=1;
+            calculateWirelessIGwithMax(p,mapping_module_,ViewIG,ViewMax,new_cell_percentage);
         }
 
         if (i!=0)
         {
             if (!IsSamePosition(view_gen_->generated_poses[i],view_gen_->generated_poses[i-1]))
             {
-                calculateWirelessIGwithMax(p,mapping_module_,ViewIG,ViewMax);
+                new_cell_percentage=1;
+                calculateWirelessIGwithMax(p,mapping_module_,ViewIG,ViewMax,new_cell_percentage);
             }
             else
             ViewIG = Info_View_utilities.back();
@@ -252,6 +273,8 @@ void view_evaluator_weighted::evaluateWireless()
             Info_View_Max.push_back(ViewMax);
             Info_WirelessDiection.push_back(utility_direction);
             Info_poses.push_back(p);
+            Info_New_cellsPercentage.push_back(new_cell_percentage);
+
 
             // keep track of max information IG across all views
             if(MaxIGinAllView<ViewIG)
@@ -283,6 +306,7 @@ void view_evaluator_weighted::evaluateWireless()
             Info_View_utilities_mehtod=utility;
             info_selected_utility_ = Info_View_utilities[i]*MaxIGinAllView;
             selected_pose_ = Info_poses[i];
+            info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
         }
 
         // Second select the best exploration direction for the wireless best selected pose
@@ -291,6 +315,7 @@ void view_evaluator_weighted::evaluateWireless()
             {
                 info_selected_direction_ = Info_WirelessDiection[i];
                 selected_pose_ = Info_poses[i];
+                info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
             }
     }
 
@@ -319,6 +344,14 @@ void view_evaluator_weighted::evaluateCombined()
     Info_View_utilities_mehtod=0;
     info_utilities_.clear();
 
+    info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+    double new_cell_percentage;
+    double new_cell_percentage_dl;
+    double new_cell_percentage_thermal;
+    double new_cell_percentage_wireless;
+
+
+
 
     selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
@@ -343,11 +376,16 @@ void view_evaluator_weighted::evaluateCombined()
         double ViewMaxThermal=-std::numeric_limits<float>::infinity();
         double ViewMaxWireless=-std::numeric_limits<float>::infinity();
 
+        double new_cell_percentage_dl=1;
+        double new_cell_percentage_thermal=1;
+        double new_cell_percentage_wireless=1;
 
-        calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::DL),ViewIGDL,ViewMaxDL);
-        calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::THERMAL),ViewIGThermal,ViewMaxThermal);
-        calculateWirelessIGwithMax(p,mapping_module_->getMapLayer(MAP::WIRELESS),ViewIGWireless,ViewMaxWireless);
+        calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::DL),ViewIGDL,ViewMaxDL,new_cell_percentage_dl);
+        calculateIGwithMax(p,mapping_module_->getMapLayer(MAP::THERMAL),ViewIGThermal,ViewMaxThermal,new_cell_percentage_thermal);
+        calculateWirelessIGwithMax(p,mapping_module_->getMapLayer(MAP::WIRELESS),ViewIGWireless,ViewMaxWireless,new_cell_percentage_wireless);
 
+        new_cell_percentage=alpha*new_cell_percentage_dl+
+                beta*new_cell_percentage_thermal+gama*new_cell_percentage_wireless;
 
         Info_View_utilities_DL.push_back(ViewIGDL);
         Info_View_utilities_Thermal.push_back(ViewIGThermal);
@@ -359,6 +397,8 @@ void view_evaluator_weighted::evaluateCombined()
         Info_View_Max_Wireless.push_back(ViewMaxWireless);
 
         Info_poses.push_back(p);
+        Info_New_cellsPercentage.push_back(new_cell_percentage);
+
 
         // keep track of max information IG across all views
         if(MaxIGinAllDLView<ViewIGDL)
@@ -380,14 +420,6 @@ void view_evaluator_weighted::evaluateCombined()
     // Normalized the IG view to 1
     for (int i=0; i<Info_View_utilities_DL.size(); i++)
     {
-        //double vision_info=Info_View_utilities_DL[i];
-        //double thermal_info=Info_View_utilities_Thermal[i];
-        //double wireless_info= Info_View_utilities_Wireless[i];
-
-       // Info_View_utilities_DL[i]=Info_View_utilities_DL[i]/(vision_info+thermal_info+wireless_info);
-       // Info_View_utilities_Thermal[i]=Info_View_utilities_Thermal[i]/(vision_info+thermal_info+wireless_info);
-       // Info_View_utilities_Wireless[i]=Info_View_utilities_Wireless[i]/(vision_info+thermal_info+wireless_info);
-
        Info_View_utilities_DL[i]=Info_View_utilities_DL[i]/(MaxIGinAllDLView);
        Info_View_utilities_Thermal[i]=Info_View_utilities_Thermal[i]/(MaxIGinAllThermalView);
        Info_View_utilities_Wireless[i]=Info_View_utilities_Wireless[i]/(MaxIGinAllWirelessView);
@@ -425,6 +457,7 @@ void view_evaluator_weighted::evaluateCombined()
             Info_View_utilities_mehtod=utility;
             info_selected_utility_ = alpha*Info_View_utilities_DL[i]+beta*Info_View_utilities_Thermal[i]+gama*Info_View_utilities_Wireless[i];
             selected_pose_ = Info_poses[i];
+            info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
         }
     }
 

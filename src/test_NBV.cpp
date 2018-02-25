@@ -140,14 +140,14 @@ void TestNBV::initViewEvaluator(){
   case 2:
     View_evaluate_ = new view_evaluator_MaxMax();
     break;
-  case 3:
-    View_evaluate_ = new view_evaluator_FOV();
-  case 4:
-    View_evaluate_ = new view_evaluator_MinNEIGH();
-    break;
-  case 5:
-    View_evaluate_ = new view_evaluator_log_reward();
-    break;
+//  case 3:
+//    View_evaluate_ = new view_evaluator_FOV();
+//  case 4:
+//    View_evaluate_ = new view_evaluator_MinNEIGH();
+//    break;
+//  case 5:
+//    View_evaluate_ = new view_evaluator_log_reward();
+//    break;
   case 6:
     View_evaluate_ = new view_evaluator_ig_exp();
     break;
@@ -157,9 +157,9 @@ void TestNBV::initViewEvaluator(){
   case 8:
     View_evaluate_ = new view_evaluator_weighted();
     break;
-  case 9:
-    View_evaluate_ = new view_evaluator_weighted_max();
-    break;
+//  case 9:
+//    View_evaluate_ = new view_evaluator_weighted_max();
+//    break;
   }
 }
 
@@ -237,8 +237,17 @@ void TestNBV::initAllModules()
 
 void TestNBV::updateHistory()
 {
-  if (history_->PathPlannerUsed==false)
+    if (history_->PathPlannerUsed==false)  {
+  history_->selected_poses_along_path.push_back(View_evaluate_->getTargetPose());
   history_->selected_poses.push_back(View_evaluate_->getTargetPose());
+}
+
+    else // if planner is used then the last point the planner can reach is assigned as the selected pose ( as this is where the drone will reach)
+  history_->selected_poses.push_back(history_->selected_poses_along_path.back());
+
+
+   //percentage of new cells
+  history_->percentage_of_Unvisited_cells.push_back(View_evaluate_->info_percentage_of_New_Cells);
 
   history_->selected_utility.push_back(View_evaluate_->info_selected_utility_);
   history_->total_entropy.push_back(View_evaluate_->info_entropy_total_);
@@ -388,7 +397,7 @@ void TestNBV::navigate()
       printf("path Found...\n");
       drone_communicator_->Execute_path(path_to_waypoint);
       history_->black_listed_poses.clear();
-      history_->selected_poses.insert(history_->selected_poses.end(), path_to_waypoint.begin(),path_to_waypoint.end());
+      history_->selected_poses_along_path.insert(history_->selected_poses_along_path.end(), path_to_waypoint.begin(),path_to_waypoint.end());
       history_->PathPlannerUsed=true;
     }
 
@@ -566,9 +575,9 @@ void TestNBV::runStateMachine()
 
     case NBVState::TERMINATION_MET:
 
-      for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
+      for(int i =0; i< (history_->selected_poses_along_path.size()- 1) ;i+=1)
       {
-        visualTools->publishLine(history_->selected_poses[i].position,history_->selected_poses[i+1].position, rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE);
+        visualTools->publishLine(history_->selected_poses_along_path[i].position,history_->selected_poses_along_path[i+1].position, rviz_visual_tools::BLUE,rviz_visual_tools::XLARGE);
       }
       for(int i =0; i< (history_->selected_poses.size()- 1) ;i+=1)
       {

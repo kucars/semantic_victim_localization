@@ -7,8 +7,8 @@ Volumetric_Map::Volumetric_Map(volumetric_mapping::OctomapManager *manager):
   m_worldFrameId("/world"), m_baseFrameId("/base"),
   m_minSizeX(0.0), m_minSizeY(0.0) , accept_pointCloud(true), stop(false), count_pointCloud(0)
 {
-  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 0.8);
-  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1.2);
+  ros::param::param<double>("~minmum_z_for_2D_map", m_occupancyMinZ , 1);
+  ros::param::param<double>("~maximum_z_for_2D_map", m_occupancyMaxZ , 1);
   ros::param::param<bool>("~publish_2D_map", m_publish2DMap , true);
   ros::param::param<int>("~Number_of_recieved_pointCloud", num_recieved_pointCloud , 5);
 

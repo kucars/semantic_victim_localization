@@ -108,7 +108,7 @@ void view_evaluator_base::update_parameters()
   std::cout << "wireless resoluiton is:" << mapping_module_->getMapLayer(MAP::WIRELESS)->map.getResolution() << std::endl;
 }
 
-double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module){
+double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage){
 
   grid_map::GridMap temp_Map;
 
@@ -117,6 +117,7 @@ double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *
   temp_Map=mapping_module->raytracing_->Generate_2D_Safe_Plane(p,true,true);
   double IG_view=0;
   double IG_view_count=0;
+  double New_cell=0;
 
   for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEnd(); ++iterator) {
     Position position;
@@ -127,18 +128,20 @@ double view_evaluator_base::calculateIG(geometry_msgs::Pose p, Victim_Map_Base *
     if(temp_Map.atPosition("temp", position)==0){
       IG_view+=getCellEntropy(position,mapping_module);
       IG_view_count+=1;
+      if ( mapping_module->map.atPosition(mapping_module->getlayer_name(), position)==0.5) New_cell++;
     }
   }
 
   // std::cout << "found information gain is.. " << IG_view << std::endl;
   //if (IG_view_count!=0) IG_view=IG_view/IG_view_count;
+  new_cell_percentage=New_cell/IG_view_count;
   return IG_view;
 }
 
-double view_evaluator_base::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_base::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage)
 {
   //std::cout << "[ViewEvaluatorBase]: " << cc.yellow << "Warning: calculateUtility() not implimented, defaulting to classical IG calculation\n" << cc.reset;
-  double IG = calculateIG(p,mapping_module);
+  double IG = calculateIG(p,mapping_module,new_cell_percentage);
   return IG;
 }
 
@@ -160,13 +163,16 @@ void view_evaluator_base::evaluate(){
 
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
   info_utilities_.clear();
+  info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+   double new_cell_percentage;
 
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-        double utility = calculateUtiltiy(p,mapping_module_);
+        new_cell_percentage=1;
+        double utility = calculateUtiltiy(p,mapping_module_,new_cell_percentage);
 
         if (utility>=0)
         {
@@ -177,6 +183,7 @@ void view_evaluator_base::evaluate(){
         {
          info_selected_utility_ = utility;
           selected_pose_ = p;
+          info_percentage_of_New_Cells=new_cell_percentage;
         }
     }
        // No valid poses found, end
@@ -209,14 +216,18 @@ double view_evaluator_base::calculateDistance(geometry_msgs::Pose p)
         );
 }
 
-double view_evaluator_base::calculateCombinedUtility(geometry_msgs::Pose p)
+double view_evaluator_base::calculateCombinedUtility(geometry_msgs::Pose p,double & new_cell_percentage)
 {
  // std::cout << "[ViewEvaluatorBase]: " << cc.yellow << "Warning: calculateCombinedUtility() not implimented, defaulting to classical IG calculation\n" << cc.reset;
+   double Vision_NewCell_percentage=1;
+   double Thermal_NewCell_percentage=1;
+   double Wireless_NewCell_percentage=1;
 
-  double IG_vision = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::DL));
-  double IG_thermal = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::THERMAL));
-  double IG_wireless=calculateWirelessUtility(p,mapping_module_->getMapLayer(MAP::WIRELESS));
+  double IG_vision = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::DL),Vision_NewCell_percentage);
+  double IG_thermal = calculateUtiltiy(p,mapping_module_->getMapLayer(MAP::THERMAL),Thermal_NewCell_percentage);
+  double IG_wireless= calculateWirelessUtility(p,mapping_module_->getMapLayer(MAP::WIRELESS),Wireless_NewCell_percentage);
 
+  new_cell_percentage= ((alpha*Vision_NewCell_percentage)+(beta*Thermal_NewCell_percentage)+(gama*Wireless_NewCell_percentage))/(alpha+beta+gama);
   return ((alpha*IG_vision)+(beta*IG_thermal)+(gama*IG_wireless))/(alpha+beta+gama);
 }
 
@@ -227,13 +238,16 @@ void view_evaluator_base::evaluateCombined()
 
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
   info_utilities_.clear();
+  info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+   double new_cell_percentage;
 
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-        double utility = calculateCombinedUtility(p);
+      new_cell_percentage=1;
+        double utility = calculateCombinedUtility(p,new_cell_percentage);
 
         if (utility>=0){
     info_utilities_.push_back(utility);
@@ -243,6 +257,7 @@ void view_evaluator_base::evaluateCombined()
         {
          info_selected_utility_ = utility;
           selected_pose_ = p;
+          info_percentage_of_New_Cells=new_cell_percentage;
         }
     }
        // No valid poses found, end
@@ -267,9 +282,11 @@ info_wireless_selected_utility_ = 0;
  mapping_module_->getMapLayer(MAP::WIRELESS)->raytracing_->Done();
 }
 // Wireless Related Functions
-double view_evaluator_base::calculateWirelessIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_base::calculateWirelessIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage)
 {
   double IG_view=0;
+  double IG_count=0;
+  double new_cell_count=0;
   Position center(p.position.x,p.position.y);
   double radius = wireless_max_range;
 
@@ -279,7 +296,12 @@ double view_evaluator_base::calculateWirelessIG(geometry_msgs::Pose p, Victim_Ma
       Index index=*iterator;
       mapping_module->map.getPosition(index, position);
       IG_view+=getCellEntropy(position,mapping_module);
+      IG_count++;
+      if (mapping_module->map.getPosition(index, position)==0.5)
+        new_cell_count++;
     }
+
+    new_cell_percentage=new_cell_count/IG_count;
       return IG_view;
 }
 
@@ -290,23 +312,26 @@ void view_evaluator_base::evaluateWireless()
   info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
   info_selected_direction_=0;
   info_utilities_.clear();
-
+  info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+   double new_cell_percentage;
+   double new_cell_percentage_Direction;
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
     {
       geometry_msgs::Pose p = view_gen_->generated_poses[i];
-
-      double utility_direction = calculateIG(p,mapping_module_);
+      double utility_direction = calculateIG(p,mapping_module_,new_cell_percentage_Direction);
       double utility;
       if (i==0){
-        utility = calculateWirelessUtility(p,mapping_module_);
+          new_cell_percentage=1;
+        utility = calculateWirelessUtility(p,mapping_module_,new_cell_percentage);
       }
       if (i!=0) {
         if (!IsSamePosition(view_gen_->generated_poses[i],view_gen_->generated_poses[i-1]))
         {
-        utility = calculateWirelessUtility(p,mapping_module_);
+        new_cell_percentage=1;
+        utility = calculateWirelessUtility(p,mapping_module_,new_cell_percentage);
         info_selected_direction_=0;
         }
         else
@@ -321,6 +346,7 @@ void view_evaluator_base::evaluateWireless()
         {
          info_selected_utility_ = utility;
           selected_pose_ = p;
+          info_percentage_of_New_Cells=new_cell_percentage;
         }
 
         // Second select the best exploration direction for the wireless best selected pose
@@ -344,10 +370,10 @@ void view_evaluator_base::evaluateWireless()
  mapping_module_->raytracing_->Done();
   }
 
-double view_evaluator_base::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_base::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage)
 {
  // std::cout << "[ViewEvaluatorBase]: " << cc.yellow << "Warning: calculateWirelessUtility() not implimented, defaulting to classical IG calculation\n" << cc.reset;
-  double IG = calculateWirelessIG(p,mapping_module);
+  double IG = calculateWirelessIG(p,mapping_module,new_cell_percentage);
   return IG;
 }
 

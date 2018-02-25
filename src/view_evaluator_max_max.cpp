@@ -8,7 +8,7 @@ view_evaluator_MaxMax::view_evaluator_MaxMax():
 }
 
 
-double view_evaluator_MaxMax::GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count)
+double view_evaluator_MaxMax::GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count, double &new_cell_percentage)
 {
   grid_map::GridMap temp_Map;
 
@@ -17,6 +17,8 @@ double view_evaluator_MaxMax::GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_B
   temp_Map=mapping_module->raytracing_->Generate_2D_Safe_Plane(p,true,true);
   double view_max=0;
   double view_max_absolute=0;
+  double total_count=0;
+  double new_cells_count=0;
 
   double view_max_count=0;
 
@@ -29,7 +31,10 @@ double view_evaluator_MaxMax::GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_B
 
     if(temp_Map.atPosition("temp", position)==0){
       view_max=mapping_module->map.at(mapping_module->getlayer_name(),index);
+      total_count++;
     }
+
+    if (view_max==0.5) new_cells_count++;
 
     if (view_max_absolute<view_max)
     {
@@ -43,13 +48,16 @@ double view_evaluator_MaxMax::GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_B
 
    max=view_max_absolute;
    max_count=view_max_count;
+   new_cell_percentage=new_cells_count/total_count;
 }
 
 
-double view_evaluator_MaxMax::GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count)
+double view_evaluator_MaxMax::GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count, double &new_cell_percentage)
 {
     double view_max=0;
     double view_max_absolute=0;
+    double total_count=0;
+    double new_cells_count=0;
 
     double view_max_count=0;
 
@@ -62,8 +70,11 @@ double view_evaluator_MaxMax::GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Vict
         Position position;
         Index index=*iterator;
         mapping_module->map.getPosition(index, position);
+        total_count++;
 
         view_max=mapping_module->map.at(mapping_module->getlayer_name(),index);
+
+        if (view_max==0.5) new_cells_count++;
 
         if (view_max_absolute<view_max)
         {
@@ -77,11 +88,13 @@ double view_evaluator_MaxMax::GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Vict
 }
        max=view_max_absolute;
        max_count=view_max_count;
+       new_cell_percentage=new_cells_count/total_count;
+
 }
 
 
 
-double view_evaluator_MaxMax::GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count)
+double view_evaluator_MaxMax::GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count, double &new_cell_percentage)
 {
   grid_map::GridMap temp_Map_dl;
   grid_map::GridMap temp_Map_thermal;
@@ -104,6 +117,15 @@ double view_evaluator_MaxMax::GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victi
   double view_max_count_wireless=0;
 
 
+  double percentage_newCell_dl=0;
+  double percentage_newCell_thermal=0;
+  double percentage_newCell_wireless=0;
+  double newCell_dl=0;
+  double newCell_thermal=0;
+  double newCell_wireless=0;
+  double totalCell_dl=0;
+  double totalCell_thermal=0;
+  double totalCell_wireless=0;
 
   // for deep learning
   for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEnd(); ++iterator) {
@@ -115,7 +137,10 @@ double view_evaluator_MaxMax::GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victi
 
     if(temp_Map_dl.atPosition("temp", position)==0){
      view_max_dl=mapping_module->map.at(mapping_module->getlayer_name(),index);
+     totalCell_dl++;
     }
+
+    if (view_max_dl==0.5) newCell_dl++;
 
     if (view_max_absolute_dl<view_max_dl)
     {
@@ -126,6 +151,8 @@ double view_evaluator_MaxMax::GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victi
     if (view_max_absolute_dl==view_max_dl)
         view_max_count_dl++;
   }
+
+  percentage_newCell_dl= newCell_dl/totalCell_dl;
 
 
 // for thermal
@@ -138,7 +165,10 @@ for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEn
 
   if(temp_Map_thermal.atPosition("temp", position)==0){
    view_max_thermal=mapping_module->map.at(mapping_module->getlayer_name(),index);
+   totalCell_thermal++;
   }
+
+  if (view_max_thermal==0.5) newCell_thermal++;
 
   if (view_max_absolute_thermal<view_max_thermal)
   {
@@ -149,6 +179,8 @@ for (grid_map::GridMapIterator iterator(mapping_module->map); !iterator.isPastEn
   if (view_max_absolute_thermal==view_max_thermal)
       view_max_count_thermal++;
 }
+
+percentage_newCell_thermal= newCell_thermal/totalCell_thermal;
 
 
 //wireless
@@ -161,9 +193,11 @@ for (grid_map::CircleIterator iterator(mapping_module->map, center, radius);
     Position position;
     Index index=*iterator;
     mapping_module->map.getPosition(index, position);
+    totalCell_wireless++;
 
     view_max_wireless=mapping_module->map.at(mapping_module->getlayer_name(),index);
 
+    if (view_max_wireless==0.5) newCell_wireless++;
     if (view_max_absolute_wireless<view_max_wireless)
     {
        view_max_count_wireless=0;
@@ -175,7 +209,11 @@ for (grid_map::CircleIterator iterator(mapping_module->map, center, radius);
 
 }
 
+percentage_newCell_wireless= newCell_wireless/totalCell_wireless;
 
+
+// combined new cell percentage...
+new_cell_percentage=(alpha*percentage_newCell_dl+ beta*percentage_newCell_thermal + gama*percentage_newCell_wireless)/(alpha+beta+gama);
 
 
    if (view_max_absolute_dl>=view_max_absolute_thermal)
@@ -211,6 +249,7 @@ void view_evaluator_MaxMax::evaluate()
 Info_View_max.clear();
 Info_View_max_count.clear();
 Info_poses.clear();
+Info_New_cellsPercentage.clear();
 
 if (mapping_module_->Maptype==MAP::WIRELESS)   // if the map is Wireless then use wireless evaluator
 {
@@ -224,6 +263,9 @@ if (mapping_module_->Maptype==MAP::COMBINED)   // if the map is combined then us
     return;
 }
 
+info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+double new_cell_percentage;
+
 view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
 info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
@@ -236,17 +278,19 @@ double MAX_COUNT=0;
 
 for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
 {
+    new_cell_percentage=1;
     MAX_=0;
     MAX_COUNT=0;
     geometry_msgs::Pose p=view_gen_->generated_poses[i];
 
-    GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT);
+    GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT,new_cell_percentage);
 
     if (MAX_!=0)
     {
         Info_View_max.push_back(MAX_);
         Info_View_max_count.push_back(MAX_COUNT);
         Info_poses.push_back(p);
+        Info_New_cellsPercentage.push_back(new_cell_percentage);
     }
 
     if (absolute_max<MAX_)
@@ -262,6 +306,7 @@ for (int i=0; i<Info_View_max.size() && ros::ok(); i++)
             selected_pose_=Info_poses[i];
             info_selected_utility_ = getCellEntropy(pose_conversion::convertToGridMapPosition(Info_poses[i]),mapping_module_);
              absolute_max_count = Info_View_max_count[i];
+             info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
         }
 }
 
@@ -293,12 +338,16 @@ void view_evaluator_MaxMax::evaluateWireless()
   info_utilities_.clear();
   Info_WirelessDiection.clear();
 
+  info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+  double new_cell_percentage=1;
+
 
   selected_pose_.position.x = std::numeric_limits<double>::quiet_NaN();
 
   double MAX_=0;
   double absolute_max=0;
   double MAX_COUNT=0;
+  double new_cells_direction=0;
 
 
    for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
@@ -308,17 +357,19 @@ void view_evaluator_MaxMax::evaluateWireless()
       MAX_=0;
       MAX_COUNT=0;
 
-      GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT);
+      GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT,new_cell_percentage);
 
-      double utility_direction = calculateIG(p,mapping_module_);
+      double utility_direction = calculateIG(p,mapping_module_,new_cells_direction);
       double utility;
       if (i==0){
-          GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT);
+          new_cell_percentage=1;
+          GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT,new_cell_percentage);
       }
       if (i!=0) {
         if (!IsSamePosition(view_gen_->generated_poses[i],view_gen_->generated_poses[i-1]))
         {
-         GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT);
+         new_cell_percentage=1;
+         GetMAXANDCOUNT(p,mapping_module_,MAX_,MAX_COUNT,new_cell_percentage);
         }
         else
             MAX_=0;
@@ -330,6 +381,7 @@ void view_evaluator_MaxMax::evaluateWireless()
           Info_View_max_count.push_back(MAX_COUNT);
           Info_WirelessDiection.push_back(utility_direction);
           Info_poses.push_back(p);
+          Info_New_cellsPercentage.push_back(new_cell_percentage);
       }
 
       if (absolute_max<MAX_)
@@ -353,6 +405,7 @@ void view_evaluator_MaxMax::evaluateWireless()
                {
                    info_selected_direction_ = Info_WirelessDiection[i];
                    selected_pose_ = Info_poses[i];
+                   info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
                }
            }
 
@@ -379,6 +432,9 @@ Info_View_max.clear();
 Info_View_max_count.clear();
 Info_poses.clear();
 
+info_percentage_of_New_Cells=1;// initialize with maximum pecentage value
+double new_cell_percentage;
+
 view_gen_->visualizeAllpose(view_gen_->generated_poses, view_gen_->rejected_poses);
 
 info_selected_utility_ = 0; //- std::numeric_limits<float>::infinity(); //-inf
@@ -391,16 +447,18 @@ double MAX_COUNT=0;
 
 for (int i=0; i<view_gen_->generated_poses.size() && ros::ok(); i++)
 {
+    new_cell_percentage=1;
     MAX_=0;
     MAX_COUNT=0;
     geometry_msgs::Pose p=view_gen_->generated_poses[i];
 
-    GetMAXANDCOUNCombined(p,mapping_module_,MAX_,MAX_COUNT);
+    GetMAXANDCOUNCombined(p,mapping_module_,MAX_,MAX_COUNT,new_cell_percentage);
 
     if (MAX_!=0){
         Info_View_max.push_back(MAX_);
         Info_View_max_count.push_back(MAX_COUNT);
         Info_poses.push_back(p);
+        Info_New_cellsPercentage.push_back(new_cell_percentage);
     }
 
     if (absolute_max<MAX_)
@@ -416,6 +474,7 @@ for (int i=0; i<Info_View_max.size() && ros::ok(); i++)
             selected_pose_=Info_poses[i];
             info_selected_utility_ = getCellEntropy(pose_conversion::convertToGridMapPosition(Info_poses[i]),mapping_module_);
             absolute_max_count = Info_View_max_count[i];
+            info_percentage_of_New_Cells=Info_New_cellsPercentage[i];
         }
 }
 

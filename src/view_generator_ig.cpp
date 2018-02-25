@@ -70,19 +70,23 @@ bool view_generator_IG::isInsideBounds(geometry_msgs::Pose p)
 bool view_generator_IG::isSafe(geometry_msgs::Pose p)
 {
   Eigen::Vector3d loc(p.position.x, p.position.y,p.position.z);
-  Eigen::Vector3d box_size(0.5,0.5,0.5);
+  Eigen::Vector3d box_size(0.4,0.4,0.4);
 
 if (generator_type==Generator::NN_Adaptive_Frontier_Generator){    // cell status 0: free , 1: occupied , 2: unknown
- if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;}
-else if (generator_type==Generator::NN_Adaptive_Generator){
- if( manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;}
-else if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
+ if( manager_->getCellStatusBoundingBox(loc,box_size)!=1) return true;
+  else return false;}
+if (generator_type==Generator::NN_Adaptive_Generator){
+ if( manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
+  else return false;}
+
+//return true;
+if (manager_->getCellStatusBoundingBox(loc,box_size)==0) return true;
  return false;
 }
 
 void view_generator_IG::FixCurrentLoc()
 {
-    double box_size=0.5;
+    double box_size=0.4;
     geometry_msgs::Pose p=current_pose_;
     bool lazy_eval=true;
     octomap::KeySet free_cells;
@@ -112,13 +116,15 @@ void view_generator_IG::FixCurrentLoc()
 bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safety)
 {
     //check current loc is free.
-  Eigen::Vector3d box_size(0.5,0.5,0.5);
+  Eigen::Vector3d box_size(0.2,0.2,0.2);
   Eigen::Vector3d loc(current_pose_.position.x, current_pose_.position.y,current_pose_.position.z);
 
-  if (manager_->getCellStatusBoundingBox(loc,box_size)!=0)
-  {
-     FixCurrentLoc();
-  }
+//  if (manager_->getCellStatusBoundingBox(loc,box_size)!=0)
+//  {
+
+//      FixCurrentLoc();
+//   }
+
 
   if (!isInsideBounds(p) ){
    std::cout << "rejectedbyvalidity" << std::endl;
@@ -129,10 +135,10 @@ bool view_generator_IG::isValidViewpoint(geometry_msgs::Pose p , bool check_safe
 //{\
 
 
-//  if (!isSafe(p)){
+  if (!isSafe(p)){
    //std::cout << "rejectedbySafety" << std::endl;
-  //  return false;
-  //}
+    return false;
+  }
 
 
 //}
@@ -154,11 +160,10 @@ if (nav_type==0){ // line collision checking only done for straight line navigat
 }
 
 if (nav_type==1){ // line collision checking only done for straight line navigation. Reactive planner follows a different approach (search space)
+                  // reject all poses within distance to goal range in case they are not reachable by straight line navigator.
   if (sqrt(pow(p.position.x-current_pose_.position.x,2)+pow(p.position.y-current_pose_.position.y,2))<dist_to_goal)
     {
-     std::cout << "condition met...." << std::endl;
       if (isCollide(p)){
-    //std::cout << "rejectedbycollision" << std::endl;
   return false;
 }}
 
@@ -170,9 +175,9 @@ return true;
 bool view_generator_IG::isCollide(geometry_msgs::Pose p) {
 
   // Check for collision of new connection plus some overshoot distance.
-  boundingbox_[0]=boundingbox_x_;
-  boundingbox_[1]=boundingbox_y_;
-  boundingbox_[2]=boundingbox_z_;
+  boundingbox_[0]=0.4;
+  boundingbox_[1]=0.4;
+  boundingbox_[2]=0.4;
 
   Eigen::Vector3d origin(current_pose_.position.x, current_pose_.position.y, current_pose_.position.z);
   Eigen::Vector3d direction(p.position.x - origin[0], p.position.y - origin[1],

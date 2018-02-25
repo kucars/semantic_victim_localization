@@ -10,9 +10,9 @@ public:
   view_evaluator_MaxMax();
 
 
-   double GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
-   double GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
-   double GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count);
+   double GetMAXANDCOUNT(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count, double &new_cell_percentage);
+   double GetMAXANDCOUNTWIRELESS(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count,double &new_cell_percentage);
+   double GetMAXANDCOUNCombined(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &max, double &max_count, double &new_cell_percentage);
    void evaluate();
    void evaluateCombined();
    void evaluateWireless();
@@ -23,6 +23,7 @@ public:
    std::vector<double> Info_View_max_count;
    std::vector<double>  Info_WirelessDiection;
    std::vector<geometry_msgs::Pose> Info_poses;
+   std::vector<double> Info_New_cellsPercentage;
 
 
 private:

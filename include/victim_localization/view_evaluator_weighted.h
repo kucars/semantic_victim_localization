@@ -8,9 +8,9 @@ class view_evaluator_weighted : public view_evaluator_base
 public:
   view_evaluator_weighted();
 
-   double calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-   void calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max);
-   void calculateWirelessIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max);
+   double calculateUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double &new_cell_percentage);
+   void calculateIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max,double &new_cell_percentage);
+   void calculateWirelessIGwithMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &IG, double &Max,double &new_cell_percentage);
    void evaluate();
    void evaluateWireless();
    void evaluateCombined();
@@ -23,6 +23,7 @@ public:
    std::vector<double> Info_View_utilities;
    std::vector<double> Info_View_Max;
    std::vector<double> Info_WirelessDiection;
+    std::vector<double> Info_New_cellsPercentage;
 
 
    double exploration_weight;

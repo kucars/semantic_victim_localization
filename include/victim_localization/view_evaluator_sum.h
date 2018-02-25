@@ -10,8 +10,8 @@ public:
   view_evaluator_sum();
   ~view_evaluator_sum();
 
-   double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-   double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+   double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage);
+   double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage);
    std::string getMethodName();
 
 private:

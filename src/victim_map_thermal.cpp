@@ -19,6 +19,8 @@ victim_map_Thermal::victim_map_Thermal(const ros::NodeHandle &nh,const ros::Node
            map.getLength().x(), map.getLength().y(),
            map.getSize()(0), map.getSize()(1));
 
+  std::cout << cc.red << x_arena_max <<" " << y_arena_max<<  " " << map_resol << cc.reset << std::endl;
+
   map.add(layer_name,0.5); // initialize map probability to 0.5
 
   pub_map=nh_.advertise<grid_map_msgs::GridMap>(map_topic, 1, true);

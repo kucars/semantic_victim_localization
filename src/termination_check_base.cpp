@@ -39,8 +39,8 @@ void TerminationCheckBase::SaveResults()
   view_evaluator->view_gen_->manager_->
       octree_->writeBinary(file_path+"environment");
 
-  // --- Save generated path ---
-  ofstream myfile (file_path+"PATH.txt");
+  // --- Save selected Poses ---
+  ofstream myfile (file_path+"POSES.txt");
   if (myfile.is_open())
   {
     for(int i =0; i< (nbv_history_->selected_poses.size()) ;i+=1)
@@ -54,6 +54,26 @@ void TerminationCheckBase::SaveResults()
              << nbv_history_->selected_poses[i].orientation.w<< "\n";
     }
     myfile.close();
+  }
+  else
+    cout << "Unable to open PATH.txt file";
+
+
+  // --- Save Path Generated ---
+  ofstream myfile2 (file_path+"PATH.txt");
+  if (myfile2.is_open())
+  {
+    for(int i =0; i< (nbv_history_->selected_poses_along_path.size()) ;i+=1)
+    {
+      myfile2 << nbv_history_->selected_poses_along_path[i].position.x << " "
+             << nbv_history_->selected_poses_along_path[i].position.y<< " "
+             << nbv_history_->selected_poses_along_path[i].position.z<< " "
+             << nbv_history_->selected_poses_along_path[i].orientation.x<< " "
+             << nbv_history_->selected_poses_along_path[i].orientation.y<< " "
+             << nbv_history_->selected_poses_along_path[i].orientation.z<< " "
+             << nbv_history_->selected_poses_along_path[i].orientation.w<< "\n";
+    }
+    myfile2.close();
   }
   else
     cout << "Unable to open PATH.txt file";

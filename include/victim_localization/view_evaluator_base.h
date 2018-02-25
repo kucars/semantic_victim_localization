@@ -22,6 +22,8 @@ class view_evaluator_base
 {
 public:
   float info_selected_utility_;
+  float info_percentage_of_New_Cells;
+
   float info_dl_selected_utility_;
   float info_thermal_selected_utility_;
   float info_wireless_selected_utility_;
@@ -76,18 +78,19 @@ public:
 
   double tree_resolution;
   double const_;
-  double calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-  virtual double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+  double calculateIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage);
+  virtual double calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage);
 
   //--------- functions for wireless map which overwrite the original equivalent functions
   virtual void evaluateWireless();
-  double calculateWirelessIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
-  virtual double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module);
+  double calculateWirelessIG(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage);
+  virtual double calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage);
+
   //----------
 
   //--------- functions for wireless map which overwrite the original equivalent functions
   virtual void evaluateCombined();
-  virtual double calculateCombinedUtility(geometry_msgs::Pose p);
+  virtual double calculateCombinedUtility(geometry_msgs::Pose p, double &new_cell_percentage);
   double alpha;
   double beta;
   double gama;

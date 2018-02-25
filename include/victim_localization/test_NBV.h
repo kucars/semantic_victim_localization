@@ -22,15 +22,15 @@
 #include <victim_localization/view_evaluator_base.h>
 #include <victim_localization/view_evaluator_ig.h>
 #include <victim_localization/view_evaluator_max_max.h>
-#include <victim_localization/view_evaluator_max_min.h>
-#include <victim_localization/view_evaluator_max_sum.h>
-#include <victim_localization/view_evaluator_min_neigh.h>
-#include "victim_localization/view_evaluator_log_reward.h"
+//#include <victim_localization/view_evaluator_max_min.h>
+//#include <victim_localization/view_evaluator_max_sum.h>
+//#include <victim_localization/view_evaluator_min_neigh.h>
+//#include "victim_localization/view_evaluator_log_reward.h"
 #include <victim_localization/view_evaluator_ig_exp.h>
 #include <victim_localization/view_evaluator_ig_exp_max.h>
 #include <victim_localization/view_evaluator_weighted.h>
-#include <victim_localization/view_evaluator_weighted_max.h>
-#include "victim_localization/view_evaluator_fieldofview.h"
+//#include <victim_localization/view_evaluator_weighted_max.h>
+//#include "victim_localization/view_evaluator_fieldofview.h"
 #include "victim_localization/view_evaluator_sum.h"
 
 

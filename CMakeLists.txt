@@ -173,17 +173,17 @@ add_executable (test_NBV
 
     src/view_evaluator_base.cpp
     src/view_evaluator_ig.cpp
-    src/view_evaluator_max_sum.cpp
+   # src/view_evaluator_max_sum.cpp
     src/view_evaluator_max_max.cpp
-    src/view_evaluator_max_min.cpp
-    src/view_evaluator_min_neigh.cpp
-    src/view_evaluator_log_reward.cpp
+    #src/view_evaluator_max_min.cpp
+   # src/view_evaluator_min_neigh.cpp
+   # src/view_evaluator_log_reward.cpp
     src/view_evaluator_ig_exp_max.cpp
     src/view_evaluator_ig_exp.cpp
     src/view_evaluator_weighted.cpp
-    src/view_evaluator_weighted_max.cpp
+    #src/view_evaluator_weighted_max.cpp
     src/view_evaluator_sum.cpp
-    src/view_evaluator_fieldofview.cpp
+    #src/view_evaluator_fieldofview.cpp
 
     src/view_generator_ig.cpp
     src/view_generator_ig_nn_adaptive.cpp
@@ -265,6 +265,22 @@ target_link_libraries(Visualizeresults
     )
 add_dependencies(Visualizeresults  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
+
+add_executable(VisualizeresultsPlanner
+    src/visualize_results1.cpp
+    src/volumetric_map_manager.cpp
+    )
+target_link_libraries(VisualizeresultsPlanner
+    ${Boost_LIBRARIES} ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_DATE_TIME_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    ${catkin_LIBRARIES}
+    ${Eigen_LIBRARIES}
+    ${OCTOMAP_LIBRARIES}
+    ${PCL_LIBRARIES}
+    ${CGAL_LIBRARY}
+    ${CGAL_Core_LIBRARY}
+    ${rviz_visual_tools_LIBRARIES}
+    )
+add_dependencies(VisualizeresultsPlanner  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 add_executable(takeoff src/takeoff.cpp)
 target_link_libraries(takeoff ${catkin_LIBRARIES})

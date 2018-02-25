@@ -5,21 +5,21 @@ view_evaluator_ig::view_evaluator_ig():
 {
 }
 
-double view_evaluator_ig::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage)
 {
-  double IG = calculateIG(p,mapping_module);
+  double IG = calculateIG(p,mapping_module,new_cell_percentage);
   return IG;
 }
 
-double view_evaluator_ig::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double & new_cell_percentage)
 {
-  double IG = calculateWirelessIG(p,mapping_module);
+  double IG = calculateWirelessIG(p,mapping_module,new_cell_percentage);
   return IG;
 }
 
-double view_evaluator_ig::calculateCombinedUtility(geometry_msgs::Pose p)
+double view_evaluator_ig::calculateCombinedUtility(geometry_msgs::Pose p,double & new_cell_percentage)
 {
-  double IG =view_evaluator_base::calculateCombinedUtility(p);
+  double IG =view_evaluator_base::calculateCombinedUtility(p,new_cell_percentage);
   return IG;
 }
 

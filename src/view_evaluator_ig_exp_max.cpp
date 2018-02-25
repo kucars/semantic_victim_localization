@@ -6,17 +6,17 @@ view_evaluator_ig_exp_max::view_evaluator_ig_exp_max():
     ros::param::param<double>("~view_evaluator_weight_distance", w_dist_, 1.0);
 }
 
-double view_evaluator_ig_exp_max::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp_max::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage)
 {
-    double IG_MAX = calculateIGMax(p,mapping_module);
+    double IG_MAX = calculateIGMax(p,mapping_module,new_cell_percentage);
     double dist = calculateDistance(p);
 
     return IG_MAX*exp(-dist*w_dist_);
 }
 
-double view_evaluator_ig_exp_max::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp_max::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module,double &new_cell_percentage)
 {
-    double IG_MAX = calculateWirelessIGMAX(p,mapping_module);
+    double IG_MAX = calculateWirelessIGMAX(p,mapping_module,new_cell_percentage);
     double dist = calculateDistance(p);
 
     return IG_MAX*exp(-dist*w_dist_);
@@ -27,12 +27,14 @@ std::string view_evaluator_ig_exp_max::getMethodName()
     return "IG_exp_max";
 }
 
-double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage)
 {
     grid_map::GridMap temp_Map;
     double max=0;
     double current_prob=0;
     double IG_view=0;
+    double IG_count=0;
+    double new_cell_count=0;
 
     mapping_module->raytracing_->Initiate(false);
 
@@ -51,6 +53,8 @@ double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_M
         if(temp_Map.atPosition("temp", position)==0){
             IG_view+=getCellEntropy(position,mapping_module);
             current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
+            IG_count++;
+            if (current_prob==0.5) new_cell_count++;
 
             if (current_prob>max){
                 max=current_prob;
@@ -65,14 +69,18 @@ double view_evaluator_ig_exp_max::calculateIGMax(geometry_msgs::Pose p, Victim_M
             }
         }
     }
+
+    new_cell_percentage=new_cell_count/IG_count;
     return max*IG_view;
 }
 
-double view_evaluator_ig_exp_max::calculateWirelessIGMAX(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp_max::calculateWirelessIGMAX(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage)
 {
     double IG_view=0;
     double max=0;
     double current_prob;
+    double IG_count=0;
+    double new_cell_count=0;
 
     Position center(p.position.x,p.position.y);
     double radius = wireless_max_range;
@@ -83,13 +91,17 @@ double view_evaluator_ig_exp_max::calculateWirelessIGMAX(geometry_msgs::Pose p, 
         Index index=*iterator;
         mapping_module->map.getPosition(index, position);
         IG_view+=getCellEntropy(position,mapping_module);
-
+        IG_count++;
         current_prob=mapping_module->map.at(mapping_module->getlayer_name(),index);
+        if (current_prob==0.5) new_cell_count++;
+
         if (current_prob>max){
             max=current_prob;
         }
 
     }
+    new_cell_percentage=new_cell_count/IG_count;
+
     return max*IG_view;
 }
 

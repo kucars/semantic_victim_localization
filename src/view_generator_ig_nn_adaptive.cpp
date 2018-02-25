@@ -3,12 +3,18 @@
 view_generator_ig_nn_adaptive::view_generator_ig_nn_adaptive():
 view_generator_IG(),
 scale_factor_(1),
-do_adaptive_generation(true)
+do_adaptive_generation(true),
+new_cell_status(false),
+new_cell_status_stop(false)
 {
   ros::param::param<int>("~view_generator_nn_adaptive_local_minima_iterations", minima_iterations_, 5);
   ros::param::param<double>("~view_generator_nn_adaptive_utility_threshold", minima_threshold_, 3.0);
   ros::param::param<double>("~view_generator_nn_adaptive_scale_multiplier", scale_multiplier_, 2.0);
   ros::param::param<double>("~view_generator_nn_adaptive_entropy_max", entropy_max, 0.1);
+
+  ros::param::param<double>("~view_generator_nn_adaptive_new_cell_percentage", new_cell_percentage_threshold, 0.1);
+  ros::param::param<double>("~view_generator_nn_adaptive_new_cell_percentage_respawn", new_cell_percentage_threshold_respawn, 0.5);
+  ros::param::param<double>("~view_generator_nn_adaptive_new_cell_percentage_N", new_cell_percentage_Iteration, 3);
 
   generator_type=Generator::NN_Generator;
 }
@@ -18,9 +24,12 @@ bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
   if (minima_iterations_ > nbv_history_->iteration)
     return false;
 
+  if (nbv_history_->max_prob > 0.51)
+      return false;
+
   // See if the last few moves are repeating
-  if (nbv_history_->isRepeatingMotions(4))
-    return true;
+//  if (nbv_history_->isRepeatingMotions(4))
+//    return true;
 
   // Find max entropy change in the past few iterations
   //float utility = nbv_history_->getMaxUtility(minima_iterations_);
@@ -30,8 +39,21 @@ bool view_generator_ig_nn_adaptive::isStuckInLocalMinima()
 
   std::cout << "entropy_max" << std::endl;
 
-  if(nbv_history_->getMaxEntropyChange(3,entropy_max))
+  if (new_cell_status_stop){
+     nbv_history_->CheckPercentageofUnVisitedCellsIsLow(new_cell_percentage_Iteration,new_cell_percentage_threshold,current_percentage);
+     if (current_percentage>new_cell_percentage_threshold_respawn){
+     new_cell_status_stop=false;
+     return false;
+     }
+    }
+
+  if (!new_cell_status_stop)
+  {
+  if(nbv_history_->CheckPercentageofUnVisitedCellsIsLow(new_cell_percentage_Iteration,new_cell_percentage_threshold,current_percentage)){
+   new_cell_status=true;
    return true;
+  }
+  }
 
   return false;
 }
@@ -43,7 +65,7 @@ void view_generator_ig_nn_adaptive::generateViews()
     scale_factor_*= scale_multiplier_;
     std::cout << "[ViewGeneratorNNAdaptive]: " << cc.yellow << "Local minima detected. Increasing scale factor to " << scale_factor_ << "\n" << cc.reset;
 
-    if (scale_factor_ > 4)
+    if (scale_factor_ > 16)
     {
       std::cout << "[ViewGeneratorNNAdaptive]: " << cc.red << "Warning: Scale factor very large: Resetting" << scale_factor_ << "\n" << cc.reset;
       scale_factor_ = 1;
@@ -77,7 +99,7 @@ void view_generator_ig_nn_adaptive::generateViews()
   else
   {
       generator_type=Generator::NN_Adaptive_Generator;
-      nav_type = 0; // set navigation type as reactive planner for adaptive_nn_view_generator
+      nav_type = 1; // set navigation type as reactive planner for adaptive_nn_view_generator
       view_generator_IG::generateViews(true); // do not sample in the current pose to escape local minimum
   }
 

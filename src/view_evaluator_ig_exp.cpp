@@ -6,23 +6,23 @@ view_evaluator_ig_exp::view_evaluator_ig_exp():
   ros::param::param<double>("~view_evaluator_weight_distance", w_dist_, 1.0);
 }
 
-double view_evaluator_ig_exp::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp::calculateUtiltiy(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage)
 {
-  double IG = calculateIG(p, mapping_module);
+  double IG = calculateIG(p, mapping_module,new_cell_percentage);
   double dist = calculateDistance(p);
   return IG*exp(-dist*w_dist_);
 }
 
-double view_evaluator_ig_exp::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module)
+double view_evaluator_ig_exp::calculateWirelessUtility(geometry_msgs::Pose p, Victim_Map_Base *mapping_module, double &new_cell_percentage)
 {
-  double IG = calculateWirelessIG(p,mapping_module);
+  double IG = calculateWirelessIG(p,mapping_module,new_cell_percentage);
   double dist = calculateDistance(p);
   return IG*exp(-dist*w_dist_);
 }
 
-double view_evaluator_ig_exp::calculateCombinedUtility(geometry_msgs::Pose p)
+double view_evaluator_ig_exp::calculateCombinedUtility(geometry_msgs::Pose p,double &new_cell_percentage)
 {
-  double IG = view_evaluator_base::calculateCombinedUtility(p);
+  double IG = view_evaluator_base::calculateCombinedUtility(p,new_cell_percentage);
   double dist = calculateDistance(p);
 
   return IG*exp(-dist*w_dist_);

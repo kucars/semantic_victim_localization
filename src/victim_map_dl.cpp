@@ -18,6 +18,7 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
            map.getLength().x(), map.getLength().y(),
            map.getSize()(0), map.getSize()(1));
 
+
   map.add(layer_name,0.5); // initialize probability in the map to 0.5
   const_=max_depth_d/cos(DEG2RAD(HFOV_deg/4));
 
@@ -28,6 +29,7 @@ victim_map_DL::victim_map_DL(const ros::NodeHandle &nh,const ros::NodeHandle &nh
   ros::param::param<double>("~Prob_D_Hc_for_DL", Prob_D_Hc , 0.05);
   ros::param::param<double>("~Prob_Dc_H_for_DL", Prob_Dc_H , 0.1);
   ros::param::param<double>("~Prob_Dc_Hc_for_DL", Prob_Dc_Hc , 0.95);
+
 
   switch(raytracing_type) {
   case 0:

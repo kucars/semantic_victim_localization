@@ -47,7 +47,7 @@ class ssdKeras():
         self.model.load_weights(pkg_path + '/resources/ssd_keras/weights_SSD300.hdf5')
 
         self.bbox_util = BBoxUtility(self.num_classes)
-        self.conf_thresh = 0.4
+        self.conf_thresh = 0.25
 
         self.model._make_predict_function()
         self.graph = tf.get_default_graph()
