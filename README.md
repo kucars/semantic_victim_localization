@@ -8,8 +8,8 @@ Follow the steps below to install the simulation environment with all it's depen
 ```
 cd <catkin_ws>
 wstool init src
-wstool set -t src Victim-Localization https://github.com/AbdulrahmanGoian/Victim-Localization --git
-wstool merge -t src https://raw.githubusercontent.com/https://github.com/AbdulrahmanGoian/Victim-Localization/master/victim_localization.rosinstall
+wstool set -t src semantic_victim_localization https://github.com/kucars/semantic_victim_localization --git
+wstool merge -t src https://raw.githubusercontent.com/kucars/semantic_victim_localization/master/victim_localization.rosinstall?token=AACHO4VKR6EP27G7VRLTW225NLC44/victim_localization.rosinstall
 wstool update -t src
 rosdep install -y -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 catkin build
