@@ -28,14 +28,14 @@ roslaunch victim_localization NBV_test.launch
 If you find this code useful, please cite this in your work.
 
 ```
-@article{ashour2020exploration,
-  title={Exploration for Object Mapping Guided by Environmental Semantics using UAVs},
-  author={Ashour, Reem and Taha, Tarek and Dias, Jorge Manuel Miranda and Seneviratne, Lakmal and Almoosa, Nawaf},
+@article{goian2019victim,
+  title={Victim Localization in USAR Scenario Exploiting Multi-Layer Mapping Structure},
+  author={Goian, Abdulrahman and Ashour, Reem and Ahmad, Ubaid and Taha, Tarek and Almoosa, Nawaf and Seneviratne, Lakmal},
   journal={Remote Sensing},
-  volume={12},
-  number={5},
-  pages={891},
-  year={2020},
+  volume={11},
+  number={22},
+  pages={2704},
+  year={2019},
   publisher={Multidisciplinary Digital Publishing Institute}
 }
 ```
